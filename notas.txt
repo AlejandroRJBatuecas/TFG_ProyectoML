@@ -1,0 +1,20 @@
+104 proyectos
+    71 proyectos - Conjunto de entrenamiento (+38k archivos)
+    33 proyectos - Conjunto de prueba (+15k archivos)
+        Len(data) = 63527 - 1 nulo
+
+Clasificador en 6 grupos MVC - Etiquetas (columna role)
+    Modelo
+        Entity - 4
+        Repository - 2 (Menos frecuente - 990 archivos de entrenamiento y 283 de prueba = 1273)
+            print(data["role"].value_counts()) --> 1325
+        Component - 5
+        Service - 3
+    Other - 0
+    Controller - 1
+
+Probado con la medida F1 (F1-score)
+    Es la media armónica de 
+        sensibilidad y 
+        valor predictivo positivo
+    Entre 0 y 1
