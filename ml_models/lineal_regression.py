@@ -1,17 +1,16 @@
 from sklearn.calibration import cross_val_predict
-import ML_models.utils as utils
+import utils as utils
 from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.preprocessing import StandardScaler
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import accuracy_score, f1_score, classification_report, confusion_matrix, multilabel_confusion_matrix
-from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import accuracy_score, f1_score, classification_report
+from sklearn.model_selection import train_test_split
 
 # Leer el csv
-data = pd.read_csv(Path("./datasets/dataset_openqasm_qiskit.csv"), delimiter=";")
+data = pd.read_csv(Path("../datasets/dataset_openqasm_qiskit.csv"), delimiter=";")
 
 # Mostrar la estructura de los datos
 # print(data.head())
@@ -20,11 +19,17 @@ data.info()
 print(data.describe())
 
 # data.hist(bins=50)
-# utils.save_fig("attribute_histogram_plots")
+utils.save_fig("attribute_histogram_plots")
 # plt.show()
 
 # Limpiar las filas nulas
 data = data.dropna()
+
+# Convertir las etiquetas de texto a valores binarios (0/1)
+data['p.initialization'] = data['p.initialization'].apply(lambda x: 1 if x == True else 0)
+data['p.superposition'] = data['p.superposition'].apply(lambda x: 1 if x == True else 0)
+data['p.oracle'] = data['p.oracle'].apply(lambda x: 1 if x == True else 0)
+data['p.entanglement'] = data['p.entanglement'].apply(lambda x: 1 if x == True else 0)
 
 # Obtener el conjunto de prueba
 print("Nº de archivos: ", len(data))
@@ -59,44 +64,35 @@ scaler = StandardScaler()
 train_set_num = scaler.fit_transform(train_set_num)
 test_set_num = scaler.transform(test_set_num)
 
-# Crear el clasificador multietiqueta
-knn_classifier = KNeighborsClassifier()
+# Crear los clasificadores para cada patrón
+initialization_lin_reg = LinearRegression()
+superposition_lin_reg = LinearRegression()
+oracle_lin_reg = LinearRegression()
+entanglement_lin_reg = LinearRegression()
 
-# Entrenar el clasificador
-train_set_labels_np_matrix = np.c_[
-    train_set_labels['p.initialization'],
-    train_set_labels['p.superposition'],
-    train_set_labels['p.oracle'],
-    train_set_labels['p.entanglement']]
-knn_classifier.fit(train_set_num, train_set_labels_np_matrix)
+# Entrenar los clasificadores
+initialization_lin_reg.fit(train_set_num, train_set_labels['p.initialization'])
+superposition_lin_reg.fit(train_set_num, train_set_labels['p.superposition'])
+oracle_lin_reg.fit(train_set_num, train_set_labels['p.oracle'])
+entanglement_lin_reg.fit(train_set_num, train_set_labels['p.entanglement'])
 
 # Realizar predicciones en el conjunto de prueba
-test_pred = knn_classifier.predict(test_set_num)
+initialization_test_pred = initialization_lin_reg.predict(test_set_num)
+superposition_test_pred = superposition_lin_reg.predict(test_set_num)
+oracle_test_pred = oracle_lin_reg.predict(test_set_num)
+entanglement_test_pred = entanglement_lin_reg.predict(test_set_num)
 
-# Evaluar el rendimiento del modelo
-test_set_labels_np_matrix = np.c_[
-    test_set_labels['p.initialization'],
-    test_set_labels['p.superposition'],
-    test_set_labels['p.oracle'],
-    test_set_labels['p.entanglement']]
-accuracy = accuracy_score(test_set_labels_np_matrix, test_pred)
-print(f"Precisión del modelo: {accuracy:.2f}")
+print(initialization_test_pred)
+media = sum(initialization_test_pred)/len(initialization_test_pred)
+print("Media: ", media)
+print(max(initialization_test_pred))
 
+'''
 # Evaluar la exactitud mediante evaluación cruzada
-cross_val = cross_val_predict(knn_classifier, train_set_num, train_set_labels_np_matrix, cv=3)
-print("Validación cruzada: ", cross_val)
-
-# Calcular el f1 score
-f1_score = f1_score(train_set_labels_np_matrix, cross_val, average="weighted", zero_division=np.nan)
-print("F1 score: ", f1_score)
+cross_val = cross_val_predict(initialization_lin_reg, train_set_num, train_set_labels['p.initialization'], cv=3)
+print("Validación cruzada : ", cross_val)
 
 # Imprimir el informe de clasificación
 print("Informe de clasificación:")
 print(classification_report(test_set_labels_np_matrix, test_pred, zero_division=np.nan, target_names=list(train_set_labels.keys())))
-
-# Calcular la matriz de confusión en el conjunto de prueba
-conf_matrix = multilabel_confusion_matrix(test_set_labels_np_matrix, test_pred)
-
-# Imprimir la matriz de confusión
-print("Matriz de Confusión:")
-print(conf_matrix)
+'''
