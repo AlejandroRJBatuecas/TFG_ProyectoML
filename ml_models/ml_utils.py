@@ -32,8 +32,11 @@ def clean_outliers(data):
 
 # Mostrar la estructura de los datos
 def show_data_structure(data):
+    # Mostrar los 5 primeros registros
     print(data.head())
+    # Mostrar la estructura de los datos
     data.info()
+    # Mostrar las estadísticas de los datos numéricos
     print(data.describe())
 
 # Crear histograma de los atributos
@@ -69,7 +72,7 @@ def model_performance_data(test_set_labels, test_pred, knn_classifier, train_set
 
     # Evaluar la exactitud mediante evaluación cruzada
     cross_val = cross_val_predict(knn_classifier, train_set_num, train_set_labels_np_matrix, cv=3)
-    print("Validación cruzada: ", cross_val)
+    #print("Validación cruzada: ", cross_val)
 
     # Calcular el f1 score
     f1_score_value = f1_score(train_set_labels_np_matrix, cross_val, average="weighted", zero_division=np.nan)

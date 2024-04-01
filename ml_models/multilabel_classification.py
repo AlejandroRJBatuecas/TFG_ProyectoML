@@ -15,7 +15,7 @@ patterns_list = ["p.initialization", "p.superposition", "p.oracle", "p.entanglem
 
 # Leer el csv con los datos
 data = pd.read_csv(Path("../datasets/dataset_openqasm_qiskit.csv"), delimiter=";")
-test_data = pd.read_csv(Path("../datasets/prueba_uno_dataset_openqasm_qiskit.csv"), delimiter=";")
+test_data = pd.read_csv(Path("../datasets/prueba_cinco_dataset_openqasm_qiskit.csv"), delimiter=";")
 
 # Mostrar la estructura de los datos
 #mlutils.clean_outliers(data)
@@ -66,8 +66,10 @@ test_pred = knn_classifier.predict(test_set_num)
 mlutils.model_performance_data(test_set_labels, test_pred, knn_classifier, train_set_num, train_set_labels_np_matrix, train_set_labels)
 
 # Preparar los datos de prueba
-test_set_data = test_data.drop(["m.AvgDens", "m.AvgCNOT", "m.AvgToff"], axis=1)
-test_set_data_values = test_set_data.select_dtypes(include=[np.number])
+# Eliminar las columnas con valores corruptos
+#test_set_data = test_data.drop(["m.AvgDens", "m.AvgCNOT", "m.AvgToff"], axis=1)
+# Obtener y escalar los datos numéricos
+test_set_data_values = test_data.select_dtypes(include=[np.number])
 test_set_data_values = scaler.transform(test_set_data_values)
 
 # Obtener predicciones de los datos de prueba con el modelo entrenado
