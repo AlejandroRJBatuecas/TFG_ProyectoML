@@ -45,6 +45,26 @@ def create_data_histogram(data):
     utils.save_fig("attribute_histogram_plots")
     plt.show()
 
+# Ver la correlación entre los datos
+def get_correlation_matrix(data):
+    # Calcular correlación
+    correlation_matrix = data.corr()
+
+    # Plot
+    plt.figure(figsize=(8, 6))
+    plt.imshow(correlation_matrix, cmap='coolwarm', interpolation='nearest')
+    plt.colorbar(label='Correlation')
+    plt.title('Matriz de correlación')
+    plt.xticks(range(len(correlation_matrix)), correlation_matrix.columns, rotation=45)
+    plt.yticks(range(len(correlation_matrix)), correlation_matrix.columns)
+    plt.tight_layout()
+
+    # Guardar la imagen
+    utils.save_fig('matriz_correlacion.png')
+
+    # Mostrar el gráfico
+    plt.show()
+
 # Obtener los datos sin etiquetas y las etiquetas
 def separate_data_and_labels(data_set, labels_list):
     # Obtener los datos sin la etiqueta

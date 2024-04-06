@@ -18,12 +18,15 @@ data = pd.read_csv(Path("../datasets/dataset_openqasm_qiskit.csv"), delimiter=";
 test_data = pd.read_csv(Path("../datasets/prueba_cinco_dataset_openqasm_qiskit.csv"), delimiter=";")
 
 # Mostrar la estructura de los datos
-#mlutils.clean_outliers(data)
 #mlutils.show_data_structure(data)
 #mlutils.create_data_histogram(data)
 
 # Limpiar las filas con algún dato nulo
 data = data.dropna()
+
+# Ver la correlación entre los datos
+data_num = data.select_dtypes(include=[np.number])
+#mlutils.get_correlation_matrix(data_num)
 
 # Obtener el conjunto de prueba
 print("Nº de archivos: ", len(data))
