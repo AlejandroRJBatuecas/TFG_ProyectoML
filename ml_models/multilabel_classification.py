@@ -14,12 +14,12 @@ patterns_list = ["p.initialization", "p.superposition", "p.oracle", "p.entanglem
 min_correlation_value = 0.5 # Selecciona características con una correlación superior a este valor
 min_importance_value = 0.04 # Selecciona características con una importancia superior a este valor
 cv_value = 3 # Número de particiones realizadas en la validación cruzada. Por defecto = 5
+test_results_num = 5 # Número de registros de prueba mostrados
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # Leer el csv con los datos
 data = pd.read_csv(Path("../datasets/dataset_openqasm_qiskit.csv"), delimiter=";")
-test_data = pd.read_csv(Path("../datasets/prueba_cinco_dataset_openqasm_qiskit.csv"), delimiter=";")
 
 # Limpiar las filas con algún dato nulo
 data = data.dropna()
@@ -87,6 +87,7 @@ mlutils.model_performance_data(train_set_labels_np_matrix, predictions, patterns
 
 # Realizar predicciones en el conjunto de prueba
 predictions = knn_classifier.predict(test_set_values)
+predictions_proba = knn_classifier.predict_proba(test_set_values)
 
 # Transponer las listas colocando los datos en columnas para cada patrón
 test_set_labels_np_matrix = np.c_[tuple(test_set_labels[pattern] for pattern in patterns_list)]
@@ -97,42 +98,24 @@ mlutils.model_performance_data(test_set_labels_np_matrix, predictions, patterns_
 
 # Realizar predicciones en el conjunto de prueba con las mejores métricas
 predictions = best_features_knn_classifier.predict(best_features_test_set_values)
+best_features_predictions_proba = best_features_knn_classifier.predict_proba(best_features_test_set_values)
 
 # # Mostrar las medidas de rendimiento
 print(f"\nMétricas seleccionadas: {best_features}")
 print("\nRendimiento del modelo mejorado con el conjunto de prueba")
 mlutils.model_performance_data(test_set_labels_np_matrix, predictions, patterns_list)
 
-'''
-# Preparar los datos de prueba
-# # Obtener los datos numéricos
-test_set_data_values = test_data.select_dtypes(include=[np.number])
-# # Obtener los datos de prueba con las mejores métricas
-best_features_test_set_data_values = test_data[best_features]
-
-# Escalar los datos de prueba
-test_set_data_values = scaler.transform(test_set_data_values)
-best_features_test_set_data_values = best_features_scaler.transform(best_features_test_set_data_values)
-
-# Obtener predicciones y probabilidades de los datos de prueba con el modelo entrenado
-test_data_pred = knn_classifier.predict(test_set_data_values)
-predictions_proba = knn_classifier.predict_proba(test_set_data_values)
-
-# Realizar predicciones con los datos de prueba
-best_features_test_data_pred = best_features_knn_classifier.predict(best_features_test_set_data_values)
-best_features_predictions_proba = best_features_knn_classifier.predict_proba(best_features_test_set_data_values)
-
-# Imprimir los porcentajes de predicción
-for i in range(len(predictions_proba[0])):
-    print(f"\nInstancia {i+1}:")
+# Imprimir los porcentajes de predicción de los primeros registros del conjunto de prueba
+for i in range(0,test_results_num):
+    print(f"\nInstancia {i+1}: {test_set_labels.iloc[i].tolist()}")
     for j in range(len(predictions_proba)):
+        print(f"Patrón {patterns_list[j]}: ")
         if len(predictions_proba[j][i]) > 1 and (predictions_proba[j][i][1] > predictions_proba[j][i][0]):
-            print(f" Cumple el patrón {patterns_list[j]} en un {round(predictions_proba[j][i][1]*100, 2)}%")
+            print(f"Modelo normal --> Cumple el patrón en un {round(predictions_proba[j][i][1]*100, 2)}%")
         else:
-            print(f" No cumple el patrón {patterns_list[j]} en un {round(predictions_proba[j][i][0]*100, 2)}%")
+            print(f"Modelo normal --> No cumple el patrón en un {round(predictions_proba[j][i][0]*100, 2)}%")
 
         if len(best_features_predictions_proba[j][i]) > 1 and (best_features_predictions_proba[j][i][1] > best_features_predictions_proba[j][i][0]):
-            print(f" Cumple el patrón {patterns_list[j]} en un {round(best_features_predictions_proba[j][i][1]*100, 2)}%")
+            print(f"Modelo mejorado --> Cumple el patrón en un {round(best_features_predictions_proba[j][i][1]*100, 2)}%")
         else:
-            print(f" No cumple el patrón {patterns_list[j]} en un {round(best_features_predictions_proba[j][i][0]*100, 2)}%")
-'''
+            print(f"Modelo mejorado --> No cumple el patrón en un {round(best_features_predictions_proba[j][i][0]*100, 2)}%")
