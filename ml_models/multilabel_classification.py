@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.calibration import cross_val_predict
 
 # Parámetros generales
@@ -58,15 +58,40 @@ best_features_train_set_values = best_features_scaler.fit_transform(best_feature
 best_features_test_set_values = best_features_scaler.transform(best_features_test_set_values)
 
 # Crear el clasificador multietiqueta
-knn_classifier = KNeighborsClassifier()
-best_features_knn_classifier = KNeighborsClassifier()
+classifier = KNeighborsClassifier()
+best_features_classifier = KNeighborsClassifier()
 
 # Transponer las listas colocando los datos en columnas para cada patrón
 train_set_labels_np_matrix = np.c_[tuple(train_set_labels[pattern] for pattern in patterns_list)]
 
+# Definir la cuadrícula de hiperparámetros a buscar
+param_grid = {'n_neighbors': [3, 5, 7, 9], 'weights': ['uniform', 'distance']}
+
+# Realizar la búsqueda de hiperparámetros utilizando validación cruzada
+grid_search = GridSearchCV(classifier, param_grid, cv=5)
+grid_search.fit(train_set_values, train_set_labels_np_matrix)
+
+best_features_grid_search = GridSearchCV(best_features_classifier, param_grid, cv=5)
+best_features_grid_search.fit(best_features_train_set_values, train_set_labels_np_matrix)
+
+# Obtener el mejor modelo y sus hiperparámetros
+knn_classifier = grid_search.best_estimator_
+best_params = grid_search.best_params_
+
+best_features_knn_classifier = best_features_grid_search.best_estimator_
+best_features_best_params = best_features_grid_search.best_params_
+
+print(knn_classifier)
+print(best_params)
+
+print(best_features_knn_classifier)
+print(best_features_best_params)
+
+'''
 # Entrenar el clasificador
 knn_classifier.fit(train_set_values, train_set_labels_np_matrix)
 best_features_knn_classifier.fit(best_features_train_set_values, train_set_labels_np_matrix)
+'''
 
 # Evaluar el rendimiento del modelo
 # # Calcular las predicciones del clasificador mediante evaluación cruzada
