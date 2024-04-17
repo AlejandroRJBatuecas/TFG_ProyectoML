@@ -65,8 +65,8 @@ def get_correlation_matrix(data, min_correlation_value, patterns_list):
 
 # Obtener la información mutua respecto a las variables objetivo
 # Seleccionar las mejores características con Búsqueda hacia adelante
-def get_best_features(data_values, data_labels, train_set_values, train_set_labels, min_importance_value):
-    best_features = []
+def get_best_features(data_values, data_labels, train_set_values, train_set_labels, min_importance_value, scaler):
+    best_features = dict()
 
     print("\nCaracterísticas seleccionadas por patrón:")
     for label in data_labels:
@@ -80,6 +80,7 @@ def get_best_features(data_values, data_labels, train_set_values, train_set_labe
         index_list = selector.get_support(indices=True)
         features_names = [data_values.columns[index] for index in index_list]
         print(f"Información mutua:", features_names)
+        best_features_set = set(features_names)
 
         # Búsqueda hacia adelante
         # # Inicializar el modelo de regresión lineal
@@ -91,6 +92,7 @@ def get_best_features(data_values, data_labels, train_set_values, train_set_labe
         index_list = sequential_feature_selector.get_support(indices=True)
         features_names = [data_values.columns[index] for index in index_list]
         print("Búsqueda hacia adelante:", features_names)
+        best_features_set = best_features_set.union(set(features_names))
 
         # Eliminación Recursiva de Características (RFE)
         # # Inicializar el modelo de regresión lineal
@@ -101,11 +103,13 @@ def get_best_features(data_values, data_labels, train_set_values, train_set_labe
         # # Identificar las características seleccionadas
         selected_features = [data_values.columns[index] for index in range(len(selector.support_)) if selector.support_[index]]
         print("RFE:", selected_features)
+        best_features_set = best_features_set.union(set(selected_features))
+        best_features[label] = list(best_features_set)
 
         # Método de regularización L1 - Lasso
         # # Normalizar las características
         if label != "p.entanglement": # Da fallo para este patrón, ya que no hay ningún registro que lo implemente
-            scaler = StandardScaler()
+            #scaler = StandardScaler()
             scaled_data_values = scaler.fit_transform(data_values)
 
             # # Ajustar el modelo Lasso con validación cruzada para encontrar el mejor alpha
@@ -126,27 +130,27 @@ def get_best_features(data_values, data_labels, train_set_values, train_set_labe
         importances = forest.feature_importances_
         indices = np.argsort(importances)[::-1]
 
+        '''
+        pattern_best_features = []
+        i = 0
+        seguir = True
         # Imprimir la importancia de las características
         print("Importancia de las características:")
-        for f in range(data_values.shape[1]):
-            print(f"{data_values.columns[indices[f]]}: {importances[indices[f]]}")
-            # Añadir a la lista de mejores características si su importancia es mayor del 10%
-            if importances[indices[f]] > min_importance_value and data_values.columns[indices[f]] not in best_features:
-                best_features.append(data_values.columns[indices[f]])
-
+        while i < data_values.shape[1] and seguir:
+            feature = data_values.columns[indices[i]]
+            # Añadir a la lista de mejores características si su importancia es mayor del valor mínimo
+            if importances[indices[i]] > min_importance_value:
+                print(f"{feature}: {importances[indices[i]]}")
+                pattern_best_features.append(data_values.columns[indices[i]])
+                i += 1
+            else:
+                seguir = False
+        
+        # Añadir la lista de características del patrón a la lista general
+        best_features[label] = pattern_best_features
+        '''
+        
     return best_features
-
-# Obtener los datos sin etiquetas y las etiquetas
-def separate_data_and_labels(data_set, labels_list):
-    # Obtener los datos sin la etiqueta
-    data_set_values = data_set.drop(labels_list, axis=1)
-
-    # Almacenar las etiquetas en un diccionario
-    data_set_labels = dict()
-    for label in labels_list:
-        data_set_labels[label] = data_set[label].copy()
-
-    return data_set_values, data_set_labels
 
 # Evaluar el rendimiento del modelo
 def model_performance_data(data_labels_np_matrix, predictions, patterns_list):
