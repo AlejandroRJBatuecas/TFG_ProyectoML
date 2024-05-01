@@ -10,19 +10,26 @@ from sklearn.calibration import cross_val_predict
 
 # Parámetros generales
 test_set_size = 0.3 # Porcentaje de datos utilizados para el conjunto de prueba
-patterns_list = ["p.initialization", "p.superposition", "p.oracle", "p.entanglement"] # Lista de patrones a detectar
+patterns_list = ["p.initialization", "p.superposition", "p.oracle"] # Lista de patrones a detectar
+eliminated_metrics = ["m.NoOr", "m.NoCOr", "m.%QInOr", "m.%QInCOr", "m.AvgOrD", "m.MaxOrD"] # Métricas de Oráculo eliminadas
+min_importance_values = [0.04, 0.04, 0.01] # Selecciona características con una importancia superior a este valor
 min_correlation_value = 0.5 # Selecciona características con una correlación superior a este valor
-min_importance_value = 0.04 # Selecciona características con una importancia superior a este valor
 cv_value = 3 # Número de particiones realizadas en la validación cruzada. Por defecto = 5
 test_results_num = 5 # Número de registros de prueba mostrados
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+# Establecer la semilla de aleatoridad
+np.random.seed(42)
 
 # Leer el csv con los datos
 data = pd.read_csv(Path("../datasets/dataset_openqasm_qiskit.csv"), delimiter=";")
 
 # Limpiar las filas con algún dato nulo
 data = data.dropna()
+
+# Elimnar las columnas relacionadas con Oracle
+data = data.drop(columns=eliminated_metrics)
 
 # Separar datos y etiquetas
 data_values = data.select_dtypes(include=[np.number])
@@ -40,7 +47,13 @@ data_vars = data.drop(["id", "language", "extension", "author", "name", "path", 
 # # Obtener la matriz de correlación
 mlutils.get_correlation_matrix(data_vars, min_correlation_value, patterns_list)
 # # Obtener las mejores características
-best_features = mlutils.get_best_features(data_values, data_labels, train_set_values, train_set_labels, min_importance_value)
+best_features_scaler = StandardScaler()
+scaled_data_values = best_features_scaler.fit_transform(data_values)
+best_features_dict = mlutils.get_best_features(data_values, scaled_data_values, data_labels, train_set_values, train_set_labels, min_importance_values)
+# # Unir la lista de cada patrón en una única
+best_features_list = [feature for pattern in best_features_dict.values() for feature in pattern]
+# # Pasar a conjunto para eliminar valores repetidos y después a lista
+best_features = list(set(best_features_list))
 
 # Obtener los datos de entrenamiento y prueba con las mejores métricas
 best_features_train_set_values = train_set_values[best_features]
@@ -48,7 +61,7 @@ best_features_test_set_values = test_set_values[best_features]
 
 # Escalar los atributos
 scaler = StandardScaler()
-best_features_scaler = StandardScaler()
+#best_features_scaler = StandardScaler()
 # # Ajustar el escalador y tranformar los datos de entrenamiento
 train_set_values = scaler.fit_transform(train_set_values)
 # # Transformar los datos de prueba
@@ -60,6 +73,10 @@ best_features_test_set_values = best_features_scaler.transform(best_features_tes
 # Crear el clasificador multietiqueta
 classifier = KNeighborsClassifier()
 best_features_classifier = KNeighborsClassifier()
+
+print("\nCaracterísticas de los clasificadores:")
+print(classifier)
+print(classifier.get_params())
 
 # Transponer las listas colocando los datos en columnas para cada patrón
 train_set_labels_np_matrix = np.c_[tuple(train_set_labels[pattern] for pattern in patterns_list)]
@@ -81,6 +98,7 @@ best_params = grid_search.best_params_
 best_features_knn_classifier = best_features_grid_search.best_estimator_
 best_features_best_params = best_features_grid_search.best_params_
 
+print("\nCaracterísticas de los clasificadores optimizados:")
 print(knn_classifier)
 print(best_params)
 

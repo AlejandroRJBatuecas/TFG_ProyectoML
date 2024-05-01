@@ -1,7 +1,7 @@
 import utils as utils
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, classification_report, multilabel_confusion_matrix
+from sklearn.metrics import accuracy_score, balanced_accuracy_score, precision_score, recall_score, f1_score, classification_report, confusion_matrix, multilabel_confusion_matrix
 from sklearn.feature_selection import SelectKBest, mutual_info_regression, SequentialFeatureSelector, RFE
 from sklearn.linear_model import LinearRegression, LassoCV
 from sklearn.preprocessing import StandardScaler
@@ -65,22 +65,22 @@ def get_correlation_matrix(data, min_correlation_value, patterns_list):
 
 # Obtener la información mutua respecto a las variables objetivo
 # Seleccionar las mejores características con Búsqueda hacia adelante
-def get_best_features(data_values, data_labels, train_set_values, train_set_labels, min_importance_value, scaler):
+def get_best_features(data_values, scaled_data_values, data_labels, train_set_values, train_set_labels, min_importance_values):
     best_features = dict()
 
     print("\nCaracterísticas seleccionadas por patrón:")
-    for label in data_labels:
+    for index, label in enumerate(data_labels):
         print("\nPatrón :", label)
-
-        # Información mutua
         pattern = data_labels[label]
+        
+        # Información mutua
         # # Aplicar la información mutua para seleccionar las 5 mejores características
         selector = SelectKBest(mutual_info_regression, k=5)
         selector.fit_transform(data_values, pattern)
         index_list = selector.get_support(indices=True)
         features_names = [data_values.columns[index] for index in index_list]
         print(f"Información mutua:", features_names)
-        best_features_set = set(features_names)
+        #best_features_set = set(features_names)
 
         # Búsqueda hacia adelante
         # # Inicializar el modelo de regresión lineal
@@ -92,7 +92,7 @@ def get_best_features(data_values, data_labels, train_set_values, train_set_labe
         index_list = sequential_feature_selector.get_support(indices=True)
         features_names = [data_values.columns[index] for index in index_list]
         print("Búsqueda hacia adelante:", features_names)
-        best_features_set = best_features_set.union(set(features_names))
+        #best_features_set = best_features_set.union(set(features_names))
 
         # Eliminación Recursiva de Características (RFE)
         # # Inicializar el modelo de regresión lineal
@@ -103,15 +103,12 @@ def get_best_features(data_values, data_labels, train_set_values, train_set_labe
         # # Identificar las características seleccionadas
         selected_features = [data_values.columns[index] for index in range(len(selector.support_)) if selector.support_[index]]
         print("RFE:", selected_features)
-        best_features_set = best_features_set.union(set(selected_features))
-        best_features[label] = list(best_features_set)
+        #best_features_set = best_features_set.union(set(selected_features))
+        #best_features[label] = list(best_features_set)
 
         # Método de regularización L1 - Lasso
         # # Normalizar las características
         if label != "p.entanglement": # Da fallo para este patrón, ya que no hay ningún registro que lo implemente
-            #scaler = StandardScaler()
-            scaled_data_values = scaler.fit_transform(data_values)
-
             # # Ajustar el modelo Lasso con validación cruzada para encontrar el mejor alpha
             lasso = LassoCV(cv=5, max_iter=10000)
             lasso.fit(scaled_data_values, pattern)
@@ -120,17 +117,16 @@ def get_best_features(data_values, data_labels, train_set_values, train_set_labe
             index_list = np.where(lasso.coef_ != 0)[0]
             selected_features = [data_values.columns[index] for index in index_list]
             print("Lasso:", selected_features)
-
+        
         # Evaluación de la importancia de las características - Random Forest
         # Ajustar el modelo de Random Forest
         forest = RandomForestRegressor(n_estimators=100)
-        forest.fit(data_values, pattern)
+        forest.fit(scaled_data_values, pattern)
 
         # Obtener la importancia de las características
         importances = forest.feature_importances_
         indices = np.argsort(importances)[::-1]
 
-        '''
         pattern_best_features = []
         i = 0
         seguir = True
@@ -138,17 +134,17 @@ def get_best_features(data_values, data_labels, train_set_values, train_set_labe
         print("Importancia de las características:")
         while i < data_values.shape[1] and seguir:
             feature = data_values.columns[indices[i]]
+            print(f"{feature}: {importances[indices[i]]}")
             # Añadir a la lista de mejores características si su importancia es mayor del valor mínimo
-            if importances[indices[i]] > min_importance_value:
-                print(f"{feature}: {importances[indices[i]]}")
+            if importances[indices[i]] > min_importance_values[index]:
+                
                 pattern_best_features.append(data_values.columns[indices[i]])
-                i += 1
-            else:
-                seguir = False
+            i += 1
+            #else:
+                #seguir = False
         
         # Añadir la lista de características del patrón a la lista general
         best_features[label] = pattern_best_features
-        '''
         
     return best_features
 
@@ -169,11 +165,16 @@ def model_performance_data(data_labels_np_matrix, predictions, patterns_list):
     # Calcular el f1 score
     f1 = f1_score(data_labels_np_matrix, predictions, average="weighted", zero_division=np.nan)
     print(f"F1 score: {round(f1*100, 2)}%")
+    
+    if len(data_labels_np_matrix.shape) > 1:
+        # Imprimir el informe de clasificación
+        print("Informe de clasificación:")
+        print(classification_report(data_labels_np_matrix, predictions, target_names=patterns_list, zero_division=np.nan))
 
-    # Imprimir el informe de clasificación
-    print("Informe de clasificación:")
-    print(classification_report(data_labels_np_matrix, predictions, target_names=patterns_list, zero_division=np.nan))
-
-    # Imprimir la matriz de confusión
-    print("Matriz de Confusión:")
-    print(multilabel_confusion_matrix(data_labels_np_matrix, predictions))
+        # Imprimir la matriz de confusión
+        print("Matriz de Confusión:")
+        print(multilabel_confusion_matrix(data_labels_np_matrix, predictions))
+    else:
+        # Imprimir la matriz de confusión
+        print("Matriz de Confusión:")
+        print(confusion_matrix(data_labels_np_matrix, predictions))
