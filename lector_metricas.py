@@ -7,8 +7,8 @@ import json
 def analyze_circuit(circuit):
     metrics = {
         'Circuit Size': {
-            'Width': circuit.width(), # Number of qubits and clbits (classical qubits)
-            'Qubits Used': circuit.num_qubits, # Number of qubits in the circuit
+            'Width': circuit.num_qubits, # Number of qubits in the circuit
+            'Total bits': circuit.width(), # Number of qubits and clbits (classical bits)
             'Depth': circuit.depth(), # Return circuit depth (i.e., length of critical path)
             'Max Operations in a Qubit': 0 # Maximum number of operations in a qubit
         },
@@ -16,7 +16,7 @@ def analyze_circuit(circuit):
             'MaxDens': 0, # Maximum number of simultaneous operations
             'AvgDens': 0.0, # Average number of simultaneous operations
         },
-        'Single Qubits Gates': {
+        'Single Qubit Gates': {
             'NoP-X': 0, # Number of Pauli-X gates
             'NoP-Y': 0, # Number of Pauli-Y gates
             'NoP-Z': 0, # Number of Pauli-Z gates
@@ -29,6 +29,7 @@ def analyze_circuit(circuit):
         },
         'Controlled Gates Count': defaultdict(int),
         'Multiple Qubit Gates': {
+            'NoCZ': 0, # Total number of CZ gates
             'NoSWAP': 0, # Total number of SWAP gates
             'NoCNOT': 0, # Total number of CNOT gates
             '%QInCNOT': 0.0, # Percentage of qubits affected by a CNOT
@@ -49,22 +50,28 @@ def analyze_circuit(circuit):
             'NoM': 0, # Number of measurement gates in the circuit
             '%QM': 0.0 # Percentage of qubits measured in the circuit
         },
+        '''
         'Entanglement Metrics': {
             'Entangling Gates Count': 0,
             'Qubit Pairs Entangled': Counter()
         },
+        '''
         'Gate Count': defaultdict(int)
     }
 
+    '''
     # Calculating circuit density
     max_dens = max(circuit.count_ops().values()) / circuit.num_qubits
     avg_dens = circuit.size() / (circuit.depth() * circuit.num_qubits)
     metrics['Circuit Density']['MaxDens'] = max_dens
     metrics['Circuit Density']['AvgDens'] = avg_dens
-
+    '''
+    
     # Conteo de instrucciones por qubit
     qubit_instructions = [0] * circuit.num_qubits
+    qubits_in_cnot_count = [0] * circuit.num_qubits
     qubits_in_cnot = set()
+    qubits_in_toffoli_count = [0] * circuit.num_qubits
     qubits_in_toffoli = set()
     qubits_measured = set()
 
@@ -87,18 +94,18 @@ def analyze_circuit(circuit):
         # Contar las puertas específicas
         # Single Qubit Gates
         if gate_name == 'h':
-            metrics['Single Qubits Gates']['NoH'] += 1
+            metrics['Single Qubit Gates']['NoH'] += 1
         elif gate_name == 'x':
-            metrics['Single Qubits Gates']['NoP-X'] += 1
-            metrics['Single Qubits Gates']['TNo-P'] += 1
+            metrics['Single Qubit Gates']['NoP-X'] += 1
+            metrics['Single Qubit Gates']['TNo-P'] += 1
         elif gate_name == 'y':
-            metrics['Single Qubits Gates']['NoP-Y'] += 1
-            metrics['Single Qubits Gates']['TNo-P'] += 1
+            metrics['Single Qubit Gates']['NoP-Y'] += 1
+            metrics['Single Qubit Gates']['TNo-P'] += 1
         elif gate_name == 'z':
-            metrics['Single Qubits Gates']['NoP-Z'] += 1
-            metrics['Single Qubits Gates']['TNo-P'] += 1
+            metrics['Single Qubit Gates']['NoP-Z'] += 1
+            metrics['Single Qubit Gates']['TNo-P'] += 1
         elif gate_name in ['s', 't']: # s y t son el resto de puertas simples
-            metrics['Single Qubits Gates']['NoOtherSG'] += 1
+            metrics['Single Qubit Gates']['NoOtherSG'] += 1
         # Multiple Qubit Gates
         elif gate_name == 'swap':
             metrics['Multiple Qubit Gates']['NoSWAP'] += 1
@@ -106,7 +113,7 @@ def analyze_circuit(circuit):
         elif gate_name == 'measure':
             metrics['Measurement Gates']['NoM'] += 1
             for qubit in qargs:
-                qubits_measured.add(qubit)
+                qubits_measured.add(qubit._index)
 
         # Contar las puertas controladas
         if 'c' in gate_name and gate_name != 'measure':
@@ -114,40 +121,64 @@ def analyze_circuit(circuit):
             metrics['Controlled Gates Count'][controlled_gate] += 1
             metrics['All Gates']['NoCGates'] += 1
 
-            if gate_name in ['x', 'y', 'z', 'h', 's', 't']:
-                metrics['Single Qubits Gates']['TNoCSQG'] += 1
+            if gate_name in ['cx', 'cy', 'cz', 'ch', 'cs', 'ct']:
+                metrics['Single Qubit Gates']['TNoCSQG'] += 1
 
-            if gate_name == 'x': # cx o CNOT
-                metrics['Multiple Qubit Gates']['NoCNOT'] += 1
-                for qubit in qargs:
-                    qubits_in_cnot.add(qubit)
-            elif gate_name == 'cx': # ccx o Toffoli
+                if gate_name == 'cx': # CNOT
+                    metrics['Multiple Qubit Gates']['NoCNOT'] += 1
+                    for qubit in qargs:
+                        qubits_in_cnot.add(qubit._index)
+                        qubits_in_cnot_count[qubit._index] += 1
+                elif gate_name == 'cz': # CZ
+                    metrics['Multiple Qubit Gates']['NoCZ'] += 1
+            
+            if gate_name == 'ccx': # Toffoli
                 metrics['Multiple Qubit Gates']['NoToff'] += 1
                 for qubit in qargs:
-                    qubits_in_toffoli.add(qubit)
+                    qubits_in_toffoli.add(qubit._index)
+                    qubits_in_toffoli_count[qubit._index] += 1
 
+        '''
         # Contar y almacenar las puertas entrelazadas
         if gate_name in ['cx', 'cz', 'cy', 'swap']:
             metrics['Entanglement Metrics']['Entangling Gates Count'] += 1
             qubit_pair = str(tuple(sorted([q._index for q in qargs])))  # Sort to avoid different orderings
             print(qubit_pair)
             metrics['Entanglement Metrics']['Qubit Pairs Entangled'][qubit_pair] += 1
+        '''
 
     # Obtener el nº máximo de operaciones entre todos los qubits
-    print(qubit_instructions)
     metrics['Circuit Size']['Max Operations in a Qubit'] = max(qubit_instructions)
 
-    # Calcular %SpposQ
-    metrics['Single Qubits Gates']['%SpposQ'] = metrics['Single Qubits Gates']['NoH'] / circuit.num_qubits
+    # Calcular %SpposQ = NoH / Total Qubits
+    metrics['Single Qubit Gates']['%SpposQ'] = metrics['Single Qubit Gates']['NoH'] / circuit.num_qubits
 
     # Calcular TNoSQG = TNo-P + NoH + NoOtherSG
-    metrics['Single Qubits Gates']['TNoSQG'] = metrics['Single Qubits Gates']['TNo-P'] + metrics['Single Qubits Gates']['NoH'] + metrics['Single Qubits Gates']['NoOtherSG']
+    metrics['Single Qubit Gates']['TNoSQG'] = metrics['Single Qubit Gates']['TNo-P'] + metrics['Single Qubit Gates']['NoH'] + metrics['Single Qubit Gates']['NoOtherSG']
 
     # Calcular %QInCNOT = Nº qubits afectados / Total Qubits
     metrics['Multiple Qubit Gates']['%QInCNOT'] = len(qubits_in_cnot) / circuit.num_qubits
 
+    # Calcular AvgCNOT = Sum(CNOT en cada qubit) / Total Qubits
+    metrics['Multiple Qubit Gates']['AvgCNOT'] = sum(qubits_in_cnot_count) / circuit.num_qubits
+
+    # Calcular MaxCNOT
+    metrics['Multiple Qubit Gates']['MaxCNOT'] = max(qubits_in_cnot_count)
+
     # Calcular %QInToff = Nº qubits afectados / Total Qubits
     metrics['Multiple Qubit Gates']['%QInToff'] = len(qubits_in_toffoli) / circuit.num_qubits
+
+    # Calcular AvgToff = Sum(Toffoli en cada qubit) / Total Qubits
+    metrics['Multiple Qubit Gates']['AvgToff'] = sum(qubits_in_toffoli_count) / circuit.num_qubits
+
+    # Calcular MaxToff
+    metrics['Multiple Qubit Gates']['MaxToff'] = max(qubits_in_toffoli_count)
+
+    # Calcular NoGates = TNoSQG + Total múltiples (CNOT, CZ, SWAP, Toffoli)
+    metrics['All Gates']['NoGates'] = metrics['Single Qubit Gates']['TNoSQG'] + metrics['Multiple Qubit Gates']['NoCNOT'] + metrics['Multiple Qubit Gates']['NoCZ'] + metrics['Multiple Qubit Gates']['NoSWAP'] + metrics['Multiple Qubit Gates']['NoToff']
+
+    # Calcular %SGates = TNoSQG / NoGates
+    metrics['All Gates']['%SGates'] = metrics['Single Qubit Gates']['TNoSQG'] / metrics['All Gates']['NoGates']
 
     # Calcular %QM = Nº qubits medidos / Total Qubits
     metrics['Measurement Gates']['%QM'] = len(qubits_measured) / circuit.num_qubits
@@ -172,6 +203,7 @@ circuit.cx(0, 1)
 circuit.cx(0, 1)
 circuit.cy(1, 2)
 circuit.cz(0, 2)
+circuit.ccx(0, 1, 2)
 circuit.measure_all()
 
 print("Listado de Qubits:", circuit.qubits)
@@ -185,5 +217,5 @@ results_json = json.dumps(results, indent=4)
 print(results_json)
 
 # Dibujar el circuito
-# circuit_drawer(circuit=circuit, output="mpl")
-# plt.show()
+circuit_drawer(circuit=circuit, output="mpl")
+plt.show()
