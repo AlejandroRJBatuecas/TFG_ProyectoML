@@ -61,7 +61,6 @@ best_features_test_set_values = test_set_values[best_features]
 
 # Escalar los atributos
 scaler = StandardScaler()
-#best_features_scaler = StandardScaler()
 # # Ajustar el escalador y tranformar los datos de entrenamiento
 train_set_values = scaler.fit_transform(train_set_values)
 # # Transformar los datos de prueba
@@ -75,14 +74,16 @@ classifier = KNeighborsClassifier()
 best_features_classifier = KNeighborsClassifier()
 
 print("\nCaracterísticas de los clasificadores:")
-print(classifier)
-print(classifier.get_params())
+print(classifier, ":", classifier.get_params())
 
 # Transponer las listas colocando los datos en columnas para cada patrón
 train_set_labels_np_matrix = np.c_[tuple(train_set_labels[pattern] for pattern in patterns_list)]
 
 # Definir la cuadrícula de hiperparámetros a buscar
-param_grid = {'n_neighbors': [3, 5, 7, 9], 'weights': ['uniform', 'distance']}
+param_grid = {
+    'n_neighbors': [3, 5, 7, 9], # Mejor valores impares para evitar empates
+    'weights': ['uniform', 'distance']
+}
 
 # Realizar la búsqueda de hiperparámetros utilizando validación cruzada
 grid_search = GridSearchCV(classifier, param_grid, cv=5)
@@ -99,17 +100,8 @@ best_features_knn_classifier = best_features_grid_search.best_estimator_
 best_features_best_params = best_features_grid_search.best_params_
 
 print("\nCaracterísticas de los clasificadores optimizados:")
-print(knn_classifier)
-print(best_params)
-
-print(best_features_knn_classifier)
-print(best_features_best_params)
-
-'''
-# Entrenar el clasificador
-knn_classifier.fit(train_set_values, train_set_labels_np_matrix)
-best_features_knn_classifier.fit(best_features_train_set_values, train_set_labels_np_matrix)
-'''
+print("Normal:", best_params)
+print("Mejorado:", best_features_best_params)
 
 # Evaluar el rendimiento del modelo
 # # Calcular las predicciones del clasificador mediante evaluación cruzada
@@ -124,8 +116,8 @@ mlutils.model_performance_data(train_set_labels_np_matrix, predictions, patterns
 predictions = cross_val_predict(best_features_knn_classifier, best_features_train_set_values, train_set_labels_np_matrix, cv=cv_value)
 
 # # Mostrar las medidas de rendimiento
-print(f"\nMétricas seleccionadas: {best_features}")
-print("Rendimiento del modelo mejorado")
+print(f"\nMétricas seleccionadas: {len(best_features)}\n{best_features}")
+print("\nRendimiento del modelo mejorado")
 mlutils.model_performance_data(train_set_labels_np_matrix, predictions, patterns_list)
 
 # Realizar predicciones en el conjunto de prueba
@@ -139,17 +131,44 @@ test_set_labels_np_matrix = np.c_[tuple(test_set_labels[pattern] for pattern in 
 print("\nRendimiento del modelo con el conjunto de prueba")
 mlutils.model_performance_data(test_set_labels_np_matrix, predictions, patterns_list)
 
+# Imprimir los porcentajes de predicción de los registros mal predichos del conjunto de prueba
+for i in range(len(test_set_labels)):
+    test_set_labels_list = test_set_labels.iloc[i].tolist()
+    for j in range(len(test_set_labels_list)):
+        if (predictions_proba[j][i][1] > predictions_proba[j][i][0]):
+            if test_set_labels_list[j] == False:
+                print(f"\nModelo normal --> Cumple el patrón {patterns_list[j]} en un {round(predictions_proba[j][i][1]*100, 2)}%")
+                print(f"Instancia {i+1}: {test_set_labels_list[j]}")
+        else:
+            if test_set_labels_list[j] == True:
+                print(f"\nModelo normal --> No cumple el patrón {patterns_list[j]} en un {round(predictions_proba[j][i][0]*100, 2)}%")
+                print(f"Instancia {i+1}: {test_set_labels_list[j]}")
+
 # Realizar predicciones en el conjunto de prueba con las mejores métricas
 predictions = best_features_knn_classifier.predict(best_features_test_set_values)
 best_features_predictions_proba = best_features_knn_classifier.predict_proba(best_features_test_set_values)
 
 # # Mostrar las medidas de rendimiento
-print(f"\nMétricas seleccionadas: {best_features}")
+print(f"\nMétricas seleccionadas: {len(best_features)}\n{best_features}")
 print("\nRendimiento del modelo mejorado con el conjunto de prueba")
 mlutils.model_performance_data(test_set_labels_np_matrix, predictions, patterns_list)
 
+# Imprimir los porcentajes de predicción de los registros mal predichos del conjunto de prueba
+for i in range(len(test_set_labels)):
+    test_set_labels_list = test_set_labels.iloc[i].tolist()
+    for j in range(len(test_set_labels_list)):
+        if best_features_predictions_proba[j][i][1] > best_features_predictions_proba[j][i][0]:
+            if test_set_labels_list[j] == False:
+                print(f"\nModelo mejorado --> Cumple el patrón {patterns_list[j]} en un {round(best_features_predictions_proba[j][i][1]*100, 2)}%")
+                print(f"Instancia {i+1}: {test_set_labels_list[j]}")
+        else:
+            if test_set_labels_list[j] == True:
+                print(f"\nModelo mejorado --> No cumple el patrón {patterns_list[j]} en un {round(best_features_predictions_proba[j][i][0]*100, 2)}%")
+                print(f"Instancia {i+1}: {test_set_labels_list[j]}")
+
 # Imprimir los porcentajes de predicción de los primeros registros del conjunto de prueba
-for i in range(0,test_results_num):
+print("\nResultados de los primeros", test_results_num, "registros de prueba:")
+for i in range(0, test_results_num):
     print(f"\nInstancia {i+1}: {test_set_labels.iloc[i].tolist()}")
     for j in range(len(predictions_proba)):
         print(f"Patrón {patterns_list[j]}: ")

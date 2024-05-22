@@ -5,7 +5,7 @@ from sklearn.metrics import accuracy_score, balanced_accuracy_score, precision_s
 from sklearn.feature_selection import SelectKBest, mutual_info_regression, SequentialFeatureSelector, RFE
 from sklearn.linear_model import LinearRegression, LassoCV
 from sklearn.preprocessing import StandardScaler
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 
 # Mostrar la estructura de los datos
 def show_data_structure(data, data_values, data_labels, train_set_values, test_set_values, train_set_labels, test_set_labels):
@@ -72,7 +72,7 @@ def get_best_features(data_values, scaled_data_values, data_labels, train_set_va
     for index, label in enumerate(data_labels):
         print("\nPatrón :", label)
         pattern = data_labels[label]
-        
+        '''
         # Información mutua
         # # Aplicar la información mutua para seleccionar las 5 mejores características
         selector = SelectKBest(mutual_info_regression, k=5)
@@ -117,10 +117,10 @@ def get_best_features(data_values, scaled_data_values, data_labels, train_set_va
             index_list = np.where(lasso.coef_ != 0)[0]
             selected_features = [data_values.columns[index] for index in index_list]
             print("Lasso:", selected_features)
-        
+        '''
         # Evaluación de la importancia de las características - Random Forest
-        # Ajustar el modelo de Random Forest
-        forest = RandomForestRegressor(n_estimators=100)
+        # # Ajustar el modelo de Random Forest
+        forest = RandomForestClassifier(n_estimators=100)
         forest.fit(scaled_data_values, pattern)
 
         # Obtener la importancia de las características
@@ -130,19 +130,17 @@ def get_best_features(data_values, scaled_data_values, data_labels, train_set_va
         pattern_best_features = []
         i = 0
         seguir = True
-        # Imprimir la importancia de las características
+        # # Imprimir la importancia de las características
         print("Importancia de las características:")
         while i < data_values.shape[1] and seguir:
             feature = data_values.columns[indices[i]]
-            print(f"{feature}: {importances[indices[i]]}")
+            feature_importance = importances[indices[i]]
+            print(f"{feature}: {feature_importance}")
             # Añadir a la lista de mejores características si su importancia es mayor del valor mínimo
-            if importances[indices[i]] > min_importance_values[index]:
-                
-                pattern_best_features.append(data_values.columns[indices[i]])
+            if feature_importance > min_importance_values[index]:
+                pattern_best_features.append(feature)
             i += 1
-            #else:
-                #seguir = False
-        
+
         # Añadir la lista de características del patrón a la lista general
         best_features[label] = pattern_best_features
         
@@ -177,4 +175,4 @@ def model_performance_data(data_labels_np_matrix, predictions, patterns_list):
     else:
         # Imprimir la matriz de confusión
         print("Matriz de Confusión:")
-        print(confusion_matrix(data_labels_np_matrix, predictions))
+        print(confusion_matrix(data_labels_np_matrix, predictions), "\n", confusion_matrix(data_labels_np_matrix, predictions, normalize='true'))
