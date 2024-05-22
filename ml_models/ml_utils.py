@@ -152,27 +152,28 @@ def model_performance_data(data_labels_np_matrix, predictions, patterns_list):
     accuracy = accuracy_score(data_labels_np_matrix, predictions)
     print(f"Exactitud: {round(accuracy*100, 2)}%")
 
-    # Evaluar la precisión
+    # Evaluar la precisión = VP / (VP + FP), donde VP es (2,2) y FP es (1,2) de la matriz de confusión
     precision = precision_score(data_labels_np_matrix, predictions, average="weighted", zero_division=np.nan)
     print(f"Precisión: {round(precision*100, 2)}%")
 
-    # Evaluar la sensibilidad
+    # Evaluar la sensibilidad = VP / (VP + FN), donde VP es (2,2) y FP es (2,1) de la matriz de confusión
     recall = recall_score(data_labels_np_matrix, predictions, average="weighted", zero_division=np.nan)
     print(f"Sensibilidad: {round(recall*100, 2)}%")
 
-    # Calcular el f1 score
+    # Calcular el f1 score (media armónica entre precision y recall) = 2 / (1/Precision + 1/Recall)
     f1 = f1_score(data_labels_np_matrix, predictions, average="weighted", zero_division=np.nan)
     print(f"F1 score: {round(f1*100, 2)}%")
-    
+
     if len(data_labels_np_matrix.shape) > 1:
         # Imprimir el informe de clasificación
-        print("Informe de clasificación:")
-        print(classification_report(data_labels_np_matrix, predictions, target_names=patterns_list, zero_division=np.nan))
-
+        print("Informe de clasificación:\n",
+            classification_report(data_labels_np_matrix, predictions, target_names=patterns_list, zero_division=np.nan))
         # Imprimir la matriz de confusión
-        print("Matriz de Confusión:")
-        print(multilabel_confusion_matrix(data_labels_np_matrix, predictions))
+        print("Matriz de Confusión:\n", multilabel_confusion_matrix(data_labels_np_matrix, predictions))
     else:
+        # Imprimir el informe de clasificación
+        print("Informe de clasificación:\n",
+            classification_report(data_labels_np_matrix, predictions, target_names=None, zero_division=np.nan))
         # Imprimir la matriz de confusión
-        print("Matriz de Confusión:")
-        print(confusion_matrix(data_labels_np_matrix, predictions), "\n", confusion_matrix(data_labels_np_matrix, predictions, normalize='true'))
+        print("Matriz de Confusión:\n", confusion_matrix(data_labels_np_matrix, predictions))
+        print("Normalizada:\n", confusion_matrix(data_labels_np_matrix, predictions, normalize='true'))

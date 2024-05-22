@@ -14,7 +14,7 @@ patterns_list = ["p.initialization", "p.superposition", "p.oracle"] # Lista de p
 eliminated_metrics = ["m.NoOr", "m.NoCOr", "m.%QInOr", "m.%QInCOr", "m.AvgOrD", "m.MaxOrD"] # Métricas de Oráculo eliminadas
 min_importance_values = [0.04, 0.04, 0.01] # Selecciona características con una importancia superior a este valor
 min_correlation_value = 0.5 # Selecciona características con una correlación superior a este valor
-cv_value = 3 # Número de particiones realizadas en la validación cruzada. Por defecto = 5
+cv_value = 3 # Por defecto = 5. Número de particiones realizadas en la validación cruzada. Ponemos 3 ya que es un conjunto de datos pequeño
 test_results_num = 5 # Número de registros de prueba mostrados
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -81,15 +81,15 @@ train_set_labels_np_matrix = np.c_[tuple(train_set_labels[pattern] for pattern i
 
 # Definir la cuadrícula de hiperparámetros a buscar
 param_grid = {
-    'n_neighbors': [3, 5, 7, 9], # Mejor valores impares para evitar empates
+    'n_neighbors': [1, 3, 5, 7, 9], # Mejor valores impares para evitar empates
     'weights': ['uniform', 'distance']
 }
 
 # Realizar la búsqueda de hiperparámetros utilizando validación cruzada
-grid_search = GridSearchCV(classifier, param_grid, cv=5)
+grid_search = GridSearchCV(classifier, param_grid, cv=cv_value)
 grid_search.fit(train_set_values, train_set_labels_np_matrix)
 
-best_features_grid_search = GridSearchCV(best_features_classifier, param_grid, cv=5)
+best_features_grid_search = GridSearchCV(best_features_classifier, param_grid, cv=cv_value)
 best_features_grid_search.fit(best_features_train_set_values, train_set_labels_np_matrix)
 
 # Obtener el mejor modelo y sus hiperparámetros
