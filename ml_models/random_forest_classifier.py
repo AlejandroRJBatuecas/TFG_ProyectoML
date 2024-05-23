@@ -37,7 +37,7 @@ data = data.drop(columns=eliminated_metrics)
 # Separar datos y etiquetas
 data_values = data.select_dtypes(include=[np.number])
 data_labels = data[patterns_list]
-print(data_values)
+
 # Obtener el conjunto de entrenamiento y de prueba
 train_set_values, test_set_values, train_set_labels, test_set_labels = train_test_split(data_values, data_labels, test_size=test_set_size, stratify=data_labels)
 
@@ -73,12 +73,12 @@ for i, pattern in enumerate(patterns_list):
         ('classifier', RandomForestClassifier())
     ])
 
-    print("\n Hiperparámetros por defecto de RandomForestClassifier:\n", 
+    print("\nHiperparámetros por defecto de RandomForestClassifier:\n", 
           pipeline.named_steps['classifier'].get_params())
 
     best_features_pipeline = Pipeline([
         ('scaler', StandardScaler()),
-        ('feature_selection', SelectFromModel(RandomForestClassifier())),
+        ('feature_selection', SelectFromModel(RandomForestClassifier(n_estimators=100))),
         ('classifier', RandomForestClassifier())
     ])
 
@@ -189,9 +189,11 @@ for i, pattern in enumerate(patterns_list):
     features_names = data_values.columns
     best_features = [feature for feature, selected in zip(features_names, selected_features) if selected]
     
-    # Realizar las predicciones con el clasificador
+    # Realizar las predicciones con el conjunto de prueba
     predictions = classifier.predict(test_set_values)
     predictions_proba = classifier.predict_proba(test_set_values)
+
+    # Realizar las predicciones en el conjunto de prueba con las mejores métricas
     best_features_predictions = best_features_classifier.predict(test_set_values)
     best_features_predictions_proba = best_features_classifier.predict_proba(test_set_values)
 
@@ -210,13 +212,11 @@ for i, pattern in enumerate(patterns_list):
     print("\nRendimiento del modelo mejorado")
     mlutils.model_performance_data(pattern_train_labels, best_features_cross_val_predictions, pattern)
 
-    pattern_test_labels_list = pattern_test_labels.tolist()
-
     # # Mostrar las medidas de rendimiento
     print("\nRendimiento del modelo con el conjunto de prueba")
     mlutils.model_performance_data(pattern_test_labels, predictions, pattern)
-
-    # Imprimir los porcentajes de predicción de los registros mal predichos del conjunto de prueba
+    # # Imprimir los porcentajes de predicción de los registros mal predichos del conjunto de prueba
+    pattern_test_labels_list = pattern_test_labels.tolist()
     for j in range(len(pattern_test_labels_list)):
         if predictions_proba[j][1] > predictions_proba[j][0]:
             if pattern_test_labels_list[j] == False:
@@ -227,11 +227,11 @@ for i, pattern in enumerate(patterns_list):
                 print(f"\nModelo normal --> No cumple el patrón en un {round(predictions_proba[j][0]*100, 3)}%")
                 print(f"Instancia {j+1}: {pattern_test_labels_list[j]}")
 
+    # # Mostrar las medidas de rendimiento
     print(f"\nMétricas seleccionadas ({len(best_features)}): {best_features}")
     print("\nRendimiento del modelo mejorado con el conjunto de prueba")
     mlutils.model_performance_data(pattern_test_labels, best_features_predictions, pattern)
-
-    # Imprimir los porcentajes de predicción de los registros mal predichos del conjunto de prueba
+    # # Imprimir los porcentajes de predicción de los registros mal predichos del conjunto de prueba
     for j in range(len(pattern_test_labels_list)):
         if best_features_predictions_proba[j][1] > best_features_predictions_proba[j][0]:
             if pattern_test_labels_list[j] == False:

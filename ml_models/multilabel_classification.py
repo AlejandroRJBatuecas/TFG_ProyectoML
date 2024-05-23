@@ -4,7 +4,10 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
+from sklearn.feature_selection import SelectFromModel
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.calibration import cross_val_predict
 
@@ -12,7 +15,7 @@ from sklearn.calibration import cross_val_predict
 test_set_size = 0.3 # Porcentaje de datos utilizados para el conjunto de prueba
 patterns_list = ["p.initialization", "p.superposition", "p.oracle"] # Lista de patrones a detectar
 eliminated_metrics = ["m.NoOr", "m.NoCOr", "m.%QInOr", "m.%QInCOr", "m.AvgOrD", "m.MaxOrD"] # Métricas de Oráculo eliminadas
-min_importance_values = [0.04, 0.04, 0.01] # Selecciona características con una importancia superior a este valor
+min_importance_value = 0.01 # Selecciona características con una importancia superior a este valor
 min_correlation_value = 0.5 # Selecciona características con una correlación superior a este valor
 cv_value = 3 # Por defecto = 5. Número de particiones realizadas en la validación cruzada. Ponemos 3 ya que es un conjunto de datos pequeño
 test_results_num = 5 # Número de registros de prueba mostrados
@@ -46,92 +49,96 @@ mlutils.show_data_structure(data, data_values, data_labels, train_set_values, te
 data_vars = data.drop(["id", "language", "extension", "author", "name", "path", "circuit"], axis=1)
 # # Obtener la matriz de correlación
 mlutils.get_correlation_matrix(data_vars, min_correlation_value, patterns_list)
-# # Obtener las mejores características
-best_features_scaler = StandardScaler()
-scaled_data_values = best_features_scaler.fit_transform(data_values)
-best_features_dict = mlutils.get_best_features(data_values, scaled_data_values, data_labels, train_set_values, train_set_labels, min_importance_values)
-# # Unir la lista de cada patrón en una única
-best_features_list = [feature for pattern in best_features_dict.values() for feature in pattern]
-# # Pasar a conjunto para eliminar valores repetidos y después a lista
-best_features = list(set(best_features_list))
 
-# Obtener los datos de entrenamiento y prueba con las mejores métricas
-best_features_train_set_values = train_set_values[best_features]
-best_features_test_set_values = test_set_values[best_features]
+# Definir la cuadrícula de hiperparámetros a buscar
+param_grid = {
+    'classifier__n_neighbors': [1, 3, 5, 7, 9], # Mejor valores impares para evitar empates
+    'classifier__weights': ['uniform', 'distance']
+}
 
-# Escalar los atributos
-scaler = StandardScaler()
-# # Ajustar el escalador y tranformar los datos de entrenamiento
-train_set_values = scaler.fit_transform(train_set_values)
-# # Transformar los datos de prueba
-test_set_values = scaler.transform(test_set_values)
-# # Lo mismo para los datos mejorados
-best_features_train_set_values = best_features_scaler.fit_transform(best_features_train_set_values)
-best_features_test_set_values = best_features_scaler.transform(best_features_test_set_values)
+# Crear el pipeline
+pipeline = Pipeline([
+    ('scaler', StandardScaler()),
+    ('classifier', KNeighborsClassifier())
+])
 
-# Crear el clasificador multietiqueta
-classifier = KNeighborsClassifier()
-best_features_classifier = KNeighborsClassifier()
+print("\nHiperparámetros por defecto de KNeighborsClassifier:\n", 
+      pipeline.named_steps['classifier'].get_params())
 
-print("\nCaracterísticas de los clasificadores:")
-print(classifier, ":", classifier.get_params())
+best_features_pipeline = Pipeline([
+    ('scaler', StandardScaler()),
+    ('feature_selection', SelectFromModel(RandomForestClassifier(n_estimators=100))),
+    ('classifier', KNeighborsClassifier())
+])
+
+# Asignar el umbral de importancia al selector de características
+best_features_pipeline.steps[1][1].threshold = min_importance_value
 
 # Transponer las listas colocando los datos en columnas para cada patrón
 train_set_labels_np_matrix = np.c_[tuple(train_set_labels[pattern] for pattern in patterns_list)]
 
-# Definir la cuadrícula de hiperparámetros a buscar
-param_grid = {
-    'n_neighbors': [1, 3, 5, 7, 9], # Mejor valores impares para evitar empates
-    'weights': ['uniform', 'distance']
-}
-
 # Realizar la búsqueda de hiperparámetros utilizando validación cruzada
-grid_search = GridSearchCV(classifier, param_grid, cv=cv_value)
+grid_search = GridSearchCV(pipeline, param_grid, cv=cv_value)
 grid_search.fit(train_set_values, train_set_labels_np_matrix)
+print("\nMejores hiperparámetros para Normal: \n", grid_search.best_params_)
 
-best_features_grid_search = GridSearchCV(best_features_classifier, param_grid, cv=cv_value)
-best_features_grid_search.fit(best_features_train_set_values, train_set_labels_np_matrix)
+best_features_grid_search = GridSearchCV(best_features_pipeline, param_grid, cv=cv_value)
+best_features_grid_search.fit(train_set_values, train_set_labels_np_matrix)
+print("\nMejores hiperparámetros para Mejorado: \n", best_features_grid_search.best_params_)
 
-# Obtener el mejor modelo y sus hiperparámetros
+# Obtener el mejor modelo
 knn_classifier = grid_search.best_estimator_
-best_params = grid_search.best_params_
-
 best_features_knn_classifier = best_features_grid_search.best_estimator_
-best_features_best_params = best_features_grid_search.best_params_
 
-print("\nCaracterísticas de los clasificadores optimizados:")
-print("Normal:", best_params)
-print("Mejorado:", best_features_best_params)
+# # Obtener los nombres de las características originales
+feature_names = data_values.columns
+
+# Obtener la importancia de las caracteristicas
+# # Obtener el selector de características desde la pipeline
+feature_selector = best_features_knn_classifier.named_steps['feature_selection']
+# # Obtener el modelo subyacente desde el selector de características
+model = feature_selector.estimator_
+# # Obtener las importancias de las características
+importances = model.feature_importances_
+# # Crear un diccionario de características e importancias
+feature_importance_dict = dict(zip(feature_names, importances))
+# # Ordenar las características por importancia
+sorted_features = sorted(feature_importance_dict.items(), key=lambda x: x[1], reverse=True)
+# # Imprimir las importancias de las características
+print("\nImportancias de las características:")
+for feature, importance in sorted_features:
+    print(f"{feature}: {importance}")
+
+# Filtrar las características originales para obtener solo las seleccionadas
+selected_features = best_features_knn_classifier.named_steps['feature_selection'].get_support()
+best_features = [feature for feature, selected in zip(feature_names, selected_features) if selected]
 
 # Evaluar el rendimiento del modelo
 # # Calcular las predicciones del clasificador mediante evaluación cruzada
 predictions = cross_val_predict(knn_classifier, train_set_values, train_set_labels_np_matrix, cv=cv_value)
-
 # # Mostrar las medidas de rendimiento
 print("\nRendimiento del modelo entrenado")
 mlutils.model_performance_data(train_set_labels_np_matrix, predictions, patterns_list)
 
 # Evaluar el rendimiento del modelo con las mejores métricas
 # # Calcular las predicciones del clasificador mediante evaluación cruzada
-predictions = cross_val_predict(best_features_knn_classifier, best_features_train_set_values, train_set_labels_np_matrix, cv=cv_value)
-
+predictions = cross_val_predict(best_features_knn_classifier, train_set_values, train_set_labels_np_matrix, cv=cv_value)
 # # Mostrar las medidas de rendimiento
 print(f"\nMétricas seleccionadas: {len(best_features)}\n{best_features}")
 print("\nRendimiento del modelo mejorado")
 mlutils.model_performance_data(train_set_labels_np_matrix, predictions, patterns_list)
 
-# Realizar predicciones en el conjunto de prueba
-predictions = knn_classifier.predict(test_set_values)
-predictions_proba = knn_classifier.predict_proba(test_set_values)
-
 # Transponer las listas colocando los datos en columnas para cada patrón
 test_set_labels_np_matrix = np.c_[tuple(test_set_labels[pattern] for pattern in patterns_list)]
 
+# Evaluar el rendimiento del modelo con el conjunto de prueba
+# # Realizar predicciones en el conjunto de prueba
+predictions = knn_classifier.predict(test_set_values)
+predictions_proba = knn_classifier.predict_proba(test_set_values)
 # # Mostrar las medidas de rendimiento
 print("\nRendimiento del modelo con el conjunto de prueba")
 mlutils.model_performance_data(test_set_labels_np_matrix, predictions, patterns_list)
-
-# Imprimir los porcentajes de predicción de los registros mal predichos del conjunto de prueba
+# # Imprimir los porcentajes de predicción de los registros mal predichos del conjunto de prueba
 for i in range(len(test_set_labels)):
     test_set_labels_list = test_set_labels.iloc[i].tolist()
     for j in range(len(test_set_labels_list)):
@@ -144,16 +151,15 @@ for i in range(len(test_set_labels)):
                 print(f"\nModelo normal --> No cumple el patrón {patterns_list[j]} en un {round(predictions_proba[j][i][0]*100, 2)}%")
                 print(f"Instancia {i+1}: {test_set_labels_list[j]}")
 
-# Realizar predicciones en el conjunto de prueba con las mejores métricas
-predictions = best_features_knn_classifier.predict(best_features_test_set_values)
-best_features_predictions_proba = best_features_knn_classifier.predict_proba(best_features_test_set_values)
-
+# Evaluar el rendimiento del modelo con mejores métricas con el conjunto de prueba
+# Realizar predicciones en el conjunto de prueba
+predictions = best_features_knn_classifier.predict(test_set_values)
+best_features_predictions_proba = best_features_knn_classifier.predict_proba(test_set_values)
 # # Mostrar las medidas de rendimiento
 print(f"\nMétricas seleccionadas: {len(best_features)}\n{best_features}")
 print("\nRendimiento del modelo mejorado con el conjunto de prueba")
 mlutils.model_performance_data(test_set_labels_np_matrix, predictions, patterns_list)
-
-# Imprimir los porcentajes de predicción de los registros mal predichos del conjunto de prueba
+# # Imprimir los porcentajes de predicción de los registros mal predichos del conjunto de prueba
 for i in range(len(test_set_labels)):
     test_set_labels_list = test_set_labels.iloc[i].tolist()
     for j in range(len(test_set_labels_list)):

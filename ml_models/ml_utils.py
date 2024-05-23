@@ -146,6 +146,17 @@ def get_best_features(data_values, scaled_data_values, data_labels, train_set_va
         
     return best_features
 
+# Normalizar la matriz de confusión multietiqueta
+def normalize_confusion_matrix(mcm):
+    normalized_mcm = []
+    for cm in mcm:
+        cm_sum = cm.astype(float).sum(axis=1, keepdims=True)
+        # Evitar la división por cero
+        cm_sum[cm_sum == 0] = 1
+        normalized_cm = cm.astype(float) / cm_sum
+        normalized_mcm.append(normalized_cm)
+    return np.array(normalized_mcm)
+
 # Evaluar el rendimiento del modelo
 def model_performance_data(data_labels_np_matrix, predictions, patterns_list):
     # Evaluar la exactitud
@@ -168,12 +179,19 @@ def model_performance_data(data_labels_np_matrix, predictions, patterns_list):
         # Imprimir el informe de clasificación
         print("Informe de clasificación:\n",
             classification_report(data_labels_np_matrix, predictions, target_names=patterns_list, zero_division=np.nan))
-        # Imprimir la matriz de confusión
-        print("Matriz de Confusión:\n", multilabel_confusion_matrix(data_labels_np_matrix, predictions))
+        
+        # Imprimir las matrices de confusión
+        mcm = multilabel_confusion_matrix(data_labels_np_matrix, predictions)
+        normalized_mcm = normalize_confusion_matrix(mcm)
+        for i in range(len(mcm)):
+            print("Matriz de Confusión:", patterns_list[i], "\n", mcm[i])
+            print("Normalizada:\n", normalized_mcm[i])
+
     else:
         # Imprimir el informe de clasificación
         print("Informe de clasificación:\n",
             classification_report(data_labels_np_matrix, predictions, target_names=None, zero_division=np.nan))
-        # Imprimir la matriz de confusión
+        
+        # Imprimir las matrices de confusión
         print("Matriz de Confusión:\n", confusion_matrix(data_labels_np_matrix, predictions))
         print("Normalizada:\n", confusion_matrix(data_labels_np_matrix, predictions, normalize='true'))
