@@ -181,10 +181,10 @@ def model_performance_data(data_labels_np_matrix, predictions, patterns_list):
             classification_report(data_labels_np_matrix, predictions, target_names=patterns_list, zero_division=np.nan))
         
         # Imprimir las matrices de confusión
-        mcm = multilabel_confusion_matrix(data_labels_np_matrix, predictions)
-        normalized_mcm = normalize_confusion_matrix(mcm)
-        for i in range(len(mcm)):
-            print("Matriz de Confusión:", patterns_list[i], "\n", mcm[i])
+        multilabel_confusionMatrix = multilabel_confusion_matrix(data_labels_np_matrix, predictions)
+        normalized_mcm = normalize_confusion_matrix(multilabel_confusionMatrix)
+        for i in range(len(multilabel_confusionMatrix)):
+            print("Matriz de Confusión:", patterns_list[i], "\n", multilabel_confusionMatrix[i])
             print("Normalizada:\n", normalized_mcm[i])
 
     else:

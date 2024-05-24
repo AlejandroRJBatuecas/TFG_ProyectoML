@@ -16,7 +16,6 @@ patterns_list = ["p.initialization", "p.superposition", "p.oracle"] # Lista de p
 eliminated_metrics = ["m.NoOr", "m.NoCOr", "m.%QInOr", "m.%QInCOr", "m.AvgOrD", "m.MaxOrD"] # Métricas de Oráculo eliminadas
 min_importance_values = [0.02, 0.02, 0.02] # Selecciona características con una importancia superior a este valor
 min_correlation_value = 0.5 # Selecciona características con una correlación superior a este valor
-#max_importance_feature_num = 4 # Número máximo de características seleccionadas para cada patrón
 cv_value = 3 # Número de particiones realizadas en la validación cruzada. Por defecto = 5
 test_results_num = 10 # Número de registros de prueba mostrados
 
