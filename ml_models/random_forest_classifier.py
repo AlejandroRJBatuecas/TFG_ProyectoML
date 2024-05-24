@@ -181,36 +181,30 @@ for i, pattern in enumerate(patterns_list):
     classifier = rf_random.best_estimator_
     best_features_classifier = best_features_rf_random.best_estimator_
 
-    # Obtener las características seleccionadas
-    selected_features = best_features_classifier.named_steps['feature_selection'].get_support()
-
     # Filtrar las características originales para obtener solo las seleccionadas
+    selected_features = best_features_classifier.named_steps['feature_selection'].get_support()
     features_names = data_values.columns
     best_features = [feature for feature, selected in zip(features_names, selected_features) if selected]
-    
-    # Realizar las predicciones con el conjunto de prueba
-    predictions = classifier.predict(test_set_values)
-    predictions_proba = classifier.predict_proba(test_set_values)
-
-    # Realizar las predicciones en el conjunto de prueba con las mejores métricas
-    best_features_predictions = best_features_classifier.predict(test_set_values)
-    best_features_predictions_proba = best_features_classifier.predict_proba(test_set_values)
 
     # Evaluar el rendimiento del modelo
     # # Calcular las predicciones del clasificador mediante evaluación cruzada
-    cross_val_predictions = cross_val_predict(classifier, train_set_values, pattern_train_labels, cv=cv_value)
+    predictions = cross_val_predict(classifier, train_set_values, pattern_train_labels, cv=cv_value)
     # # Mostrar las medidas de rendimiento
     print(f"\nRendimiento del clasificador de {pattern}")
-    mlutils.model_performance_data(pattern_train_labels, cross_val_predictions, pattern)
+    mlutils.model_performance_data(pattern_train_labels, predictions, pattern)
 
     # Evaluar el rendimiento del modelo con las mejores métricas
     # # Calcular las predicciones del clasificador mediante evaluación cruzada
-    best_features_cross_val_predictions = cross_val_predict(best_features_classifier, train_set_values, pattern_train_labels, cv=cv_value)
+    predictions = cross_val_predict(best_features_classifier, train_set_values, pattern_train_labels, cv=cv_value)
     # # Mostrar las medidas de rendimiento
-    print(f"\nMétricas seleccionadas ({len(best_features)}): {best_features}")
+    print(f"\nMétricas seleccionadas ({len(best_features)})\n{best_features}")
     print("\nRendimiento del modelo mejorado")
-    mlutils.model_performance_data(pattern_train_labels, best_features_cross_val_predictions, pattern)
+    mlutils.model_performance_data(pattern_train_labels, predictions, pattern)
 
+    # Evaluar el rendimiento del modelo con el conjunto de prueba
+    # # Realizar las predicciones con el conjunto de prueba
+    predictions = classifier.predict(test_set_values)
+    predictions_proba = classifier.predict_proba(test_set_values)
     # # Mostrar las medidas de rendimiento
     print("\nRendimiento del modelo con el conjunto de prueba")
     mlutils.model_performance_data(pattern_test_labels, predictions, pattern)
@@ -226,10 +220,14 @@ for i, pattern in enumerate(patterns_list):
                 print(f"\nModelo normal --> No cumple el patrón en un {round(predictions_proba[j][0]*100, 3)}%")
                 print(f"Instancia {j+1}: {pattern_test_labels_list[j]}")
 
+    # Evaluar el rendimiento del modelo con mejores métricas con el conjunto de prueba
+    # # Realizar las predicciones en el conjunto de prueba con las mejores métricas
+    predictions = best_features_classifier.predict(test_set_values)
+    best_features_predictions_proba = best_features_classifier.predict_proba(test_set_values)
     # # Mostrar las medidas de rendimiento
-    print(f"\nMétricas seleccionadas ({len(best_features)}): {best_features}")
+    print(f"\nMétricas seleccionadas ({len(best_features)})\n{best_features}")
     print("\nRendimiento del modelo mejorado con el conjunto de prueba")
-    mlutils.model_performance_data(pattern_test_labels, best_features_predictions, pattern)
+    mlutils.model_performance_data(pattern_test_labels, predictions, pattern)
     # # Imprimir los porcentajes de predicción de los registros mal predichos del conjunto de prueba
     for j in range(len(pattern_test_labels_list)):
         if best_features_predictions_proba[j][1] > best_features_predictions_proba[j][0]:

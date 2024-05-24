@@ -18,7 +18,7 @@ eliminated_metrics = ["m.NoOr", "m.NoCOr", "m.%QInOr", "m.%QInCOr", "m.AvgOrD", 
 min_importance_value = 0.01 # Selecciona características con una importancia superior a este valor
 min_correlation_value = 0.5 # Selecciona características con una correlación superior a este valor
 cv_value = 3 # Por defecto = 5. Número de particiones realizadas en la validación cruzada. Ponemos 3 ya que es un conjunto de datos pequeño
-test_results_num = 5 # Número de registros de prueba mostrados
+test_results_num = 10 # Número de registros de prueba mostrados
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -144,11 +144,11 @@ for i in range(len(test_set_labels)):
     for j in range(len(test_set_labels_list)):
         if (predictions_proba[j][i][1] > predictions_proba[j][i][0]):
             if test_set_labels_list[j] == False:
-                print(f"\nModelo normal --> Cumple el patrón {patterns_list[j]} en un {round(predictions_proba[j][i][1]*100, 2)}%")
+                print(f"\nModelo normal --> Cumple el patrón {patterns_list[j]} en un {round(predictions_proba[j][i][1]*100, 3)}%")
                 print(f"Instancia {i+1}: {test_set_labels_list[j]}")
         else:
             if test_set_labels_list[j] == True:
-                print(f"\nModelo normal --> No cumple el patrón {patterns_list[j]} en un {round(predictions_proba[j][i][0]*100, 2)}%")
+                print(f"\nModelo normal --> No cumple el patrón {patterns_list[j]} en un {round(predictions_proba[j][i][0]*100, 3)}%")
                 print(f"Instancia {i+1}: {test_set_labels_list[j]}")
 
 # Evaluar el rendimiento del modelo con mejores métricas con el conjunto de prueba
@@ -165,11 +165,11 @@ for i in range(len(test_set_labels)):
     for j in range(len(test_set_labels_list)):
         if best_features_predictions_proba[j][i][1] > best_features_predictions_proba[j][i][0]:
             if test_set_labels_list[j] == False:
-                print(f"\nModelo mejorado --> Cumple el patrón {patterns_list[j]} en un {round(best_features_predictions_proba[j][i][1]*100, 2)}%")
+                print(f"\nModelo mejorado --> Cumple el patrón {patterns_list[j]} en un {round(best_features_predictions_proba[j][i][1]*100, 3)}%")
                 print(f"Instancia {i+1}: {test_set_labels_list[j]}")
         else:
             if test_set_labels_list[j] == True:
-                print(f"\nModelo mejorado --> No cumple el patrón {patterns_list[j]} en un {round(best_features_predictions_proba[j][i][0]*100, 2)}%")
+                print(f"\nModelo mejorado --> No cumple el patrón {patterns_list[j]} en un {round(best_features_predictions_proba[j][i][0]*100, 3)}%")
                 print(f"Instancia {i+1}: {test_set_labels_list[j]}")
 
 # Imprimir los porcentajes de predicción de los primeros registros del conjunto de prueba
@@ -178,12 +178,12 @@ for i in range(0, test_results_num):
     print(f"\nInstancia {i+1}: {test_set_labels.iloc[i].tolist()}")
     for j in range(len(predictions_proba)):
         print(f"Patrón {patterns_list[j]}: ")
-        if len(predictions_proba[j][i]) > 1 and (predictions_proba[j][i][1] > predictions_proba[j][i][0]):
-            print(f"Modelo normal --> Cumple el patrón en un {round(predictions_proba[j][i][1]*100, 2)}%")
+        if predictions_proba[j][i][1] > predictions_proba[j][i][0]:
+            print(f"Modelo normal --> Cumple el patrón en un {round(predictions_proba[j][i][1]*100, 3)}%")
         else:
-            print(f"Modelo normal --> No cumple el patrón en un {round(predictions_proba[j][i][0]*100, 2)}%")
+            print(f"Modelo normal --> No cumple el patrón en un {round(predictions_proba[j][i][0]*100, 3)}%")
 
-        if len(best_features_predictions_proba[j][i]) > 1 and (best_features_predictions_proba[j][i][1] > best_features_predictions_proba[j][i][0]):
-            print(f"Modelo mejorado --> Cumple el patrón en un {round(best_features_predictions_proba[j][i][1]*100, 2)}%")
+        if best_features_predictions_proba[j][i][1] > best_features_predictions_proba[j][i][0]:
+            print(f"Modelo mejorado --> Cumple el patrón en un {round(best_features_predictions_proba[j][i][1]*100, 3)}%")
         else:
-            print(f"Modelo mejorado --> No cumple el patrón en un {round(best_features_predictions_proba[j][i][0]*100, 2)}%")
+            print(f"Modelo mejorado --> No cumple el patrón en un {round(best_features_predictions_proba[j][i][0]*100, 3)}%")
