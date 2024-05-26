@@ -107,7 +107,7 @@ sorted_features = sorted(feature_importance_dict.items(), key=lambda x: x[1], re
 # # Imprimir las importancias de las características
 print("\nImportancias de las características:")
 for feature, importance in sorted_features:
-    print(f"{feature}: {importance}")
+    print(f"{feature}: {round(importance*100, 3)}%")
 
 # Filtrar las características originales para obtener solo las seleccionadas
 selected_features = best_features_knn_classifier.named_steps['feature_selection'].get_support()

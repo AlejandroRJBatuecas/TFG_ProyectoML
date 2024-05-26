@@ -14,7 +14,7 @@ from sklearn.calibration import cross_val_predict
 test_set_size = 0.3 # Porcentaje de datos utilizados para el conjunto de prueba
 patterns_list = ["p.initialization", "p.superposition", "p.oracle"] # Lista de patrones a detectar
 eliminated_metrics = ["m.NoOr", "m.NoCOr", "m.%QInOr", "m.%QInCOr", "m.AvgOrD", "m.MaxOrD"] # Métricas de Oráculo eliminadas
-min_importance_values = [0.02, 0.02, 0.02] # Selecciona características con una importancia superior a este valor
+min_importance_values = [0.02, 0.02, 0.01] # Selecciona características con una importancia superior a este valor
 min_correlation_value = 0.5 # Selecciona características con una correlación superior a este valor
 cv_value = 3 # Número de particiones realizadas en la validación cruzada. Por defecto = 5
 test_results_num = 10 # Número de registros de prueba mostrados
@@ -52,8 +52,8 @@ mlutils.get_correlation_matrix(data_vars, min_correlation_value, patterns_list)
 # Parámetros para la búsqueda aleatoria de hiperparámetros
 random_grid = {
     'classifier__n_estimators': np.linspace(100, 3000, 10, dtype=int),
-    'classifier__min_samples_split': [5, 10, 20, 40, 80], # Valores [2,inf] o [0.0,1.0]
-    'classifier__min_samples_leaf': [5, 10, 20, 40, 80], # Mínimo 2 por hoja para no crear hojas específicas
+    'classifier__min_samples_split': [2, 3, 4, 5, 10, 20, 40, 80], # Valores [2,inf] o [0.0,1.0]
+    'classifier__min_samples_leaf': [2, 3, 4, 5, 10, 20, 40, 80], # Mínimo 2 por hoja para no crear hojas específicas
     'classifier__max_features': ['sqrt', 'log2'],
     'classifier__max_depth': [10, 20, 40, 80, 160], # Valores [1,inf]
     'classifier__criterion': ['gini', 'entropy', 'log_loss'],
@@ -197,7 +197,7 @@ for i, pattern in enumerate(patterns_list):
     # # Calcular las predicciones del clasificador mediante evaluación cruzada
     predictions = cross_val_predict(best_features_classifier, train_set_values, pattern_train_labels, cv=cv_value)
     # # Mostrar las medidas de rendimiento
-    print(f"\nMétricas seleccionadas ({len(best_features)})\n{best_features}")
+    print(f"\nMétricas seleccionadas: {len(best_features)}\n{best_features}")
     print("\nRendimiento del modelo mejorado")
     mlutils.model_performance_data(pattern_train_labels, predictions, pattern)
 
@@ -225,7 +225,7 @@ for i, pattern in enumerate(patterns_list):
     predictions = best_features_classifier.predict(test_set_values)
     best_features_predictions_proba = best_features_classifier.predict_proba(test_set_values)
     # # Mostrar las medidas de rendimiento
-    print(f"\nMétricas seleccionadas ({len(best_features)})\n{best_features}")
+    print(f"\nMétricas seleccionadas: {len(best_features)}\n{best_features}")
     print("\nRendimiento del modelo mejorado con el conjunto de prueba")
     mlutils.model_performance_data(pattern_test_labels, predictions, pattern)
     # # Imprimir los porcentajes de predicción de los registros mal predichos del conjunto de prueba

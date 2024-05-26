@@ -16,9 +16,8 @@ def show_data_structure(data, data_values, data_labels, train_set_values, test_s
     # Mostrar las estadísticas de los datos numéricos
     print(data.describe())
     # Mostrar el total de patrones detectados y tamaño de los dataframes
-    print("\nTotal", data_labels["p.initialization"].value_counts())
-    print("Total", data_labels["p.superposition"].value_counts())
-    print("Total", data_labels["p.oracle"].value_counts())
+    for pattern in data_labels.columns:
+        print("\nTotal", data_labels[pattern].value_counts())
 
     print("\nFormato antes del train-test split:")
     print("Formato de los valores:", data_values.shape)
@@ -161,19 +160,19 @@ def normalize_confusion_matrix(mcm):
 def model_performance_data(data_labels_np_matrix, predictions, patterns_list):
     # Evaluar la exactitud
     accuracy = accuracy_score(data_labels_np_matrix, predictions)
-    print(f"Exactitud: {round(accuracy*100, 2)}%")
+    print(f"Exactitud: {round(accuracy*100, 3)}%")
 
     # Evaluar la precisión = VP / (VP + FP), donde VP es (2,2) y FP es (1,2) de la matriz de confusión
     precision = precision_score(data_labels_np_matrix, predictions, average="weighted", zero_division=np.nan)
-    print(f"Precisión: {round(precision*100, 2)}%")
+    print(f"Precisión: {round(precision*100, 3)}%")
 
     # Evaluar la sensibilidad = VP / (VP + FN), donde VP es (2,2) y FP es (2,1) de la matriz de confusión
     recall = recall_score(data_labels_np_matrix, predictions, average="weighted", zero_division=np.nan)
-    print(f"Sensibilidad: {round(recall*100, 2)}%")
+    print(f"Sensibilidad: {round(recall*100, 3)}%")
 
     # Calcular el f1 score (media armónica entre precision y recall) = 2 / (1/Precision + 1/Recall)
     f1 = f1_score(data_labels_np_matrix, predictions, average="weighted", zero_division=np.nan)
-    print(f"F1 score: {round(f1*100, 2)}%")
+    print(f"F1 score: {round(f1*100, 3)}%")
 
     if len(data_labels_np_matrix.shape) > 1:
         # Imprimir el informe de clasificación
@@ -182,7 +181,7 @@ def model_performance_data(data_labels_np_matrix, predictions, patterns_list):
         
         # Imprimir las matrices de confusión
         multilabel_confusionMatrix = multilabel_confusion_matrix(data_labels_np_matrix, predictions)
-        normalized_mcm = normalize_confusion_matrix(multilabel_confusionMatrix)
+        normalized_mcm = np.round(normalize_confusion_matrix(multilabel_confusionMatrix), 3)
         for i in range(len(multilabel_confusionMatrix)):
             print("Matriz de Confusión:", patterns_list[i], "\n", multilabel_confusionMatrix[i])
             print("Normalizada:\n", normalized_mcm[i])
@@ -194,4 +193,4 @@ def model_performance_data(data_labels_np_matrix, predictions, patterns_list):
         
         # Imprimir las matrices de confusión
         print("Matriz de Confusión:\n", confusion_matrix(data_labels_np_matrix, predictions))
-        print("Normalizada:\n", confusion_matrix(data_labels_np_matrix, predictions, normalize='true'))
+        print("Normalizada:\n", np.round(confusion_matrix(data_labels_np_matrix, predictions, normalize='true'), 3))

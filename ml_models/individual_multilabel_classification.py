@@ -15,7 +15,7 @@ from sklearn.calibration import cross_val_predict
 test_set_size = 0.3 # Porcentaje de datos utilizados para el conjunto de prueba
 patterns_list = ["p.initialization", "p.superposition", "p.oracle"] # Lista de patrones a detectar
 eliminated_metrics = ["m.NoOr", "m.NoCOr", "m.%QInOr", "m.%QInCOr", "m.AvgOrD", "m.MaxOrD"] # Métricas de Oráculo eliminadas
-min_importance_value = [0.02, 0.02, 0.02] # Selecciona características con una importancia superior a este valor
+min_importance_value = [0.02, 0.02, 0.01] # Selecciona características con una importancia superior a este valor
 min_correlation_value = 0.5 # Selecciona características con una correlación superior a este valor
 cv_value = 3 # Por defecto = 5. Número de particiones realizadas en la validación cruzada. Ponemos 3 ya que es un conjunto de datos pequeño
 test_results_num = 10 # Número de registros de prueba mostrados
