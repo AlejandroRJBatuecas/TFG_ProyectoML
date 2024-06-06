@@ -4,6 +4,24 @@ import matplotlib.pyplot as plt
 from collections import defaultdict, Counter
 import json
 
+def set_maximum_time(qargs, current_qubit_timeline, circuit_timeline):
+    # Añadir puerta al momento temporal del circuito y a las líneas temporales de los qubits
+    max_timeline = -1
+    # Para los qubits involucrados, obtenemos el momento temporal de cada uno y nos quedamos con el máximo
+    for qubit in qargs:
+        if current_qubit_timeline[qubit._index] > max_timeline:
+            max_timeline = current_qubit_timeline[qubit._index]
+    # Inicializar el momento temporal si no lo está
+    if max_timeline not in circuit_timeline:
+        circuit_timeline[max_timeline] = 0
+    # Añadir puerta al momento temporal del circuito
+    circuit_timeline[max_timeline] += 1
+    # Calculamos el próximo momento
+    max_timeline +=1
+    # Asignar a cada qubit el máximo momento temporal
+    for qubit in qargs:
+        current_qubit_timeline[qubit._index] = max_timeline
+
 def analyze_circuit(circuit):
     metrics = {
         'Circuit Size': {
@@ -50,22 +68,12 @@ def analyze_circuit(circuit):
             'NoM': 0, # Number of measurement gates in the circuit
             '%QM': 0.0 # Percentage of qubits measured in the circuit
         },
-        '''
-        'Entanglement Metrics': {
-            'Entangling Gates Count': 0,
-            'Qubit Pairs Entangled': Counter()
-        },
-        '''
         'Gate Count': defaultdict(int)
     }
-
-    '''
-    # Calculating circuit density
-    max_dens = max(circuit.count_ops().values()) / circuit.num_qubits
-    avg_dens = circuit.size() / (circuit.depth() * circuit.num_qubits)
-    metrics['Circuit Density']['MaxDens'] = max_dens
-    metrics['Circuit Density']['AvgDens'] = avg_dens
-    '''
+    
+    # Instrucciones de cada qubit por tiempo
+    current_qubit_timeline = [0] * circuit.num_qubits
+    circuit_timeline = {}
     
     # Conteo de instrucciones por qubit
     qubit_instructions = [0] * circuit.num_qubits
@@ -75,15 +83,18 @@ def analyze_circuit(circuit):
     qubits_in_toffoli = set()
     qubits_measured = set()
 
+    i = 0
     # Analizar cada puerta en el circuito
     for instruction, qargs, _ in circuit.data:
-        print("\n")
-        print(instruction) # Instrucción
+        # Añadir momento temporal al circuito
+
+        i += 1
+        print("\n", instruction) # Instrucción
         # Conteo de instrucciones por qubit
         for qubit in qargs:
             qubit_instructions[qubit._index] += 1
         print(qargs) # Qubits
-        print(_) # Classical bits
+        #print(_) # Classical bits
 
         # Obtener el nombre de la puerta
         gate_name = instruction.name
@@ -92,63 +103,73 @@ def analyze_circuit(circuit):
         metrics['Gate Count'][gate_name] += 1
 
         # Contar las puertas específicas
-        # Single Qubit Gates
-        if gate_name == 'h':
-            metrics['Single Qubit Gates']['NoH'] += 1
-        elif gate_name == 'x':
-            metrics['Single Qubit Gates']['NoP-X'] += 1
-            metrics['Single Qubit Gates']['TNo-P'] += 1
-        elif gate_name == 'y':
-            metrics['Single Qubit Gates']['NoP-Y'] += 1
-            metrics['Single Qubit Gates']['TNo-P'] += 1
-        elif gate_name == 'z':
-            metrics['Single Qubit Gates']['NoP-Z'] += 1
-            metrics['Single Qubit Gates']['TNo-P'] += 1
-        elif gate_name in ['s', 't']: # s y t son el resto de puertas simples
-            metrics['Single Qubit Gates']['NoOtherSG'] += 1
-        # Multiple Qubit Gates
-        elif gate_name == 'swap':
-            metrics['Multiple Qubit Gates']['NoSWAP'] += 1
-        # Measure
-        elif gate_name == 'measure':
-            metrics['Measurement Gates']['NoM'] += 1
-            for qubit in qargs:
-                qubits_measured.add(qubit._index)
-
-        # Contar las puertas controladas
-        if 'c' in gate_name and gate_name != 'measure':
-            controlled_gate = gate_name.lstrip('c')
-            metrics['Controlled Gates Count'][controlled_gate] += 1
-            metrics['All Gates']['NoCGates'] += 1
-
-            if gate_name in ['cx', 'cy', 'cz', 'ch', 'cs', 'ct']:
-                metrics['Single Qubit Gates']['TNoCSQG'] += 1
-
-                if gate_name == 'cx': # CNOT
-                    metrics['Multiple Qubit Gates']['NoCNOT'] += 1
-                    for qubit in qargs:
-                        qubits_in_cnot.add(qubit._index)
-                        qubits_in_cnot_count[qubit._index] += 1
-                elif gate_name == 'cz': # CZ
-                    metrics['Multiple Qubit Gates']['NoCZ'] += 1
-            
-            if gate_name == 'ccx': # Toffoli
-                metrics['Multiple Qubit Gates']['NoToff'] += 1
+        # # Puertas entrelazadas (controladas y swap)
+        if 'c' in gate_name or gate_name in ['swap', 'barrier', 'measure']:
+            # Measure
+            if gate_name == 'measure':
+                # Para la puerta measure, se establece la máxima línea temporal a todos los qubits,
+                # # ya que la medición se utiliza un momento temporal para cada qubit
+                set_maximum_time(circuit.qubits, current_qubit_timeline, circuit_timeline)
+                # Contabilizar puerta y qubits medidos
+                metrics['Measurement Gates']['NoM'] += 1
                 for qubit in qargs:
-                    qubits_in_toffoli.add(qubit._index)
-                    qubits_in_toffoli_count[qubit._index] += 1
-
-        '''
-        # Contar y almacenar las puertas entrelazadas
-        if gate_name in ['cx', 'cz', 'cy', 'swap']:
-            metrics['Entanglement Metrics']['Entangling Gates Count'] += 1
-            qubit_pair = str(tuple(sorted([q._index for q in qargs])))  # Sort to avoid different orderings
-            print(qubit_pair)
-            metrics['Entanglement Metrics']['Qubit Pairs Entangled'][qubit_pair] += 1
-        '''
+                    qubits_measured.add(qubit._index)
+            else:
+                # Establecer la máxima línea temporal a los qubits implicados
+                set_maximum_time(qargs, current_qubit_timeline, circuit_timeline)
+                if gate_name == 'swap':
+                    metrics['Multiple Qubit Gates']['NoSWAP'] += 1
+                else:
+                    controlled_gate = gate_name.lstrip('c')
+                    metrics['Controlled Gates Count'][controlled_gate] += 1
+                    metrics['All Gates']['NoCGates'] += 1
+                    # Puertas simples controladas
+                    if gate_name in ['cx', 'cy', 'cz', 'ch', 'cs', 'ct']:
+                        metrics['Single Qubit Gates']['TNoCSQG'] += 1
+                        if gate_name == 'cx': # CNOT
+                            metrics['Multiple Qubit Gates']['NoCNOT'] += 1
+                            for qubit in qargs:
+                                qubits_in_cnot.add(qubit._index)
+                                qubits_in_cnot_count[qubit._index] += 1
+                        elif gate_name == 'cz':
+                            metrics['Multiple Qubit Gates']['NoCZ'] += 1
+                    elif gate_name == 'ccx': # Toffoli
+                        metrics['Multiple Qubit Gates']['NoToff'] += 1
+                        for qubit in qargs:
+                            qubits_in_toffoli.add(qubit._index)
+                            qubits_in_toffoli_count[qubit._index] += 1
+        # # Puertas no entrelazadas ni controladas
+        else:
+            # Añadir puerta al momento temporal del circuito y a la línea temporal del qubit
+            for qubit in qargs:
+                # Inicializar el momento temporal si no lo está
+                if current_qubit_timeline[qubit._index] not in circuit_timeline:
+                    circuit_timeline[current_qubit_timeline[qubit._index]] = 0
+                # Contabilizar puerta
+                circuit_timeline[current_qubit_timeline[qubit._index]] += 1
+                current_qubit_timeline[qubit._index] += 1
+                
+            # Single Qubit Gates
+            if gate_name == 'h':
+                metrics['Single Qubit Gates']['NoH'] += 1
+            elif gate_name == 'x':
+                metrics['Single Qubit Gates']['NoP-X'] += 1
+                metrics['Single Qubit Gates']['TNo-P'] += 1
+            elif gate_name == 'y':
+                metrics['Single Qubit Gates']['NoP-Y'] += 1
+                metrics['Single Qubit Gates']['TNo-P'] += 1
+            elif gate_name == 'z':
+                metrics['Single Qubit Gates']['NoP-Z'] += 1
+                metrics['Single Qubit Gates']['TNo-P'] += 1
+            elif gate_name in ['s', 't']: # s y t son el resto de puertas simples
+                metrics['Single Qubit Gates']['NoOtherSG'] += 1
 
     # Obtener el nº máximo de operaciones entre todos los qubits
     metrics['Circuit Size']['Max Operations in a Qubit'] = max(qubit_instructions)
+
+    # Obtener las densidades del circuito
+    metrics['Circuit Density']['MaxDens'] = max(circuit_timeline.values())
+    metrics['Circuit Density']['AvgDens'] = sum(circuit_timeline.values()) / len(circuit_timeline.keys())
 
     # Calcular %SpposQ = NoH / Total Qubits
     metrics['Single Qubit Gates']['%SpposQ'] = metrics['Single Qubit Gates']['NoH'] / circuit.num_qubits
@@ -194,17 +215,23 @@ def estimate_oracles(circuit):
 
 # Ejemplo de circuito
 circuit = QuantumCircuit(3)
-circuit.h(0)
-circuit.x(0)
-circuit.y(1)
-circuit.z(2)
-circuit.swap(0, 1)
+circuit.h(0) #1
+circuit.x(0) #2
+circuit.y(1)  #1
+circuit.z(2)  #1
+circuit.swap(0, 1) #3
+circuit.x(2)
 circuit.cx(0, 1)
 circuit.cx(0, 1)
 circuit.cy(1, 2)
 circuit.cz(0, 2)
 circuit.ccx(0, 1, 2)
+circuit.x(0)
+circuit.y(0)
+circuit.z(1)
 circuit.measure_all()
+# instructions = [instr.name for instr, _, _ in circuit._data]
+# print(instructions)
 
 print("Listado de Qubits:", circuit.qubits)
 print("Conteo de operaciones por tipo: ", circuit.count_ops())
