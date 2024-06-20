@@ -1,7 +1,7 @@
 import ast
 import os
 import json
-from metrics_reader.metrics_reader import analyze_circuit, draw_circuit
+from metrics_reader import analyze_circuit, draw_circuit, get_metrics_csv
 from qiskit.circuit import QuantumCircuit, QuantumRegister, ClassicalRegister, Qubit, Clbit, Instruction
 
 def read_file(filename):
@@ -39,32 +39,8 @@ class QiskitAnalyzer(ast.NodeVisitor):
             if node.value.func.id == 'QuantumCircuit':
                 # Si el circuito no ha sido creado anteriormente
                 if var_name not in self.circuits:
-                    '''
-                    circuit_params = {
-                        'qubits': [],
-                        'clbits': [],
-                        'num_qubits': 0,
-                        'num_clbits': 0,
-                        'width': 0,
-                        'depth': 0,
-                        'data': [] # Listado de instrucciones CircuitInstruction
-                    }
-                    for arg in node.value.args:
-                        if arg.id in self.quantum_registers:
-                            qr = self.quantum_registers[arg.id]
-                            circuit_params['num_qubits'] = qr.size
-                            for i in range(qr.size):
-                                q = Qubit(qr, i)
-                                circuit_params['qubits'].append(q)
-                        elif arg.id in self.classical_registers:
-                            cr = self.classical_registers[arg.id]
-                            circuit_params['num_clbits'] = cr.size
-                            for i in range(cr.size):
-                                cl = Clbit(cr, i)
-                                circuit_params['clbits'].append(cl)
-                    circuit_params['width'] = circuit_params['num_qubits'] + circuit_params['num_clbits']
-                    '''
                     circuit = QuantumCircuit()
+                    # Añadir cada registro asignado al circuito
                     for arg in node.value.args:
                         if arg.id in self.registers:
                             circuit.add_register(self.registers[arg.id])
@@ -177,22 +153,32 @@ def get_metrics(filename):
         print("Circuitos:", circuits)
         print("Registros:", registers)
         print("Variables:", vars)
+        results = []
         for circuit_name, circuit in circuits.items():
             print("\n--- CIRCUITO", circuit_name, "---")
             print(circuit.data)
+            
             # Analizar el circuito
-            results = analyze_circuit(circuit)
+            circuit_results = analyze_circuit(circuit)
+            results.append(circuit_results)
+
             # Exportar los resultados a JSON
             results_json = json.dumps(results, indent=4)
-            print(results_json)
+            print(f"\n{results_json}")
+
             # Dibujar el circuito
             draw_circuit(circuit)
+
+        # Obtener el csv con las métricas
+        csv_filename = "../datasets/file_metrics.csv"
+        get_metrics_csv(results, csv_filename)
     else:
         print("No hay importaciones de qiskit")
 
 # Ejemplo de uso
-# # Obtener la ruta del directorio actual
-current_directory = os.path.dirname(os.path.abspath(__file__))
-# # Construye la ruta al archivo en una carpeta anterior y luego entra en la carpeta 'projects'
-filename = os.path.join(current_directory, '..', 'test_code_files', 'grover.py')
-get_metrics(filename)
+if __name__ == "__main__":
+    # # Obtener la ruta del directorio actual
+    current_directory = os.path.dirname(os.path.abspath(__file__))
+    # # Construye la ruta al archivo en una carpeta anterior y luego entra en la carpeta 'projects'
+    filename = os.path.join(current_directory, '..', 'test_code_files', 'grover.py')
+    get_metrics(filename)
