@@ -1,6 +1,6 @@
 from sklearn.metrics import accuracy_score
 import utils as utils
-import ml_utils as mlutils
+import ml_models.ml_utils as mlutils
 from pathlib import Path
 import pandas as pd
 import numpy as np
