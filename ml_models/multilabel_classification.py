@@ -1,8 +1,8 @@
-import utils as utils
-import ml_utils as mlutils
-from pathlib import Path
 import pandas as pd
 import numpy as np
+
+from .ml_utils import show_data_structure, get_correlation_matrix, model_performance_data
+from pathlib import Path
 from sklearn.preprocessing import StandardScaler
 from sklearn.feature_selection import SelectFromModel
 from sklearn.ensemble import RandomForestClassifier
@@ -43,13 +43,13 @@ def get_datasets(data, data_values, data_labels):
     train_set_values, test_set_values, train_set_labels, test_set_labels = train_test_split(data_values, data_labels, test_size=test_set_size, stratify=data_labels)
 
     # Mostrar la estructura de los datos
-    mlutils.show_data_structure(data, data_values, data_labels, train_set_values, test_set_values, train_set_labels, test_set_labels)
-    #mlutils.create_data_histogram(data)
+    show_data_structure(data, data_values, data_labels, train_set_values, test_set_values, train_set_labels, test_set_labels)
+    #create_data_histogram(data)
 
     # Ver la correlación entre los datos
     data_vars = data.drop(["id", "language", "extension", "author", "name", "path", "circuit"], axis=1)
     # # Obtener la matriz de correlación
-    mlutils.get_correlation_matrix(data_vars, min_correlation_value, patterns_list)
+    get_correlation_matrix(data_vars, min_correlation_value, patterns_list)
 
     return train_set_values, test_set_values, train_set_labels, test_set_labels
 
@@ -127,7 +127,7 @@ def evaluate_model_performance(knn_classifier, train_set_values, train_set_label
     predictions = cross_val_predict(knn_classifier, train_set_values, train_set_labels_np_matrix, cv=cv_value)
     # Mostrar las medidas de rendimiento
     print("\nRendimiento del modelo entrenado")
-    mlutils.model_performance_data(train_set_labels_np_matrix, predictions, patterns_list)
+    model_performance_data(train_set_labels_np_matrix, predictions, patterns_list)
 
 # Evaluar el rendimiento del modelo con las mejores métricas
 def evaluate_best_features_model_performance(best_features_knn_classifier, train_set_values, train_set_labels_np_matrix, best_features):
@@ -136,7 +136,7 @@ def evaluate_best_features_model_performance(best_features_knn_classifier, train
     # Mostrar las medidas de rendimiento
     print(f"\nMétricas seleccionadas: {len(best_features)}\n{best_features}")
     print("\nRendimiento del modelo mejorado")
-    mlutils.model_performance_data(train_set_labels_np_matrix, predictions, patterns_list)
+    model_performance_data(train_set_labels_np_matrix, predictions, patterns_list)
 
 # Evaluar el rendimiento del modelo con el conjunto de prueba
 def test_model_performance(knn_classifier, test_set_values, test_set_labels):
@@ -147,7 +147,7 @@ def test_model_performance(knn_classifier, test_set_values, test_set_labels):
     test_set_labels_np_matrix = np.c_[tuple(test_set_labels[pattern] for pattern in patterns_list)]
     # Mostrar las medidas de rendimiento
     print("\nRendimiento del modelo con el conjunto de prueba")
-    mlutils.model_performance_data(test_set_labels_np_matrix, predictions, patterns_list)
+    model_performance_data(test_set_labels_np_matrix, predictions, patterns_list)
     # Imprimir los porcentajes de predicción de los registros mal predichos del conjunto de prueba
     for i in range(len(test_set_labels)):
         test_set_labels_list = test_set_labels.iloc[i].tolist()
@@ -171,7 +171,7 @@ def test_best_features_model_performance(best_features_knn_classifier, test_set_
     # # Mostrar las medidas de rendimiento
     print(f"\nMétricas seleccionadas: {len(best_features)}\n{best_features}")
     print("\nRendimiento del modelo mejorado con el conjunto de prueba")
-    mlutils.model_performance_data(test_set_labels_np_matrix, predictions, patterns_list)
+    model_performance_data(test_set_labels_np_matrix, predictions, patterns_list)
     # # Imprimir los porcentajes de predicción de los registros mal predichos del conjunto de prueba
     for i in range(len(test_set_labels)):
         test_set_labels_list = test_set_labels.iloc[i].tolist()
@@ -205,32 +205,26 @@ def show_first_test_predictions(test_set_labels, predictions_proba, best_feature
                 print(f"Modelo mejorado --> No cumple el patrón en un {round(best_features_predictions_proba[j][i][0]*100, 3)}%")
 
 # Realizar predicción a partir de datos externos
-def generate_prediction(test_data, best_features, pipeline, best_features_pipeline, knn_classifier, best_features_knn_classifier):
-    # Obtener los datos a predecir con las mejores métricas
-    best_features_test_set_data_values = test_data[best_features]
-
-    # Escalar los datos a predecir
-    test_set_data_values = pipeline.named_steps['scaler'].transform(test_set_data_values)
-    best_features_test_set_data_values = best_features_pipeline.named_steps['scaler'].transform(best_features_test_set_data_values)
-
+def generate_prediction(test_data, knn_classifier, best_features_knn_classifier):
     # Obtener predicciones y probabilidades de los datos de prueba con el modelo entrenado
-    test_data_pred = knn_classifier.predict(test_set_data_values)
-    predictions_proba = knn_classifier.predict_proba(test_set_data_values)
+    test_data_pred = knn_classifier.predict(test_data)
+    predictions_proba = knn_classifier.predict_proba(test_data)
     # Realizar predicciones con los datos de prueba
-    best_features_test_data_pred = best_features_knn_classifier.predict(best_features_test_set_data_values)
-    best_features_predictions_proba = best_features_knn_classifier.predict_proba(best_features_test_set_data_values)
+    best_features_test_data_pred = best_features_knn_classifier.predict(test_data)
+    best_features_predictions_proba = best_features_knn_classifier.predict_proba(test_data)
     # Imprimir los porcentajes de predicción
     for i in range(len(predictions_proba[0])):
         print(f"\nInstancia {i+1}:")
         for j in range(len(predictions_proba)):
+            print(f"Patrón {patterns_list[j]}: ")
             if len(predictions_proba[j][i]) > 1 and (predictions_proba[j][i][1] > predictions_proba[j][i][0]):
-                print(f"Cumple el patrón {patterns_list[j]} en un {round(predictions_proba[j][i][1]*100, 2)}%")
+                print(f"Modelo normal --> Cumple el patrón en un {round(predictions_proba[j][i][1]*100, 2)}%")
             else:
-                print(f"No cumple el patrón {patterns_list[j]} en un {round(predictions_proba[j][i][0]*100, 2)}%")
+                print(f"Modelo normal --> No cumple el patrón en un {round(predictions_proba[j][i][0]*100, 2)}%")
             if len(best_features_predictions_proba[j][i]) > 1 and (best_features_predictions_proba[j][i][1] > best_features_predictions_proba[j][i][0]):
-                print(f"Cumple el patrón {patterns_list[j]} en un {round(best_features_predictions_proba[j][i][1]*100, 2)}%")
+                print(f"Modelo mejorado --> Cumple el patrón en un {round(best_features_predictions_proba[j][i][1]*100, 2)}%")
             else:
-                print(f"No cumple el patrón {patterns_list[j]} en un {round(best_features_predictions_proba[j][i][0]*100, 2)}%")
+                print(f"Modelo mejorado --> No cumple el patrón en un {round(best_features_predictions_proba[j][i][0]*100, 2)}%")
 
 def generate_ml_models(data_filename):
     # Leer el csv con los datos de entrenamiento
@@ -244,10 +238,10 @@ def generate_ml_models(data_filename):
 
     best_features = get_feature_importance(data_values, best_features_knn_classifier)
 
-    return train_set_values, test_set_values, test_set_labels, pipeline, best_features_pipeline, knn_classifier, best_features_knn_classifier, train_set_labels_np_matrix, best_features
+    return train_set_values, test_set_values, train_set_labels, test_set_labels, pipeline, best_features_pipeline, knn_classifier, best_features_knn_classifier, train_set_labels_np_matrix, best_features
 
 def show_model_evaluation(data_filename):
-    train_set_values, test_set_values, test_set_labels, pipeline, best_features_pipeline, knn_classifier, best_features_knn_classifier, train_set_labels_np_matrix, best_features = generate_ml_models(data_filename)
+    train_set_values, test_set_values, _, test_set_labels, _, _, knn_classifier, best_features_knn_classifier, train_set_labels_np_matrix, best_features = generate_ml_models(data_filename)
 
     evaluate_model_performance(knn_classifier, train_set_values, train_set_labels_np_matrix)
     evaluate_best_features_model_performance(best_features_knn_classifier, train_set_values, train_set_labels_np_matrix, best_features)
@@ -258,13 +252,12 @@ def show_model_evaluation(data_filename):
     show_first_test_predictions(test_set_labels, predictions_proba, best_features_predictions_proba)
 
 def get_prediction(data_filename, test_data_filename):
-    train_set_values, test_set_values, test_set_labels, pipeline, best_features_pipeline, knn_classifier, best_features_knn_classifier, train_set_labels_np_matrix, best_features = generate_ml_models(data_filename)
+    _, _, _, _, _, _, knn_classifier, best_features_knn_classifier, _, _ = generate_ml_models(data_filename)
 
     test_data = pd.read_csv(Path(test_data_filename), delimiter=";")
 
-    generate_prediction(test_data, best_features, pipeline, best_features_pipeline, knn_classifier, best_features_knn_classifier)
+    generate_prediction(test_data, knn_classifier, best_features_knn_classifier)
 
 if __name__ == "__main__":
     data_filename = "../datasets/dataset_openqasm_qiskit.csv"
-    test_data_filename = "../datasets/file_metrics.csv"
     show_model_evaluation(data_filename)

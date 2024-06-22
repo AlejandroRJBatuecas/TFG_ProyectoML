@@ -1,7 +1,7 @@
 import ast
 import os
 import json
-from metrics_reader import analyze_circuit, draw_circuit, get_metrics_csv
+from .metrics_reader import analyze_circuit, draw_circuit, get_metrics_csv
 from qiskit.circuit import QuantumCircuit, QuantumRegister, ClassicalRegister, Qubit, Clbit, Instruction
 
 def read_file(filename):
@@ -144,7 +144,7 @@ def count_instructions(instructions):
         counting[circuit][instruction] += 1
     return counting
 
-def get_metrics(filename):
+def get_metrics(filename, test_data_filename):
     code = read_file(filename)
     qiskit_imports, circuits, registers, vars = analyze_code(code)
     print("\n--- MÉTRICAS ---")
@@ -170,15 +170,12 @@ def get_metrics(filename):
             draw_circuit(circuit)
 
         # Obtener el csv con las métricas
-        csv_filename = "../datasets/file_metrics.csv"
-        get_metrics_csv(results, csv_filename)
+        get_metrics_csv(results, test_data_filename)
     else:
         print("No hay importaciones de qiskit")
 
 # Ejemplo de uso
 if __name__ == "__main__":
-    # # Obtener la ruta del directorio actual
-    current_directory = os.path.dirname(os.path.abspath(__file__))
-    # # Construye la ruta al archivo en una carpeta anterior y luego entra en la carpeta 'projects'
-    filename = os.path.join(current_directory, '..', 'test_code_files', 'grover.py')
-    get_metrics(filename)
+    filename = "../test_code_files/grover.py"
+    test_data_filename = "../datasets/file_metrics.csv"
+    get_metrics(filename, test_data_filename)

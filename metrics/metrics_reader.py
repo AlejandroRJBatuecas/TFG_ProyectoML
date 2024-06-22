@@ -218,7 +218,7 @@ def get_metrics_csv(results, filename):
     headers = results[0].keys()
 
     with open(filename, mode='w', newline='') as csv_file:
-        csv_writer = csv.DictWriter(csv_file, fieldnames=headers)
+        csv_writer = csv.DictWriter(csv_file, fieldnames=headers, delimiter=";")
         csv_writer.writeheader()
         csv_writer.writerows(results)
 

@@ -1,6 +1,7 @@
-import utils as utils
 import matplotlib.pyplot as plt
 import numpy as np
+
+from .utils import save_fig
 from sklearn.metrics import accuracy_score, balanced_accuracy_score, precision_score, recall_score, f1_score, classification_report, confusion_matrix, multilabel_confusion_matrix
 from sklearn.feature_selection import SelectKBest, mutual_info_regression, SequentialFeatureSelector, RFE
 from sklearn.linear_model import LinearRegression, LassoCV
@@ -33,7 +34,7 @@ def show_data_structure(data, data_values, data_labels, train_set_values, test_s
 # Crear histograma de los atributos
 def create_data_histogram(data):
     data.hist(bins=50)
-    utils.save_fig("attribute_histogram_plots")
+    save_fig("attribute_histogram_plots")
     plt.show()
 
 # Ver la correlación entre los datos
@@ -51,7 +52,7 @@ def get_correlation_matrix(data, min_correlation_value, patterns_list):
     plt.tight_layout()
 
     # Guardar la imagen
-    utils.save_fig('correlation_matrix')
+    save_fig('correlation_matrix')
 
     # Seleccionar las características con alta correlación con las variables objetivo
     print(f"\nCaracterísticas con alta correlación (>{min_correlation_value}):")
