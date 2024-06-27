@@ -10,13 +10,10 @@ jobs:
     name: Main Workflow
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - name: SonarCloud Scan
-      uses: sonarsource/sonarcloud-github-action@v2.1.0
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     - name: SonarCloud Scan
       uses: sonarsource/sonarcloud-github-action@v2.1.0
       env:
