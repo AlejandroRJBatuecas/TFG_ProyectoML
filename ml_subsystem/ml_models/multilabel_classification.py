@@ -21,8 +21,8 @@ min_importance_value = 0.01 # Selecciona características con una importancia su
 min_correlation_value = 0.5 # Selecciona características con una correlación superior a este valor
 cv_value = 3 # Por defecto = 5. Número de particiones realizadas en la validación cruzada. Ponemos 3 ya que es un conjunto de datos pequeño
 test_results_num = 10 # Número de registros de prueba mostrados
-trained_model_path = "./trained_models/kn_classifier.joblib" # Ruta de almacenamiento del modelo (respecto al directorio raíz)
-best_features_trained_model_path = "./trained_models/best_features_kn_classifier.joblib" # Ruta de almacenamiento del modelo con mejores características (respecto al directorio raíz)
+trained_model_path = "ml_subsystem/trained_models/kn_classifier.joblib" # Ruta de almacenamiento del modelo (respecto al directorio raíz)
+best_features_trained_model_path = "ml_subsystem/trained_models/best_features_kn_classifier.joblib" # Ruta de almacenamiento del modelo con mejores características (respecto al directorio raíz)
 
 # Establecer la semilla de aleatoridad
 np.random.seed(42)
@@ -287,6 +287,7 @@ def get_prediction(data_filename, test_data_filename):
     # Generar las predicciones
     generate_prediction(test_data, knn_classifier, best_features_knn_classifier)
 
+# Ejemplo para mostrar el rendimiento del modelo
 if __name__ == "__main__":
     data_filename = "../datasets/dataset_openqasm_qiskit.csv"
     show_model_evaluation(data_filename)
