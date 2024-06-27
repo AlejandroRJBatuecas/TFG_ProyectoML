@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+import joblib
+import os
 
 from .ml_utils import show_data_structure, get_correlation_matrix, model_performance_data
 from pathlib import Path
@@ -19,6 +21,8 @@ min_importance_value = 0.01 # Selecciona características con una importancia su
 min_correlation_value = 0.5 # Selecciona características con una correlación superior a este valor
 cv_value = 3 # Por defecto = 5. Número de particiones realizadas en la validación cruzada. Ponemos 3 ya que es un conjunto de datos pequeño
 test_results_num = 10 # Número de registros de prueba mostrados
+trained_model_path = "./trained_models/kn_classifier.joblib" # Ruta de almacenamiento del modelo (respecto al directorio raíz)
+best_features_trained_model_path = "./trained_models/best_features_kn_classifier.joblib" # Ruta de almacenamiento del modelo con mejores características (respecto al directorio raíz)
 
 # Establecer la semilla de aleatoridad
 np.random.seed(42)
@@ -226,6 +230,21 @@ def generate_prediction(test_data, knn_classifier, best_features_knn_classifier)
             else:
                 print(f"Modelo mejorado --> No cumple el patrón en un {round(best_features_predictions_proba[j][i][0]*100, 2)}%")
 
+def store_model(knn_classifier, best_features_knn_classifier):
+    # Separar el directorio y el nombre del archivo
+    file_folder, _ = os.path.split(trained_model_path)
+    best_features_file_folder, _ = os.path.split(best_features_trained_model_path)
+
+    print(file_folder)
+
+    # Crear el directorio si no existe
+    os.makedirs(file_folder, exist_ok=True)
+    os.makedirs(best_features_file_folder, exist_ok=True)
+
+    # Almacenar los modelos entrenados en un archivo
+    joblib.dump(knn_classifier, trained_model_path)
+    joblib.dump(best_features_knn_classifier, best_features_trained_model_path)
+
 def generate_ml_models(data_filename):
     # Leer el csv con los datos de entrenamiento
     data = pd.read_csv(Path(data_filename), delimiter=";")
@@ -236,13 +255,16 @@ def generate_ml_models(data_filename):
 
     pipeline, best_features_pipeline, knn_classifier, best_features_knn_classifier, train_set_labels_np_matrix = create_ml_model(train_set_values, train_set_labels)
 
+    # Almacenar los modelos entrenados en un archivo
+    store_model(knn_classifier, best_features_knn_classifier)
+
     best_features = get_feature_importance(data_values, best_features_knn_classifier)
 
     return train_set_values, test_set_values, train_set_labels, test_set_labels, pipeline, best_features_pipeline, knn_classifier, best_features_knn_classifier, train_set_labels_np_matrix, best_features
 
 def show_model_evaluation(data_filename):
     train_set_values, test_set_values, _, test_set_labels, _, _, knn_classifier, best_features_knn_classifier, train_set_labels_np_matrix, best_features = generate_ml_models(data_filename)
-
+    
     evaluate_model_performance(knn_classifier, train_set_values, train_set_labels_np_matrix)
     evaluate_best_features_model_performance(best_features_knn_classifier, train_set_values, train_set_labels_np_matrix, best_features)
 
@@ -252,10 +274,17 @@ def show_model_evaluation(data_filename):
     show_first_test_predictions(test_set_labels, predictions_proba, best_features_predictions_proba)
 
 def get_prediction(data_filename, test_data_filename):
-    _, _, _, _, _, _, knn_classifier, best_features_knn_classifier, _, _ = generate_ml_models(data_filename)
-
+    # Si existen los modelos entrenados, los recuperamos. Si no, los generamos
+    if Path(trained_model_path).is_file() and Path(best_features_trained_model_path).is_file():
+        knn_classifier = joblib.load(trained_model_path)
+        best_features_knn_classifier = joblib.load(best_features_trained_model_path)
+    else:
+        _, _, _, _, _, _, knn_classifier, best_features_knn_classifier, _, _ = generate_ml_models(data_filename)
+    
+    # Obtener los datos a predecir
     test_data = pd.read_csv(Path(test_data_filename), delimiter=";")
 
+    # Generar las predicciones
     generate_prediction(test_data, knn_classifier, best_features_knn_classifier)
 
 if __name__ == "__main__":

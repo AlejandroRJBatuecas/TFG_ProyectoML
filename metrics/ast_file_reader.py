@@ -1,5 +1,4 @@
 import ast
-import os
 import json
 from .metrics_reader import analyze_circuit, draw_circuit, get_metrics_csv
 from qiskit.circuit import QuantumCircuit, QuantumRegister, ClassicalRegister, Qubit, Clbit, Instruction
