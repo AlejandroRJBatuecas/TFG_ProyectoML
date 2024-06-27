@@ -68,7 +68,7 @@ def create_ml_model(train_set_values, train_set_labels):
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
         ('classifier', KNeighborsClassifier())
-    ])
+    ], memory=None)
 
     print("\nHiperparámetros por defecto de KNeighborsClassifier:\n", 
         pipeline.named_steps['classifier'].get_params())
@@ -77,7 +77,7 @@ def create_ml_model(train_set_values, train_set_labels):
         ('scaler', StandardScaler()),
         ('feature_selection', SelectFromModel(RandomForestClassifier(n_estimators=100))),
         ('classifier', KNeighborsClassifier())
-    ])
+    ], memory=None)
 
     # Asignar el umbral de importancia al selector de características
     best_features_pipeline.steps[1][1].threshold = min_importance_value
