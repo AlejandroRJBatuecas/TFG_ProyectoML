@@ -2,7 +2,7 @@ name: SonarCloud
 on:
   push:
     branches:
-      - master
+      - main
 name: Main Workflow
 jobs:
   sonarcloud:
