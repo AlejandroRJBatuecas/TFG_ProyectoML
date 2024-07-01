@@ -1,4 +1,4 @@
 utils
-website-env
-images/correlation_matrix.png
-datasets/file_metrics.csv
+sw_subsystem/presentation/website-env
+ml_subsystem/images/correlation_matrix.png
+ml_subsystem/datasets/file_metrics.csv

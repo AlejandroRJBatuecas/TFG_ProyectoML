@@ -1,8 +1,8 @@
-import utils as utils
-import ml_utils as mlutils
-from pathlib import Path
 import pandas as pd
 import numpy as np
+
+from .ml_utils import show_data_structure, get_correlation_matrix, model_performance_data
+from pathlib import Path
 from sklearn.preprocessing import StandardScaler
 from sklearn.feature_selection import SelectFromModel
 from sklearn.ensemble import RandomForestClassifier
@@ -41,13 +41,13 @@ data_labels = data[patterns_list]
 train_set_values, test_set_values, train_set_labels, test_set_labels = train_test_split(data_values, data_labels, test_size=test_set_size, stratify=data_labels)
 
 # Mostrar la estructura de los datos
-mlutils.show_data_structure(data, data_values, data_labels, train_set_values, test_set_values, train_set_labels, test_set_labels)
+show_data_structure(data, data_values, data_labels, train_set_values, test_set_values, train_set_labels, test_set_labels)
 #mlutils.create_data_histogram(data)
 
 # Ver la correlación entre los datos
 data_vars = data.drop(["id", "language", "extension", "author", "name", "path", "circuit"], axis=1)
 # # Obtener la matriz de correlación
-mlutils.get_correlation_matrix(data_vars, min_correlation_value, patterns_list)
+get_correlation_matrix(data_vars, min_correlation_value, patterns_list)
 
 # Parámetros para la búsqueda aleatoria de hiperparámetros
 random_grid = {
@@ -191,7 +191,7 @@ for i, pattern in enumerate(patterns_list):
     predictions = cross_val_predict(classifier, train_set_values, pattern_train_labels, cv=cv_value)
     # # Mostrar las medidas de rendimiento
     print(f"\nRendimiento del clasificador de {pattern}")
-    mlutils.model_performance_data(pattern_train_labels, predictions, pattern)
+    model_performance_data(pattern_train_labels, predictions, pattern)
 
     # Evaluar el rendimiento del modelo con las mejores métricas
     # # Calcular las predicciones del clasificador mediante evaluación cruzada
@@ -199,7 +199,7 @@ for i, pattern in enumerate(patterns_list):
     # # Mostrar las medidas de rendimiento
     print(f"\nMétricas seleccionadas: {len(best_features)}\n{best_features}")
     print("\nRendimiento del modelo mejorado")
-    mlutils.model_performance_data(pattern_train_labels, predictions, pattern)
+    model_performance_data(pattern_train_labels, predictions, pattern)
 
     # Evaluar el rendimiento del modelo con el conjunto de prueba
     # # Realizar las predicciones con el conjunto de prueba
@@ -207,7 +207,7 @@ for i, pattern in enumerate(patterns_list):
     predictions_proba = classifier.predict_proba(test_set_values)
     # # Mostrar las medidas de rendimiento
     print("\nRendimiento del modelo con el conjunto de prueba")
-    mlutils.model_performance_data(pattern_test_labels, predictions, pattern)
+    model_performance_data(pattern_test_labels, predictions, pattern)
     # # Imprimir los porcentajes de predicción de los registros mal predichos del conjunto de prueba
     pattern_test_labels_list = pattern_test_labels.tolist()
     for j in range(len(pattern_test_labels_list)):
@@ -227,7 +227,7 @@ for i, pattern in enumerate(patterns_list):
     # # Mostrar las medidas de rendimiento
     print(f"\nMétricas seleccionadas: {len(best_features)}\n{best_features}")
     print("\nRendimiento del modelo mejorado con el conjunto de prueba")
-    mlutils.model_performance_data(pattern_test_labels, predictions, pattern)
+    model_performance_data(pattern_test_labels, predictions, pattern)
     # # Imprimir los porcentajes de predicción de los registros mal predichos del conjunto de prueba
     for j in range(len(pattern_test_labels_list)):
         if best_features_predictions_proba[j][1] > best_features_predictions_proba[j][0]:
