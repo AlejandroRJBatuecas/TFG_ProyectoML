@@ -95,7 +95,7 @@ class QiskitAnalyzer(ast.NodeVisitor):
             circuit_name = node.value.func.value.id
             if circuit_name in self.circuits:
                 circuit_instruction_name = node.value.func.attr
-                print("Circuito", circuit_name, ": Instrucción", circuit_instruction_name)
+                print("\nCircuito", circuit_name, ": Instrucción", circuit_instruction_name)
                 instruction_args = {
                     'name': circuit_instruction_name,
                     'num_qubits': 0,

@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import joblib
+import os
 
 from .utils import save_fig
 from sklearn.metrics import accuracy_score, balanced_accuracy_score, precision_score, recall_score, f1_score, classification_report, confusion_matrix, multilabel_confusion_matrix
@@ -195,3 +197,13 @@ def model_performance_data(data_labels_np_matrix, predictions, patterns_list):
         # Imprimir las matrices de confusión
         print("Matriz de Confusión:\n", confusion_matrix(data_labels_np_matrix, predictions))
         print("Normalizada:\n", np.round(confusion_matrix(data_labels_np_matrix, predictions, normalize='true'), 3))
+
+def store_model(ml_model, trained_model_path):
+    # Separar el directorio y el nombre del archivo
+    file_folder, _ = os.path.split(trained_model_path)
+
+    # Crear el directorio si no existe
+    os.makedirs(file_folder, exist_ok=True)
+
+    # Almacenar los modelos entrenados en un archivo
+    joblib.dump(ml_model, trained_model_path)

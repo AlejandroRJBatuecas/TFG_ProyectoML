@@ -1,7 +1,5 @@
 import pandas as pd
 import numpy as np
-import joblib
-import os
 
 from config import ml_parameters
 from .ml_utils import show_data_structure, get_correlation_matrix, model_performance_data
@@ -13,16 +11,6 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.calibration import cross_val_predict
-
-def store_model(ml_model, trained_model_path):
-    # Separar el directorio y el nombre del archivo
-    file_folder, _ = os.path.split(trained_model_path)
-
-    # Crear el directorio si no existe
-    os.makedirs(file_folder, exist_ok=True)
-
-    # Almacenar los modelos entrenados en un archivo
-    joblib.dump(ml_model, trained_model_path)
 
 class MultilabelLearningModel:
     def __init__(self, model, param_grid, data_filename=ml_parameters.data_filename, test_size=ml_parameters.test_set_size):
@@ -69,7 +57,7 @@ class MultilabelLearningModel:
         #create_data_histogram(data)
 
         # Ver la correlación entre los datos
-        data_vars = self.data.drop(["id", "language", "extension", "author", "name", "path", "circuit"], axis=1)
+        data_vars = self.data.drop(ml_parameters.eliminated_columns, axis=1)
         # # Obtener la matriz de correlación
         get_correlation_matrix(data_vars, ml_parameters.min_correlation_value, ml_parameters.patterns_list)
 
@@ -82,7 +70,7 @@ class MultilabelLearningModel:
             ('classifier', self.model)
         ], memory=None)
 
-        print("\nHiperparámetros por defecto de KNeighborsClassifier:\n", 
+        print(f"\nHiperparámetros por defecto de {self.model.__class__.__name__}:\n", 
             pipeline.named_steps['classifier'].get_params())
 
         best_features_pipeline = Pipeline([
