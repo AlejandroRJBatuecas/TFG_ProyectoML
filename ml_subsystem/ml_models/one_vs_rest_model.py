@@ -134,7 +134,7 @@ class OneVsRestModel(BaseMLModel):
             predictions = cross_val_predict(self.best_features_classifiers[pattern], self.train_set_values, pattern_train_labels, cv=ml_parameters.cv_value)
             # Mostrar las medidas de rendimiento
             print(f"\nMétricas seleccionadas para {pattern}: {len(self.best_features[pattern])}\n{self.best_features[pattern]}")
-            print(f"\nRendimiento del modelo mejorado")
+            print("\nRendimiento del modelo mejorado")
             model_performance_data(pattern_train_labels, predictions, pattern)
     
     # Evaluar el rendimiento del modelo con el conjunto de prueba
@@ -265,7 +265,7 @@ class RandomForestClassifierModel(OneVsRestModel):
             'classifier__criterion': ['gini', 'entropy', 'log_loss'],
             'classifier__bootstrap': [True, False]
         }
-        model = RandomForestClassifier()
+        model = RandomForestClassifier(random_state=ml_parameters.random_state_value)
         super().__init__(model, param_grid, data_filename, test_size)
 
     # Obtener los clasificadores con los mejores hiperparámetros
