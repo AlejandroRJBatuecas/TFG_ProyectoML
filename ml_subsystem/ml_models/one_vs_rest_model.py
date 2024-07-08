@@ -43,9 +43,18 @@ class OneVsRestModel(BaseMLModel):
                 ('classifier', self.model)
             ], memory=None)
 
+            rf_clf = RandomForestClassifier(
+                n_estimators=100,
+                max_depth=None,
+                min_samples_split=2,
+                min_samples_leaf=1,
+                max_features='sqrt',
+                random_state=ml_parameters.random_state_value
+            ) # Inicializado con los valores por defecto
+
             best_features_pipeline = Pipeline([
                 ('scaler', StandardScaler()),
-                ('feature_selection', SelectFromModel(RandomForestClassifier(n_estimators=100, random_state=ml_parameters.random_state_value))),
+                ('feature_selection', SelectFromModel(rf_clf)),
                 ('classifier', self.model)
             ], memory=None)
 
@@ -250,7 +259,7 @@ class KNNOvsRClassifierModel(OneVsRestModel):
             'classifier__n_neighbors': [1, 3, 5, 7, 9], # Mejor valores impares para evitar empates
             'classifier__weights': ['uniform', 'distance']
         }
-        model = KNeighborsClassifier()
+        model = KNeighborsClassifier(n_neighbors=5) # Inicializado con el valor por defecto
         super().__init__(model, param_grid, data_filename, test_size)
 
 class RandomForestClassifierModel(OneVsRestModel):
@@ -265,7 +274,14 @@ class RandomForestClassifierModel(OneVsRestModel):
             'classifier__criterion': ['gini', 'entropy', 'log_loss'],
             'classifier__bootstrap': [True, False]
         }
-        model = RandomForestClassifier(n_estimators=100, random_state=ml_parameters.random_state_value)
+        model = RandomForestClassifier(
+            n_estimators=100,
+            max_depth=None,
+            min_samples_split=2,
+            min_samples_leaf=1,
+            max_features='sqrt',
+            random_state=ml_parameters.random_state_value
+        ) # Inicializado con los valores por defecto
         super().__init__(model, param_grid, data_filename, test_size)
 
     # Obtener los clasificadores con los mejores hiperparámetros

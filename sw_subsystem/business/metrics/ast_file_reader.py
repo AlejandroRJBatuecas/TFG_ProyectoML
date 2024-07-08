@@ -13,7 +13,7 @@ class QiskitAnalyzer(ast.NodeVisitor):
         self.qiskit_imports = []
         self.circuits = {}
         self.registers = {}
-        self.vars = {}
+        self.code_vars = {}
 
     def visit_Import(self, node):
         # Detectar importaciones de Qiskit
@@ -77,21 +77,19 @@ class QiskitAnalyzer(ast.NodeVisitor):
                             name=register_params['name'], 
                             bits=register_params['bits'])
             else:
-                if var_name not in self.vars:
-                    self.vars[var_name] = {}
+                if var_name not in self.code_vars:
+                    self.code_vars[var_name] = {}
         # Asignaciones de variables con valores determinados
         elif isinstance(node.value, ast.Constant):
             var_name = node.targets[0].id
-            if var_name not in self.vars:
-                self.vars[var_name] = node.value.value
+            if var_name not in self.code_vars:
+                self.code_vars[var_name] = node.value.value
 
         self.generic_visit(node)
 
     def visit_Expr(self, node):
         # Verificar si es una instrucción aplicada a un circuito cuántico
         if isinstance(node.value, ast.Call) and isinstance(node.value.func, ast.Attribute):
-            #print(node.value.func.value.id)
-            #print(node.value.func.attr)
             circuit_name = node.value.func.value.id
             if circuit_name in self.circuits:
                 circuit_instruction_name = node.value.func.attr
@@ -131,7 +129,7 @@ def analyze_code(code):
     print(ast.dump(tree, indent=4)) # Muestra el código en forma de árbol para debug
     visitor = QiskitAnalyzer()
     visitor.visit(tree)
-    return visitor.qiskit_imports, visitor.circuits, visitor.registers, visitor.vars
+    return visitor.qiskit_imports, visitor.circuits, visitor.registers, visitor.code_vars
 
 def count_instructions(instructions):
     counting = {}
@@ -145,13 +143,13 @@ def count_instructions(instructions):
 
 def get_metrics(filename, test_data_filename):
     code = read_file(filename)
-    qiskit_imports, circuits, registers, vars = analyze_code(code)
+    qiskit_imports, circuits, registers, code_vars = analyze_code(code)
     print("\n--- MÉTRICAS ---")
     if qiskit_imports:
         print("Importaciones:", qiskit_imports)
         print("Circuitos:", circuits)
         print("Registros:", registers)
-        print("Variables:", vars)
+        print("Variables:", code_vars)
         results = []
         for circuit_name, circuit in circuits.items():
             print("\n--- CIRCUITO", circuit_name, "---")

@@ -44,9 +44,18 @@ class MultilabelLearningModel(BaseMLModel):
         print(f"\nHiperparámetros por defecto de {self.model.__class__.__name__}:\n", 
             pipeline.named_steps['classifier'].get_params())
 
+        rf_clf = RandomForestClassifier(
+            n_estimators=100,
+            max_depth=None,
+            min_samples_split=2,
+            min_samples_leaf=1,
+            max_features='sqrt',
+            random_state=ml_parameters.random_state_value
+        ) # Inicializado con los valores por defecto
+
         best_features_pipeline = Pipeline([
             ('scaler', StandardScaler()),
-            ('feature_selection', SelectFromModel(RandomForestClassifier(n_estimators=100, random_state=ml_parameters.random_state_value))),
+            ('feature_selection', SelectFromModel(rf_clf)),
             ('classifier', self.model)
         ], memory=None)
 

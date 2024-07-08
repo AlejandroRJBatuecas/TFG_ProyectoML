@@ -27,10 +27,6 @@ def set_maximum_time(qargs, current_qubit_timeline, circuit_timeline):
     for qubit in qargs:
         current_qubit_timeline[qubit._index] = max_timeline
 
-def estimate_oracles(circuit):
-    # TODO
-    return 0  # Asumir que no hay oráculos por ahora
-
 def analyze_circuit(circuit):
     metrics = {
         # Circuit Size
@@ -208,9 +204,6 @@ def analyze_circuit(circuit):
 
     # Calcular %QM = Nº qubits medidos / Total Qubits
     metrics['m.%QM'] = round(len(qubits_measured) / circuit.num_qubits, 3)
-
-    # Estimar el número de oráculos en el circuito
-    #metrics['m.NoOr'] = estimate_oracles(circuit)
 
     return metrics
 
