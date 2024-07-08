@@ -265,7 +265,7 @@ class RandomForestClassifierModel(OneVsRestModel):
             'classifier__criterion': ['gini', 'entropy', 'log_loss'],
             'classifier__bootstrap': [True, False]
         }
-        model = RandomForestClassifier(random_state=ml_parameters.random_state_value)
+        model = RandomForestClassifier(n_estimators=100, random_state=ml_parameters.random_state_value)
         super().__init__(model, param_grid, data_filename, test_size)
 
     # Obtener los clasificadores con los mejores hiperparámetros

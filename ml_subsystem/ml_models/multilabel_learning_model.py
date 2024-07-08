@@ -215,5 +215,5 @@ class KNNClassifierModel(MultilabelLearningModel):
             'classifier__n_neighbors': [1, 3, 5, 7, 9], # Mejor valores impares para evitar empates
             'classifier__weights': ['uniform', 'distance']
         }
-        model = KNeighborsClassifier()
+        model = KNeighborsClassifier(n_neighbors=5) # Inicializado con el valor por defecto
         super().__init__(model, param_grid, data_filename, test_size)
