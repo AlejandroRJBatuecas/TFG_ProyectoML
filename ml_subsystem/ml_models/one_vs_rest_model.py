@@ -2,27 +2,23 @@ import pandas as pd
 import numpy as np
 
 from config import ml_parameters
-from .ml_utils import show_data_structure, get_correlation_matrix, model_performance_data
+from .base_ml_model import BaseMLModel
+from .ml_utils import model_performance_data
 from pathlib import Path
 from sklearn.preprocessing import StandardScaler
 from sklearn.feature_selection import SelectFromModel
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
-from sklearn.model_selection import train_test_split, GridSearchCV, RandomizedSearchCV
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from sklearn.calibration import cross_val_predict
 
-class OneVsRestModel:
+class OneVsRestModel(BaseMLModel):
     def __init__(self, model, param_grid, data_filename=ml_parameters.data_filename, test_size=ml_parameters.test_set_size):
         # Inicialización de parámetros
         self.model = model
-        self.param_grid = param_grid
-        # Leer el csv con los datos de entrenamiento
-        self.data = pd.read_csv(Path(data_filename), delimiter=";")
-        self.test_size = test_size
-
-        self.data_values, self.data_labels = self._prepare_data()
-        self.train_set_values, self.test_set_values, self.train_set_labels, self.test_set_labels = self._get_datasets()
+        super().__init__(param_grid, data_filename, test_size)
+        
         self.pipelines, self.best_features_pipelines = self._create_pipelines()
         self.classifiers, self.best_features_classifiers = self._get_classifiers()
         self.best_features = self._get_feature_importance()
@@ -31,34 +27,6 @@ class OneVsRestModel:
         self.predictions_proba = self._test_model_performance()
         self.best_features_predictions_proba = self._test_best_features_model_performance()
         self._show_first_test_predictions()
-
-    def _prepare_data(self):
-        # Limpiar las filas con algún dato nulo
-        self.data = self.data.dropna()
-
-        # Elimnar las columnas relacionadas con Oracle
-        self.data = self.data.drop(columns=ml_parameters.eliminated_metrics)
-
-        # Separar datos y etiquetas
-        data_values = self.data.select_dtypes(include=[np.number])
-        data_labels = self.data[ml_parameters.patterns_list]
-
-        return data_values, data_labels
-
-    def _get_datasets(self):
-        # Obtener el conjunto de entrenamiento y de prueba
-        train_set_values, test_set_values, train_set_labels, test_set_labels = train_test_split(self.data_values, self.data_labels, test_size=ml_parameters.test_set_size, random_state=ml_parameters.random_state_value, stratify=self.data_labels)
-
-        # Mostrar la estructura de los datos
-        show_data_structure(self.data, self.data_values, self.data_labels, train_set_values, test_set_values, train_set_labels, test_set_labels)
-        #create_data_histogram(data)
-
-        # Ver la correlación entre los datos
-        data_vars = self.data.drop(ml_parameters.eliminated_columns, axis=1)
-        # # Obtener la matriz de correlación
-        get_correlation_matrix(data_vars, ml_parameters.min_correlation_value, ml_parameters.patterns_list)
-
-        return train_set_values, test_set_values, train_set_labels, test_set_labels
 
     # Definir las pipelines
     def _create_pipelines(self):
@@ -259,10 +227,8 @@ class OneVsRestModel:
 
         for pattern in ml_parameters.patterns_list:
             # Obtener predicciones y probabilidades de los datos de prueba con el modelo entrenado
-            test_data_pred = self.classifiers[pattern].predict(test_data)
             predictions_proba = self.classifiers[pattern].predict_proba(test_data)
             # Realizar predicciones con los datos de prueba
-            best_features_test_data_pred = self.best_features_classifiers[pattern].predict(test_data)
             best_features_predictions_proba = self.best_features_classifiers[pattern].predict_proba(test_data)
             # Imprimir los porcentajes de predicción
             for i in range(len(predictions_proba)):
@@ -312,12 +278,12 @@ class RandomForestClassifierModel(OneVsRestModel):
             pattern_train_labels = self.train_set_labels[pattern]
 
             # Realizar la búsqueda aleatoria de hiperparámetros
-            rf_random = RandomizedSearchCV(self.pipelines[pattern], self.param_grid, n_iter=ml_parameters.n_iter_value, cv=ml_parameters.cv_value)
+            rf_random = RandomizedSearchCV(self.pipelines[pattern], self.param_grid, n_iter=ml_parameters.n_iter_value, cv=ml_parameters.cv_value, random_state=ml_parameters.random_state_value)
             rf_random.fit(self.train_set_values, pattern_train_labels)
             print("\nMejores hiperparámetros para el clasificador Normal para la etiqueta", pattern, ": \n", rf_random.best_params_)
 
             # Realizar la búsqueda aleatoria de hiperparámetros para el modelo con mejores características
-            best_features_rf_random = RandomizedSearchCV(self.best_features_pipelines[pattern], self.param_grid, n_iter=ml_parameters.n_iter_value, cv=ml_parameters.cv_value)
+            best_features_rf_random = RandomizedSearchCV(self.best_features_pipelines[pattern], self.param_grid, n_iter=ml_parameters.n_iter_value, cv=ml_parameters.cv_value, random_state=ml_parameters.random_state_value)
             best_features_rf_random.fit(self.train_set_values, pattern_train_labels)
             print("\nMejores hiperparámetros para el clasificador Mejorado para la etiqueta", pattern, ": \n", best_features_rf_random.best_params_)
 

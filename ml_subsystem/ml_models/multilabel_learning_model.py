@@ -2,32 +2,30 @@ import pandas as pd
 import numpy as np
 
 from config import ml_parameters
-from .ml_utils import show_data_structure, get_correlation_matrix, model_performance_data
+from .base_ml_model import BaseMLModel
+from .ml_utils import model_performance_data
 from pathlib import Path
 from sklearn.preprocessing import StandardScaler
 from sklearn.feature_selection import SelectFromModel
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
-from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.model_selection import GridSearchCV
 from sklearn.calibration import cross_val_predict
 
-class MultilabelLearningModel:
+class MultilabelLearningModel(BaseMLModel):
     def __init__(self, model, param_grid, data_filename=ml_parameters.data_filename, test_size=ml_parameters.test_set_size):
         # Inicialización de parámetros
         self.model = model
-        self.param_grid = param_grid
-        # Leer el csv con los datos de entrenamiento
-        self.data = pd.read_csv(Path(data_filename), delimiter=";")
-        self.test_size = test_size
+        super().__init__(param_grid, data_filename, test_size)
 
-        self.data_values, self.data_labels = self._prepare_data()
-        self.train_set_values, self.test_set_values, self.train_set_labels, self.test_set_labels = self._get_datasets()
         # Transponer las listas colocando los datos en columnas para cada patrón
         self.train_set_labels_np_matrix = np.c_[tuple(self.train_set_labels[pattern] for pattern in ml_parameters.patterns_list)]
         # Transponer las listas colocando los datos en columnas para cada patrón
         self.test_set_labels_np_matrix = np.c_[tuple(self.test_set_labels[pattern] for pattern in ml_parameters.patterns_list)]
-        self.pipeline, self.best_features_pipeline, self.classifier, self.best_features_classifier = self._create_ml_model()
+        
+        self.pipeline, self.best_features_pipeline = self._create_pipelines()
+        self.classifier, self.best_features_classifier = self._get_classifiers()
         self.best_features = self._get_feature_importance()
         self._evaluate_model_performance()
         self._evaluate_best_features_model_performance()
@@ -35,35 +33,8 @@ class MultilabelLearningModel:
         self.best_features_predictions_proba = self._test_best_features_model_performance()
         self._show_first_test_predictions()
 
-    def _prepare_data(self):
-        # Limpiar las filas con algún dato nulo
-        self.data = self.data.dropna()
-
-        # Elimnar las columnas relacionadas con Oracle
-        self.data = self.data.drop(columns=ml_parameters.eliminated_metrics)
-
-        # Separar datos y etiquetas
-        data_values = self.data.select_dtypes(include=[np.number])
-        data_labels = self.data[ml_parameters.patterns_list]
-
-        return data_values, data_labels
-
-    def _get_datasets(self):
-        # Obtener el conjunto de entrenamiento y de prueba
-        train_set_values, test_set_values, train_set_labels, test_set_labels = train_test_split(self.data_values, self.data_labels, test_size=ml_parameters.test_set_size, random_state=ml_parameters.random_state_value, stratify=self.data_labels)
-
-        # Mostrar la estructura de los datos
-        show_data_structure(self.data, self.data_values, self.data_labels, train_set_values, test_set_values, train_set_labels, test_set_labels)
-        #create_data_histogram(data)
-
-        # Ver la correlación entre los datos
-        data_vars = self.data.drop(ml_parameters.eliminated_columns, axis=1)
-        # # Obtener la matriz de correlación
-        get_correlation_matrix(data_vars, ml_parameters.min_correlation_value, ml_parameters.patterns_list)
-
-        return train_set_values, test_set_values, train_set_labels, test_set_labels
-
-    def _create_ml_model(self):
+    # Definir las pipelines
+    def _create_pipelines(self):
         # Crear el pipeline
         pipeline = Pipeline([
             ('scaler', StandardScaler()),
@@ -82,12 +53,16 @@ class MultilabelLearningModel:
         # Asignar el umbral de importancia al selector de características
         best_features_pipeline.steps[1][1].threshold = ml_parameters.min_importance_value
 
+        return pipeline, best_features_pipeline
+
+    # Obtener los clasificadores con los mejores hiperparámetros
+    def _get_classifiers(self):
         # Realizar la búsqueda de hiperparámetros utilizando validación cruzada
-        grid_search = GridSearchCV(pipeline, self.param_grid, cv=ml_parameters.cv_value)
+        grid_search = GridSearchCV(self.pipeline, self.param_grid, cv=ml_parameters.cv_value)
         grid_search.fit(self.train_set_values, self.train_set_labels_np_matrix)
         print("\nMejores hiperparámetros para Normal: \n", grid_search.best_params_)
 
-        best_features_grid_search = GridSearchCV(best_features_pipeline, self.param_grid, cv=ml_parameters.cv_value)
+        best_features_grid_search = GridSearchCV(self.best_features_pipeline, self.param_grid, cv=ml_parameters.cv_value)
         best_features_grid_search.fit(self.train_set_values, self.train_set_labels_np_matrix)
         print("\nMejores hiperparámetros para Mejorado: \n", best_features_grid_search.best_params_)
 
@@ -95,7 +70,7 @@ class MultilabelLearningModel:
         classifier = grid_search.best_estimator_
         best_features_classifier = best_features_grid_search.best_estimator_
 
-        return pipeline, best_features_pipeline, classifier, best_features_classifier
+        return classifier, best_features_classifier
 
     # Obtener la importancia de las caracteristicas
     def _get_feature_importance(self):
@@ -216,10 +191,8 @@ class MultilabelLearningModel:
         # Obtener los datos a predecir
         test_data = pd.read_csv(Path(ml_parameters.test_data_filename), delimiter=";")
         # Obtener predicciones y probabilidades de los datos de prueba con el modelo entrenado
-        test_data_pred = self.classifier.predict(test_data)
         predictions_proba = self.classifier.predict_proba(test_data)
         # Realizar predicciones con los datos de prueba
-        best_features_test_data_pred = self.best_features_classifier.predict(test_data)
         best_features_predictions_proba = self.best_features_classifier.predict_proba(test_data)
         # Imprimir los porcentajes de predicción
         for i in range(len(predictions_proba[0])):

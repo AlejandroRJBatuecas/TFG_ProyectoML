@@ -65,89 +65,6 @@ def get_correlation_matrix(data, min_correlation_value, patterns_list):
             high_correlation_features.remove(pattern)  # Eliminar la variable objetivo de la lista
         print(f"{pattern}:", high_correlation_features)
 
-# Obtener la información mutua respecto a las variables objetivo
-# Seleccionar las mejores características con Búsqueda hacia adelante
-def get_best_features(data_values, scaled_data_values, data_labels, train_set_values, train_set_labels, min_importance_values):
-    best_features = dict()
-
-    print("\nCaracterísticas seleccionadas por patrón:")
-    for index, label in enumerate(data_labels):
-        print("\nPatrón :", label)
-        pattern = data_labels[label]
-        '''
-        # Información mutua
-        # # Aplicar la información mutua para seleccionar las 5 mejores características
-        selector = SelectKBest(mutual_info_regression, k=5)
-        selector.fit_transform(data_values, pattern)
-        index_list = selector.get_support(indices=True)
-        features_names = [data_values.columns[index] for index in index_list]
-        print(f"Información mutua:", features_names)
-        #best_features_set = set(features_names)
-
-        # Búsqueda hacia adelante
-        # # Inicializar el modelo de regresión lineal
-        lineal_regressor = LinearRegression()
-        # # Aplicar la Búsqueda hacia adelante
-        sequential_feature_selector = SequentialFeatureSelector(lineal_regressor, n_features_to_select=5, direction='forward')
-        sequential_feature_selector.fit(train_set_values, train_set_labels[label])
-        # Identificar las características seleccionadas
-        index_list = sequential_feature_selector.get_support(indices=True)
-        features_names = [data_values.columns[index] for index in index_list]
-        print("Búsqueda hacia adelante:", features_names)
-        #best_features_set = best_features_set.union(set(features_names))
-
-        # Eliminación Recursiva de Características (RFE)
-        # # Inicializar el modelo de regresión lineal
-        lineal_regressor = LinearRegression()
-        # # Aplicar RFE
-        selector = RFE(lineal_regressor, n_features_to_select=5)
-        selector = selector.fit(data_values, pattern)
-        # # Identificar las características seleccionadas
-        selected_features = [data_values.columns[index] for index in range(len(selector.support_)) if selector.support_[index]]
-        print("RFE:", selected_features)
-        #best_features_set = best_features_set.union(set(selected_features))
-        #best_features[label] = list(best_features_set)
-
-        # Método de regularización L1 - Lasso
-        # # Normalizar las características
-        if label != "p.entanglement": # Da fallo para este patrón, ya que no hay ningún registro que lo implemente
-            # # Ajustar el modelo Lasso con validación cruzada para encontrar el mejor alpha
-            lasso = LassoCV(cv=5, max_iter=10000)
-            lasso.fit(scaled_data_values, pattern)
-
-            # # Identificar las características seleccionadas (coeficientes diferentes de cero)
-            index_list = np.where(lasso.coef_ != 0)[0]
-            selected_features = [data_values.columns[index] for index in index_list]
-            print("Lasso:", selected_features)
-        '''
-        # Evaluación de la importancia de las características - Random Forest
-        # # Ajustar el modelo de Random Forest
-        forest = RandomForestClassifier(n_estimators=100)
-        forest.fit(scaled_data_values, pattern)
-
-        # Obtener la importancia de las características
-        importances = forest.feature_importances_
-        indices = np.argsort(importances)[::-1]
-
-        pattern_best_features = []
-        i = 0
-        seguir = True
-        # # Imprimir la importancia de las características
-        print("Importancia de las características:")
-        while i < data_values.shape[1] and seguir:
-            feature = data_values.columns[indices[i]]
-            feature_importance = importances[indices[i]]
-            print(f"{feature}: {feature_importance}")
-            # Añadir a la lista de mejores características si su importancia es mayor del valor mínimo
-            if feature_importance > min_importance_values[index]:
-                pattern_best_features.append(feature)
-            i += 1
-
-        # Añadir la lista de características del patrón a la lista general
-        best_features[label] = pattern_best_features
-        
-    return best_features
-
 # Normalizar la matriz de confusión multietiqueta
 def normalize_confusion_matrix(mcm):
     normalized_mcm = []
@@ -183,10 +100,10 @@ def model_performance_data(data_labels_np_matrix, predictions, patterns_list):
             classification_report(data_labels_np_matrix, predictions, target_names=patterns_list, zero_division=np.nan))
         
         # Imprimir las matrices de confusión
-        multilabel_confusionMatrix = multilabel_confusion_matrix(data_labels_np_matrix, predictions)
-        normalized_mcm = np.round(normalize_confusion_matrix(multilabel_confusionMatrix), 3)
-        for i in range(len(multilabel_confusionMatrix)):
-            print("Matriz de Confusión:", patterns_list[i], "\n", multilabel_confusionMatrix[i])
+        multilabel_confusionmatrix = multilabel_confusion_matrix(data_labels_np_matrix, predictions)
+        normalized_mcm = np.round(normalize_confusion_matrix(multilabel_confusionmatrix), 3)
+        for i in range(len(multilabel_confusionmatrix)):
+            print("Matriz de Confusión:", patterns_list[i], "\n", multilabel_confusionmatrix[i])
             print("Normalizada:\n", normalized_mcm[i])
 
     else:
