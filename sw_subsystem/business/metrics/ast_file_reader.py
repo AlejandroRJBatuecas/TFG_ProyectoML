@@ -68,7 +68,7 @@ class QiskitAnalyzer(ast.NodeVisitor):
         # Si el registro no ha sido creado anteriormente
         if var_name not in self.registers:
             # Obtener los parámetros del registro
-            register_params = self._get_register_params(self, node)
+            register_params = self._get_register_params(node)
             # Crear y almacenar los registros
             if node.value.func.id == 'QuantumRegister':
                 self.registers[var_name] = QuantumRegister(
@@ -88,10 +88,10 @@ class QiskitAnalyzer(ast.NodeVisitor):
             # Verifica si es una asignación de QuantumCircuit, QuantumRegister, ClassicalRegister u otro
             if node.value.func.id == 'QuantumCircuit':
                 # Establecer el circuito cuántico
-                self._set_quantum_circuit(self, var_name, node)
+                self._set_quantum_circuit(var_name, node)
             elif node.value.func.id in ['QuantumRegister', 'ClassicalRegister']:
                 # Establecer el registro (cuántico o clásico)
-                self._set_register(self, var_name, node)
+                self._set_register(var_name, node)
             else:
                 if var_name not in self.code_vars:
                     self.code_vars[var_name] = {}
@@ -145,7 +145,7 @@ class QiskitAnalyzer(ast.NodeVisitor):
                 circuit_instruction_name = node.value.func.attr
                 print("\nCircuito", circuit_name, ": Instrucción", circuit_instruction_name)
                 # Obtener los argumentos de la instrucción
-                instruction_args, qargs, cargs = self._get_instruction_args(self, node, circuit_instruction_name)
+                instruction_args, qargs, cargs = self._get_instruction_args(node, circuit_instruction_name)
                 # Aplicar instrucción al circuito
                 self.circuits[circuit_name].append(Instruction(**instruction_args), qargs, cargs)
 
