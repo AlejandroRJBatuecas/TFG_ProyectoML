@@ -87,7 +87,7 @@ def get_qubit_instruction_count(qargs, qubit_instructions, qubit_in_superpositio
                 qubit_in_superposition_state[qubit._index] = 0
 
 # Conteo de puertas simples específicas
-def get_SQG_instructions_count(gate_name, metrics):
+def get_sqg_instructions_count(gate_name, metrics):
     # Conteo de puertas específicas
     if gate_name == 'x': # Pauli-X
         metrics['m.NoP-X'] += 1
@@ -104,7 +104,7 @@ def get_SQG_instructions_count(gate_name, metrics):
         metrics[m_NoOtherSG] += 1
 
 # Single Qubit Gates
-def get_SQG_instructions(gate_name, current_qubit_timeline, circuit_timeline, metrics, qargs, qubits_measured):
+def get_sqg_instructions(gate_name, current_qubit_timeline, circuit_timeline, metrics, qargs, qubits_measured):
     if gate_name == 'measure': # Medición
         # Para la puerta measure, se establece la máxima línea temporal a todos los qubits,
         # # ya que la medición se utiliza un momento temporal para cada qubit
@@ -125,10 +125,25 @@ def get_SQG_instructions(gate_name, current_qubit_timeline, circuit_timeline, me
         current_qubit_timeline[qubit._index] += 1
 
         # Conteo de puertas específicas
-        get_SQG_instructions_count(gate_name, metrics)
+        get_sqg_instructions_count(gate_name, metrics)
+
+# Conteo de puertas simples específicas
+def get_sqg_instructions_count(gate_name, metrics, qargs, qubits_in_toffoli, qubits_in_toffoli_count, qubits_in_cnot, qubits_in_cnot_count):
+    if gate_name == 'ccx': # Toffoli
+        metrics['m.NoToff'] += 1
+        for qubit in qargs:
+            qubits_in_toffoli.add(qubit._index)
+            qubits_in_toffoli_count[qubit._index] += 1
+    else: # Puertas simples controladas
+        metrics['m.TNoCSQG'] += 1
+        if gate_name == 'cx': # CNOT
+            metrics['m.NoCNOT'] += 1
+            for qubit in qargs:
+                qubits_in_cnot.add(qubit._index)
+                qubits_in_cnot_count[qubit._index] += 1
 
 # Multiple Qubits Gates
-def get_MQG_instructions(gate_name, metrics, qargs, qubits_in_toffoli, qubits_in_toffoli_count, qubits_in_cnot, qubits_in_cnot_count):
+def get_mqg_instructions(gate_name, metrics, qargs, qubits_in_toffoli, qubits_in_toffoli_count, qubits_in_cnot, qubits_in_cnot_count):
     if 'c' in gate_name: # Puertas controladas
         controlled_gate = gate_name.lstrip('c')
         metrics['m.NoCGates'] += 1
@@ -138,18 +153,7 @@ def get_MQG_instructions(gate_name, metrics, qargs, qubits_in_toffoli, qubits_in
             metrics['Controlled Gates Count'][controlled_gate] += 1
 
         # Conteo de puertas específicas
-        if gate_name == 'ccx': # Toffoli
-            metrics['m.NoToff'] += 1
-            for qubit in qargs:
-                qubits_in_toffoli.add(qubit._index)
-                qubits_in_toffoli_count[qubit._index] += 1
-        else: # Puertas simples controladas
-            metrics['m.TNoCSQG'] += 1
-            if gate_name == 'cx': # CNOT
-                metrics['m.NoCNOT'] += 1
-                for qubit in qargs:
-                    qubits_in_cnot.add(qubit._index)
-                    qubits_in_cnot_count[qubit._index] += 1
+        get_sqg_instructions_count(gate_name, metrics, qargs, qubits_in_toffoli, qubits_in_toffoli_count, qubits_in_cnot, qubits_in_cnot_count)
     else: # Resto de puertas múltiples
         if gate_name == 'swap': # SWAP
             metrics['m.NoSWAP'] += 1
@@ -233,13 +237,13 @@ def analyze_circuit(circuit):
         # Single Qubit Gates
         if len(qargs) == 1:
             # Realizar el conteo de las instrucciones con puertas simples
-            get_SQG_instructions(gate_name, current_qubit_timeline, circuit_timeline, metrics, qargs, qubits_measured)
+            get_sqg_instructions(gate_name, current_qubit_timeline, circuit_timeline, metrics, qargs, qubits_measured)
         # Multiple Qubit Gates
         else:
             # Establecer la máxima línea temporal a los qubits implicados
             set_maximum_time(qargs, current_qubit_timeline, circuit_timeline)
             # Realizar el conteo de las instrucciones con puertas múltiples
-            get_MQG_instructions(gate_name, metrics, qargs, qubits_in_toffoli, qubits_in_toffoli_count, qubits_in_cnot, qubits_in_cnot_count)
+            get_mqg_instructions(gate_name, metrics, qargs, qubits_in_toffoli, qubits_in_toffoli_count, qubits_in_cnot, qubits_in_cnot_count)
 
     # Cálculo de las métricas de densidad y superposición
     calculate_density_and_superposition_metrics(metrics, circuit_timeline, qubit_in_superposition_state)
