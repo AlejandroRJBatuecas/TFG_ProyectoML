@@ -8,9 +8,7 @@ from ml_subsystem.ml_models import KNNClassifierModel, KNNOvsRClassifierModel, R
 filename = "sw_subsystem/business/metrics/test_code_files/grover.py" # Fichero a analizar
 trained_model_path = ml_trained_model_paths.random_forest_classifier_trained_model_path # Modelo
 
-def main():    
-    get_metrics(filename, ml_parameters.test_data_filename)
-
+def get_or_create_model():
     # Si existe el modelo entrenado, lo recuperamos. Si no, lo creamos
     if Path(trained_model_path).is_file():
         model = joblib.load(trained_model_path)
@@ -23,23 +21,17 @@ def main():
             model = RandomForestClassifierModel()
 
         store_model(model, trained_model_path)
-    
+
+    return model
+
+def main():    
+    get_metrics(filename, ml_parameters.test_data_filename)
+    model = get_or_create_model()
     model.get_prediction()
 
 def show_model_evaluation():
-    # Si existe el modelo entrenado, lo recuperamos. Si no, lo creamos
-    if Path(trained_model_path).is_file():
-        model = joblib.load(trained_model_path)
-        model.show_model_evaluation()
-    else:
-        if trained_model_path == ml_trained_model_paths.knn_classifier_trained_model_path:
-            model = KNNClassifierModel()
-        elif trained_model_path == ml_trained_model_paths.knn_one_vs_rest_classifier_trained_model_path:
-            model = KNNOvsRClassifierModel()
-        elif trained_model_path == ml_trained_model_paths.random_forest_classifier_trained_model_path:
-            model = RandomForestClassifierModel()
-
-        store_model(model, trained_model_path)
+    model = get_or_create_model()
+    model.show_model_evaluation()
 
 if __name__ == "__main__":
-    main()
+    show_model_evaluation()

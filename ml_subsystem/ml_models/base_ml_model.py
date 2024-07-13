@@ -13,21 +13,8 @@ class BaseMLModel:
         # Leer el csv con los datos de entrenamiento
         self.data = pd.read_csv(Path(data_filename), delimiter=";")
         self.test_size = test_size
-
         self.data_values, self.data_labels = self._prepare_data()
         self.train_set_values, self.test_set_values, self.train_set_labels, self.test_set_labels = self._get_datasets()
-        
-        # Transponer las listas colocando los datos en columnas para cada patrón
-        self.train_set_labels_np_matrix = np.c_[tuple(self.train_set_labels[pattern] for pattern in ml_parameters.patterns_list)]
-        # Transponer las listas colocando los datos en columnas para cada patrón
-        self.test_set_labels_np_matrix = np.c_[tuple(self.test_set_labels[pattern] for pattern in ml_parameters.patterns_list)]
-        self.pipeline, self.best_features_pipeline, self.classifier, self.best_features_classifier = self._create_ml_model()
-        self.best_features = self._get_feature_importance()
-        self._evaluate_model_performance()
-        self._evaluate_best_features_model_performance()
-        self.predictions_proba = self._test_model_performance()
-        self.best_features_predictions_proba = self._test_best_features_model_performance()
-        self._show_first_test_predictions()
 
     # Realizar el preprocesamiento de los datos
     def _prepare_data(self):
@@ -93,7 +80,14 @@ class BaseMLModel:
     
     # Mostrar los valores de rendimiento de todos los modelos
     def show_model_evaluation(self, test_results_num=ml_parameters.test_results_num):
-        raise NotImplementedError
+        # Evaluar el rendimiento del modelo
+        self._evaluate_model_performance()
+        self._evaluate_best_features_model_performance()
+        # Evaluar el modelo con el conjunto de prueba
+        self._test_model_performance()
+        self._test_best_features_model_performance()
+        # Imprimir los porcentajes de predicción de los primeros registros del conjunto de prueba
+        self._show_first_test_predictions(test_results_num)
     
     # Realizar predicción a partir de datos externos
     def get_prediction(self):

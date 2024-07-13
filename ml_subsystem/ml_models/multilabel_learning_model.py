@@ -18,20 +18,15 @@ class MultilabelLearningModel(BaseMLModel):
         # Inicialización de parámetros
         self.model = model
         super().__init__(param_grid, data_filename, test_size)
-
         # Transponer las listas colocando los datos en columnas para cada patrón
         self.train_set_labels_np_matrix = np.c_[tuple(self.train_set_labels[pattern] for pattern in ml_parameters.patterns_list)]
         # Transponer las listas colocando los datos en columnas para cada patrón
         self.test_set_labels_np_matrix = np.c_[tuple(self.test_set_labels[pattern] for pattern in ml_parameters.patterns_list)]
-        
         self.pipeline, self.best_features_pipeline = self._create_pipelines()
         self.classifier, self.best_features_classifier = self._get_classifiers()
         self.best_features = self._get_feature_importance()
-        self._evaluate_model_performance()
-        self._evaluate_best_features_model_performance()
-        self.predictions_proba = self._test_model_performance()
-        self.best_features_predictions_proba = self._test_best_features_model_performance()
-        self._show_first_test_predictions()
+        self.predictions_proba = self.classifier.predict_proba(self.test_set_values)
+        self.best_features_predictions_proba = self.best_features_classifier.predict_proba(self.test_set_values)
 
     # Definir las pipelines
     def _create_pipelines(self):
@@ -127,7 +122,6 @@ class MultilabelLearningModel(BaseMLModel):
     def _test_model_performance(self):
         # Realizar predicciones en el conjunto de prueba
         predictions = self.classifier.predict(self.test_set_values)
-        predictions_proba = self.classifier.predict_proba(self.test_set_values)
         
         # Mostrar las medidas de rendimiento
         print("\nRendimiento del modelo con el conjunto de prueba")
@@ -136,22 +130,19 @@ class MultilabelLearningModel(BaseMLModel):
         for i in range(len(self.test_set_labels)):
             test_set_labels_list = self.test_set_labels.iloc[i].tolist()
             for j in range(len(test_set_labels_list)):
-                if (predictions_proba[j][i][1] > predictions_proba[j][i][0]):
+                if (self.predictions_proba[j][i][1] > self.predictions_proba[j][i][0]):
                     if test_set_labels_list[j] == False:
-                        print(f"\nModelo normal --> Cumple el patrón {ml_parameters.patterns_list[j]} en un {round(predictions_proba[j][i][1]*100, 3)}%")
+                        print(f"\nModelo normal --> Cumple el patrón {ml_parameters.patterns_list[j]} en un {round(self.predictions_proba[j][i][1]*100, 3)}%")
                         print(f"Instancia {i+1}: {test_set_labels_list[j]}")
                 else:
                     if test_set_labels_list[j] == True:
-                        print(f"\nModelo normal --> No cumple el patrón {ml_parameters.patterns_list[j]} en un {round(predictions_proba[j][i][0]*100, 3)}%")
+                        print(f"\nModelo normal --> No cumple el patrón {ml_parameters.patterns_list[j]} en un {round(self.predictions_proba[j][i][0]*100, 3)}%")
                         print(f"Instancia {i+1}: {test_set_labels_list[j]}")
-
-        return predictions_proba
     
     # Evaluar el rendimiento del modelo con mejores métricas con el conjunto de prueba
     def _test_best_features_model_performance(self):
         # Realizar predicciones en el conjunto de prueba
         predictions = self.best_features_classifier.predict(self.test_set_values)
-        best_features_predictions_proba = self.best_features_classifier.predict_proba(self.test_set_values)
         # # Mostrar las medidas de rendimiento
         print(f"\nMétricas seleccionadas: {len(self.best_features)}\n{self.best_features}")
         print("\nRendimiento del modelo mejorado con el conjunto de prueba")
@@ -160,16 +151,14 @@ class MultilabelLearningModel(BaseMLModel):
         for i in range(len(self.test_set_labels)):
             test_set_labels_list = self.test_set_labels.iloc[i].tolist()
             for j in range(len(test_set_labels_list)):
-                if best_features_predictions_proba[j][i][1] > best_features_predictions_proba[j][i][0]:
+                if self.best_features_predictions_proba[j][i][1] > self.best_features_predictions_proba[j][i][0]:
                     if test_set_labels_list[j] == False:
-                        print(f"\nModelo mejorado --> Cumple el patrón {ml_parameters.patterns_list[j]} en un {round(best_features_predictions_proba[j][i][1]*100, 3)}%")
+                        print(f"\nModelo mejorado --> Cumple el patrón {ml_parameters.patterns_list[j]} en un {round(self.best_features_predictions_proba[j][i][1]*100, 3)}%")
                         print(f"Instancia {i+1}: {test_set_labels_list[j]}")
                 else:
                     if test_set_labels_list[j] == True:
-                        print(f"\nModelo mejorado --> No cumple el patrón {ml_parameters.patterns_list[j]} en un {round(best_features_predictions_proba[j][i][0]*100, 3)}%")
+                        print(f"\nModelo mejorado --> No cumple el patrón {ml_parameters.patterns_list[j]} en un {round(self.best_features_predictions_proba[j][i][0]*100, 3)}%")
                         print(f"Instancia {i+1}: {test_set_labels_list[j]}")
-
-        return best_features_predictions_proba
     
     # Imprimir los porcentajes de predicción de los primeros registros del conjunto de prueba
     def _show_first_test_predictions(self, test_results_num=ml_parameters.test_results_num):
@@ -187,13 +176,6 @@ class MultilabelLearningModel(BaseMLModel):
                     print(f"Modelo mejorado --> Cumple el patrón en un {round(self.best_features_predictions_proba[j][i][1]*100, 3)}%")
                 else:
                     print(f"Modelo mejorado --> No cumple el patrón en un {round(self.best_features_predictions_proba[j][i][0]*100, 3)}%")
-
-    def show_model_evaluation(self, test_results_num=ml_parameters.test_results_num):
-        # Evaluar el rendimiento del modelo
-        self._evaluate_model_performance()
-        self._evaluate_best_features_model_performance()
-        # Imprimir los porcentajes de predicción de los primeros registros del conjunto de prueba
-        self._show_first_test_predictions(test_results_num)
 
     # Realizar predicción a partir de datos externos
     def get_prediction(self):

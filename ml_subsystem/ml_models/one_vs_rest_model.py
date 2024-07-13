@@ -18,15 +18,16 @@ class OneVsRestModel(BaseMLModel):
         # Inicialización de parámetros
         self.model = model
         super().__init__(param_grid, data_filename, test_size)
-        
         self.pipelines, self.best_features_pipelines = self._create_pipelines()
         self.classifiers, self.best_features_classifiers = self._get_classifiers()
         self.best_features = self._get_feature_importance()
-        self._evaluate_model_performance()
-        self._evaluate_best_features_model_performance()
-        self.predictions_proba = self._test_model_performance()
-        self.best_features_predictions_proba = self._test_best_features_model_performance()
-        self._show_first_test_predictions()
+        self.predictions_proba = {}
+        self.best_features_predictions_proba = {}
+        for pattern in ml_parameters.patterns_list:
+            # Probabilidad de predicción
+            self.predictions_proba[pattern] = self.classifiers[pattern].predict_proba(self.test_set_values)
+            # Probabilidad de predicción del modelo mejorado
+            self.best_features_predictions_proba[pattern] = self.best_features_classifiers[pattern].predict_proba(self.test_set_values)
 
     # Definir las pipelines
     def _create_pipelines(self):
@@ -148,16 +149,11 @@ class OneVsRestModel(BaseMLModel):
     
     # Evaluar el rendimiento del modelo con el conjunto de prueba
     def _test_model_performance(self):
-        predictions_proba = {}
-
         for pattern in ml_parameters.patterns_list:
             pattern_test_labels = self.test_set_labels[pattern]
             # Realizar predicciones en el conjunto de prueba
             predictions = self.classifiers[pattern].predict(self.test_set_values)
-            pattern_predictions_proba = self.classifiers[pattern].predict_proba(self.test_set_values)
-
-            predictions_proba[pattern] = pattern_predictions_proba
-            
+            pattern_predictions_proba = self.predictions_proba[pattern]
             # Mostrar las medidas de rendimiento
             print(f"\nRendimiento del modelo de {pattern} con el conjunto de prueba")
             model_performance_data(pattern_test_labels, predictions, pattern)
@@ -172,21 +168,14 @@ class OneVsRestModel(BaseMLModel):
                     if pattern_test_labels_list[i] == True:
                         print(f"\nModelo normal --> No cumple el patrón en un {round(pattern_predictions_proba[i][0]*100, 3)}%")
                         print(f"Instancia {i+1}: {pattern_test_labels_list[i]}")
-
-        return predictions_proba
     
     # Evaluar el rendimiento del modelo con mejores métricas con el conjunto de prueba
     def _test_best_features_model_performance(self):
-        best_features_predictions_proba = {}
-
         for pattern in ml_parameters.patterns_list:
             pattern_test_labels = self.test_set_labels[pattern]
             # Realizar predicciones en el conjunto de prueba
             predictions = self.best_features_classifiers[pattern].predict(self.test_set_values)
-            pattern_best_features_predictions_proba = self.best_features_classifiers[pattern].predict_proba(self.test_set_values)
-            
-            best_features_predictions_proba[pattern] = pattern_best_features_predictions_proba
-            
+            pattern_best_features_predictions_proba = self.best_features_predictions_proba[pattern]
             # # Mostrar las medidas de rendimiento
             print(f"\nMétricas seleccionadas para {pattern}: {len(self.best_features[pattern])}\n{self.best_features[pattern]}")
             print("\nRendimiento del modelo mejorado con el conjunto de prueba")
@@ -202,8 +191,6 @@ class OneVsRestModel(BaseMLModel):
                     if pattern_test_labels_list[i] == True:
                         print(f"\nModelo mejorado --> No cumple el patrón en un {round(pattern_best_features_predictions_proba[i][0]*100, 3)}%")
                         print(f"Instancia {i+1}: {pattern_test_labels_list[i]}")
-
-        return best_features_predictions_proba
     
     # Imprimir los porcentajes de predicción de los primeros registros del conjunto de prueba
     def _show_first_test_predictions(self, test_results_num=ml_parameters.test_results_num):
@@ -221,13 +208,6 @@ class OneVsRestModel(BaseMLModel):
                     print(f"Modelo mejorado --> Cumple el patrón en un {round(self.best_features_predictions_proba[pattern][i][1]*100, 3)}%")
                 else:
                     print(f"Modelo mejorado --> No cumple el patrón en un {round(self.best_features_predictions_proba[pattern][i][0]*100, 3)}%")
-
-    def show_model_evaluation(self, test_results_num=ml_parameters.test_results_num):
-        # Evaluar el rendimiento del modelo
-        self._evaluate_model_performance()
-        self._evaluate_best_features_model_performance()
-        # Imprimir los porcentajes de predicción de los primeros registros del conjunto de prueba
-        self._show_first_test_predictions(test_results_num)
 
     # Realizar predicción a partir de datos externos
     def get_prediction(self):

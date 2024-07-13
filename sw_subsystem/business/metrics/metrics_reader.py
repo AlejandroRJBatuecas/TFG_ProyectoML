@@ -104,7 +104,7 @@ def get_sqg_instructions_count(gate_name, metrics):
         metrics[m_NoOtherSG] += 1
 
 # Single Qubit Gates
-def get_sqg_instructions(gate_name, current_qubit_timeline, circuit_timeline, metrics, qargs, qubits_measured):
+def get_sqg_instructions(circuit, gate_name, current_qubit_timeline, circuit_timeline, metrics, qargs, qubits_measured):
     if gate_name == 'measure': # Medición
         # Para la puerta measure, se establece la máxima línea temporal a todos los qubits,
         # # ya que la medición se utiliza un momento temporal para cada qubit
@@ -128,7 +128,7 @@ def get_sqg_instructions(gate_name, current_qubit_timeline, circuit_timeline, me
         get_sqg_instructions_count(gate_name, metrics)
 
 # Conteo de puertas simples específicas
-def get_sqg_instructions_count(gate_name, metrics, qargs, qubits_in_toffoli, qubits_in_toffoli_count, qubits_in_cnot, qubits_in_cnot_count):
+def get_mqg_instructions_count(gate_name, metrics, qargs, qubits_in_toffoli, qubits_in_toffoli_count, qubits_in_cnot, qubits_in_cnot_count):
     if gate_name == 'ccx': # Toffoli
         metrics['m.NoToff'] += 1
         for qubit in qargs:
@@ -153,13 +153,13 @@ def get_mqg_instructions(gate_name, metrics, qargs, qubits_in_toffoli, qubits_in
             metrics['Controlled Gates Count'][controlled_gate] += 1
 
         # Conteo de puertas específicas
-        get_sqg_instructions_count(gate_name, metrics, qargs, qubits_in_toffoli, qubits_in_toffoli_count, qubits_in_cnot, qubits_in_cnot_count)
+        get_mqg_instructions_count(gate_name, metrics, qargs, qubits_in_toffoli, qubits_in_toffoli_count, qubits_in_cnot, qubits_in_cnot_count)
     else: # Resto de puertas múltiples
         if gate_name == 'swap': # SWAP
             metrics['m.NoSWAP'] += 1
 
 # Cálculo de las métricas de densidad y superposición
-def calculate_density_and_superposition_metrics(metrics, circuit_timeline, qubit_in_superposition_state):
+def calculate_density_and_superposition_metrics(circuit, metrics, circuit_timeline, qubit_in_superposition_state):
     # Obtener las densidades del circuito
     metrics['m.MaxDens'] = max(circuit_timeline.values())
     metrics['m.AvgDens'] = round(sum(circuit_timeline.values()) / len(circuit_timeline.keys()), 3)
@@ -170,7 +170,7 @@ def calculate_density_and_superposition_metrics(metrics, circuit_timeline, qubit
     metrics['m.%SpposQ'] = round(sum(qubit_in_superposition_state) / circuit.num_qubits, 3)
 
 # Cálculo del resto de las métricas
-def calculate_the_rest_metrics(metrics, qubits_in_cnot, qubits_in_cnot_count, qubits_in_toffoli, qubits_in_toffoli_count, qubits_measured):
+def calculate_the_rest_metrics(circuit, metrics, qubits_in_cnot, qubits_in_cnot_count, qubits_in_toffoli, qubits_in_toffoli_count, qubits_measured):
     # Calcular TNoSQG = TNo-P + NoH + NoOtherSG
     metrics[m_TNoSQG] = metrics[m_TNoP] + metrics[m_NoH] + metrics[m_NoOtherSG]
 
@@ -237,7 +237,7 @@ def analyze_circuit(circuit):
         # Single Qubit Gates
         if len(qargs) == 1:
             # Realizar el conteo de las instrucciones con puertas simples
-            get_sqg_instructions(gate_name, current_qubit_timeline, circuit_timeline, metrics, qargs, qubits_measured)
+            get_sqg_instructions(circuit, gate_name, current_qubit_timeline, circuit_timeline, metrics, qargs, qubits_measured)
         # Multiple Qubit Gates
         else:
             # Establecer la máxima línea temporal a los qubits implicados
@@ -246,10 +246,10 @@ def analyze_circuit(circuit):
             get_mqg_instructions(gate_name, metrics, qargs, qubits_in_toffoli, qubits_in_toffoli_count, qubits_in_cnot, qubits_in_cnot_count)
 
     # Cálculo de las métricas de densidad y superposición
-    calculate_density_and_superposition_metrics(metrics, circuit_timeline, qubit_in_superposition_state)
+    calculate_density_and_superposition_metrics(circuit, metrics, circuit_timeline, qubit_in_superposition_state)
 
     # Cálculo del resto de las métricas
-    calculate_the_rest_metrics(metrics, qubits_in_cnot, qubits_in_cnot_count, qubits_in_toffoli, qubits_in_toffoli_count, qubits_measured)
+    calculate_the_rest_metrics(circuit, metrics, qubits_in_cnot, qubits_in_cnot_count, qubits_in_toffoli, qubits_in_toffoli_count, qubits_measured)
 
     return metrics
 
