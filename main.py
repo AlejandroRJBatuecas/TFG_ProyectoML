@@ -24,14 +24,14 @@ def get_or_create_model():
 
     return model
 
-def main():    
+def prediction():    
     get_metrics(filename, ml_parameters.test_data_filename)
     model = get_or_create_model()
     model.get_prediction()
 
-def show_model_evaluation():
+def model_evaluation():
     model = get_or_create_model()
     model.show_model_evaluation()
 
 if __name__ == "__main__":
-    show_model_evaluation()
+    prediction()
