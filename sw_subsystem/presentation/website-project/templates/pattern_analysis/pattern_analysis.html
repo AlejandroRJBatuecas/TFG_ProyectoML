@@ -5,10 +5,30 @@
 {% block content %}
     <div class="container-fluid text-center p-3">
         <div class="row justify-content-center text-center">
-            <div class="col-10">
+            <div class="col-12">
                 <h1 class="display-3">Análisis de patrones</h1>
                 <hr/>
             </div>
+        </div>
+        <div class="row justify-content-center mt-3">
+            <div class="col-12 d-grid p-1">
+                <p>Puedes importar un fichero JSON con las métricas, un fichero de código qiskit para analizar o insertar las métricas manualmente</p>
+            </div>
+        </div>
+        <div class="row justify-content-around mt-3">
+            <div class="col-8 col-md-5 d-grid p-1">
+                <button type="button" class="btn btn-primary">Importar JSON de métricas</button>
+            </div>
+            <div class="col-8 col-md-5 d-grid p-1">
+                <button type="button" class="btn btn-primary">Importar fichero de código</button>
+            </div>
+            <!-- <div class="col-12 col-md-6 d-grid p-2">
+                <input class="form-control" type="file" id="formFile">
+                <button type="button" class="btn btn-primary">Importar fichero</button>
+            </div> -->
+        </div>
+        <div class="row justify-content-center mt-3" id="metrics-form">
+            <!-- Contenedor de los formularios de métricas -->
         </div>
     </div>
 {% endblock %}
