@@ -3,18 +3,24 @@ import numpy as np
 
 from config import ml_parameters
 from .ml_utils import show_data_structure, get_correlation_matrix
+from abc import ABC, abstractmethod
 from pathlib import Path
 from sklearn.model_selection import train_test_split
 
-class BaseMLModel:
-    def __init__(self, param_grid, data_filename=ml_parameters.data_filename, test_size=ml_parameters.test_set_size):
-        # Inicialización de parámetros
-        self.param_grid = param_grid
+class BaseMLModel(ABC):
+    def __init__(self, data_filename=ml_parameters.data_filename, test_size=ml_parameters.test_set_size):
+        # Definir el modelo de ML utilizado y los parámetros para la búsqueda de hiperparámetros
+        self.model, self.param_grid = self._init_model()
         # Leer el csv con los datos de entrenamiento
         self.data = pd.read_csv(Path(data_filename), delimiter=";")
         self.test_size = test_size
         self.data_values, self.data_labels = self._prepare_data()
         self.train_set_values, self.test_set_values, self.train_set_labels, self.test_set_labels = self._get_datasets()
+
+    # Definir el modelo de ML utilizado y los parámetros para la búsqueda de hiperparámetros
+    @abstractmethod
+    def _init_model(self):
+        pass
 
     # Realizar el preprocesamiento de los datos
     def _prepare_data(self):
@@ -47,36 +53,44 @@ class BaseMLModel:
         return train_set_values, test_set_values, train_set_labels, test_set_labels
     
     # Definir las pipelines
+    @abstractmethod
     def _create_pipelines(self):
-        raise NotImplementedError
+        pass
 
     # Obtener los clasificadores con los mejores hiperparámetros
+    @abstractmethod
     def _get_classifiers(self):
-        raise NotImplementedError
+        pass
     
     # Obtener la importancia de las caracteristicas
+    @abstractmethod
     def _get_feature_importance(self):
-        raise NotImplementedError
+        pass
     
     # Evaluar el rendimiento del modelo
+    @abstractmethod
     def _evaluate_model_performance(self):
-        raise NotImplementedError
+        pass
     
     # Evaluar el rendimiento del modelo con las mejores métricas
+    @abstractmethod
     def _evaluate_best_features_model_performance(self):
-        raise NotImplementedError
+        pass
     
     # Evaluar el rendimiento del modelo con el conjunto de prueba
+    @abstractmethod
     def _test_model_performance(self):
-        raise NotImplementedError
+        pass
     
     # Evaluar el rendimiento del modelo con mejores métricas con el conjunto de prueba
+    @abstractmethod
     def _test_best_features_model_performance(self):
-        raise NotImplementedError
+        pass
     
     # Imprimir los porcentajes de predicción de los primeros registros del conjunto de prueba
+    @abstractmethod
     def _show_first_test_predictions(self, test_results_num=ml_parameters.test_results_num):
-        raise NotImplementedError
+        pass
     
     # Mostrar los valores de rendimiento de todos los modelos
     def show_model_evaluation(self, test_results_num=ml_parameters.test_results_num):
@@ -90,5 +104,6 @@ class BaseMLModel:
         self._show_first_test_predictions(test_results_num)
     
     # Realizar predicción a partir de datos externos
+    @abstractmethod
     def get_prediction(self):
-        raise NotImplementedError
+        pass

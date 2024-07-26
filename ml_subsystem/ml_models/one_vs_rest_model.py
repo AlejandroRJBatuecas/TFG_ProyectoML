@@ -14,10 +14,9 @@ from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from sklearn.calibration import cross_val_predict
 
 class OneVsRestModel(BaseMLModel):
-    def __init__(self, model, param_grid, data_filename=ml_parameters.data_filename, test_size=ml_parameters.test_set_size):
-        # Inicialización de parámetros
-        self.model = model
-        super().__init__(param_grid, data_filename, test_size)
+    def __init__(self, data_filename=ml_parameters.data_filename, test_size=ml_parameters.test_set_size):
+        # Inicialización de parámetros heredados
+        super().__init__(data_filename, test_size)
         self.pipelines, self.best_features_pipelines = self._create_pipelines()
         self.classifiers, self.best_features_classifiers = self._get_classifiers()
         self.best_features = self._get_feature_importance()
@@ -234,16 +233,34 @@ class OneVsRestModel(BaseMLModel):
 
 class KNNOvsRClassifierModel(OneVsRestModel):
     def __init__(self, data_filename=ml_parameters.data_filename, test_size=ml_parameters.test_set_size):
-        # Definir la cuadrícula de hiperparámetros a buscar
+        super().__init__(data_filename, test_size)
+
+    def _init_model(self):
+        # Modelo de ML a utilizar
+        model = KNeighborsClassifier(n_neighbors=5) # Inicializado con el valor por defecto
+        
+        # Cuadrícula de hiperparámetros a buscar
         param_grid = {
             'classifier__n_neighbors': [1, 3, 5, 7, 9], # Mejor valores impares para evitar empates
             'classifier__weights': ['uniform', 'distance']
         }
-        model = KNeighborsClassifier(n_neighbors=5) # Inicializado con el valor por defecto
-        super().__init__(model, param_grid, data_filename, test_size)
+
+        return model, param_grid
 
 class RandomForestClassifierModel(OneVsRestModel):
     def __init__(self, data_filename=ml_parameters.data_filename, test_size=ml_parameters.test_set_size):
+        super().__init__(data_filename, test_size)
+
+    def _init_model(self):
+        model = RandomForestClassifier(
+            n_estimators=100,
+            max_depth=None,
+            min_samples_split=2,
+            min_samples_leaf=1,
+            max_features='sqrt',
+            random_state=ml_parameters.random_state_value
+        ) # Inicializado con los valores por defecto
+
         # Parámetros para la búsqueda aleatoria de hiperparámetros
         param_grid = {
             'classifier__n_estimators': np.linspace(100, 3000, 10, dtype=int),
@@ -254,15 +271,8 @@ class RandomForestClassifierModel(OneVsRestModel):
             'classifier__criterion': ['gini', 'entropy', 'log_loss'],
             'classifier__bootstrap': [True, False]
         }
-        model = RandomForestClassifier(
-            n_estimators=100,
-            max_depth=None,
-            min_samples_split=2,
-            min_samples_leaf=1,
-            max_features='sqrt',
-            random_state=ml_parameters.random_state_value
-        ) # Inicializado con los valores por defecto
-        super().__init__(model, param_grid, data_filename, test_size)
+
+        return model, param_grid
 
     # Obtener los clasificadores con los mejores hiperparámetros
     def _get_classifiers(self):

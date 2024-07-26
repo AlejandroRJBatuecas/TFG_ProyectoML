@@ -14,10 +14,9 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.calibration import cross_val_predict
 
 class MultilabelLearningModel(BaseMLModel):
-    def __init__(self, model, param_grid, data_filename=ml_parameters.data_filename, test_size=ml_parameters.test_set_size):
-        # Inicialización de parámetros
-        self.model = model
-        super().__init__(param_grid, data_filename, test_size)
+    def __init__(self, data_filename=ml_parameters.data_filename, test_size=ml_parameters.test_set_size):
+        # Inicialización de parámetros heredados
+        super().__init__(data_filename, test_size)
         # Transponer las listas colocando los datos en columnas para cada patrón
         self.train_set_labels_np_matrix = np.c_[tuple(self.train_set_labels[pattern] for pattern in ml_parameters.patterns_list)]
         # Transponer las listas colocando los datos en columnas para cada patrón
@@ -201,10 +200,16 @@ class MultilabelLearningModel(BaseMLModel):
 
 class KNNClassifierModel(MultilabelLearningModel):
     def __init__(self, data_filename=ml_parameters.data_filename, test_size=ml_parameters.test_set_size):
-        # Definir la cuadrícula de hiperparámetros a buscar
+        super().__init__(data_filename, test_size)
+
+    def _init_model(self):
+        # Modelo de ML a utilizar
+        model = KNeighborsClassifier(n_neighbors=5) # Inicializado con el valor por defecto
+        
+        # Cuadrícula de hiperparámetros a buscar
         param_grid = {
             'classifier__n_neighbors': [1, 3, 5, 7, 9], # Mejor valores impares para evitar empates
             'classifier__weights': ['uniform', 'distance']
         }
-        model = KNeighborsClassifier(n_neighbors=5) # Inicializado con el valor por defecto
-        super().__init__(model, param_grid, data_filename, test_size)
+
+        return model, param_grid

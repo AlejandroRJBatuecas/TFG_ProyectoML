@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import tkinter as tk
+
 from pathlib import Path
 
 # Crear carpeta de imágenes

@@ -4,11 +4,7 @@ import joblib
 import os
 
 from .utils import save_fig
-from sklearn.metrics import accuracy_score, balanced_accuracy_score, precision_score, recall_score, f1_score, classification_report, confusion_matrix, multilabel_confusion_matrix
-from sklearn.feature_selection import SelectKBest, mutual_info_regression, SequentialFeatureSelector, RFE
-from sklearn.linear_model import LinearRegression, LassoCV
-from sklearn.preprocessing import StandardScaler
-from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, classification_report, confusion_matrix, multilabel_confusion_matrix
 
 # Mostrar la estructura de los datos
 def show_data_structure(data, data_values, data_labels, train_set_values, test_set_values, train_set_labels, test_set_labels):
