@@ -211,7 +211,7 @@ class OneVsRestModel(BaseMLModel):
     # Realizar predicción a partir de datos externos
     def get_prediction(self):
         # Obtener los datos a predecir
-        test_data = pd.read_csv(Path(ml_parameters.test_data_filename), delimiter=";")
+        test_data = pd.read_json(Path(ml_parameters.test_data_filename))
 
         for pattern in ml_parameters.patterns_list:
             # Obtener predicciones y probabilidades de los datos de prueba con el modelo entrenado

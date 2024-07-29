@@ -5,8 +5,8 @@ Fichero de configuración que contiene las variables de configuración de los mo
 # Parámetros generales para los modelos de ML
 data_filename = "ml_subsystem/datasets/dataset_openqasm_qiskit.csv"
 """ Ruta de almacenamiento del dataset """
-test_data_filename = "ml_subsystem/datasets/file_metrics.csv"
-""" Ruta de almacenamiento del csv con las métricas del fichero a analizar """
+test_data_filename = "ml_subsystem/datasets/file_metrics.json"
+""" Ruta de almacenamiento del json con las métricas del fichero a analizar """
 test_set_size = 0.3 # 70% de datos para el conjunto de entrenamiento y 30% para el conjunto de prueba
 """ Porcentaje de datos utilizados para el conjunto de prueba """
 random_state_value = 42

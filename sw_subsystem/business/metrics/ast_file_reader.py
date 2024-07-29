@@ -1,12 +1,9 @@
 import ast
 import json
-from .metrics_reader import analyze_circuit, draw_circuit, get_metrics_csv
-from qiskit.circuit import QuantumCircuit, QuantumRegister, ClassicalRegister, Qubit, Clbit, Instruction
 
-def read_file(filename):
-    with open(filename, 'r') as file:
-        content = file.read()
-    return content
+from .metrics_analyzer import MetricsAnalyzer
+from config import ml_parameters
+from qiskit.circuit import QuantumCircuit, QuantumRegister, ClassicalRegister, Qubit, Clbit, Instruction
 
 class QiskitAnalyzer(ast.NodeVisitor):
     def __init__(self):
@@ -151,55 +148,59 @@ class QiskitAnalyzer(ast.NodeVisitor):
 
         self.generic_visit(node)
 
-def analyze_code(code):
-    tree = ast.parse(code)
-    print(ast.dump(tree, indent=4)) # Muestra el código en forma de árbol para debug
-    visitor = QiskitAnalyzer()
-    visitor.visit(tree)
-    return visitor.qiskit_imports, visitor.circuits, visitor.registers, visitor.code_vars
+class ASTFileReader:
+    def __init__(self, filename: str):
+        self.filename = filename
 
-def count_instructions(instructions):
-    counting = {}
-    for circuit, instruction in instructions:
-        if circuit not in counting:
-            counting[circuit] = {}
-        if instruction not in counting[circuit]:
-            counting[circuit][instruction] = 0
-        counting[circuit][instruction] += 1
-    return counting
+        # Leer el fichero para obtener el código
+        self.code = self._read_file()
 
-def get_metrics(filename, test_data_filename):
-    code = read_file(filename)
-    qiskit_imports, circuits, registers, code_vars = analyze_code(code)
-    print("\n--- MÉTRICAS ---")
-    if qiskit_imports:
-        print("Importaciones:", qiskit_imports)
-        print("Circuitos:", circuits)
-        print("Registros:", registers)
-        print("Variables:", code_vars)
-        results = []
-        for circuit_name, circuit in circuits.items():
-            print("\n--- CIRCUITO", circuit_name, "---")
-            print(circuit.data)
+        # Obtener el analizador de qiskit, para obtener todas las variables
+        self.qiskit_analyzer = self._analyze_code()
+
+        # Obtener las circuitos y sus métricas
+        self.circuits_list = self.get_metrics()
+
+        # Obtener el json con las métricas
+        self._get_metrics_json()
+
+    def _read_file(self):
+        with open(self.filename, 'r') as file:
+            content = file.read()
+
+        return content
+
+    def _analyze_code(self):
+        tree = ast.parse(self.code)
+        print(ast.dump(tree, indent=4)) # Muestra el código en forma de árbol para debug
+        visitor = QiskitAnalyzer()
+        visitor.visit(tree)
+
+        return visitor
+
+    def _get_metrics_json(self):
+        # Guardar los circuitos en un archivo JSON
+        with open(ml_parameters.test_data_filename, 'w') as json_file:
+            json.dump(self.circuits_list, json_file, indent=4)
+
+    def get_metrics(self):
+        circuits_list = []
+
+        if self.qiskit_analyzer.qiskit_imports:
+            print("\n--- MÉTRICAS ---")
+            print("Importaciones:", self.qiskit_analyzer.qiskit_imports)
+            print("Circuitos:", self.qiskit_analyzer.circuits)
+            print("Registros:", self.qiskit_analyzer.registers)
+            print("Variables:", self.qiskit_analyzer.code_vars)
             
-            # Analizar el circuito
-            circuit_results = analyze_circuit(circuit)
-            results.append(circuit_results)
+            for circuit_name, circuit in self.qiskit_analyzer.circuits.items():
+                print("\n--- CIRCUITO", circuit_name, "---")
+                print(circuit.data)
+                
+                # Analizar el circuito y añadirlo a la lista
+                metrics_analyzer = MetricsAnalyzer(circuit, draw_circuit=True)
+                circuits_list.append(metrics_analyzer.simplified_circuit)
+        else:
+            print("No hay importaciones de qiskit")
 
-            # Exportar los resultados a JSON
-            results_json = json.dumps(results, indent=4)
-            print(f"\n{results_json}")
-
-            # Dibujar el circuito
-            draw_circuit(circuit)
-
-        # Obtener el csv con las métricas
-        get_metrics_csv(results, test_data_filename)
-    else:
-        print("No hay importaciones de qiskit")
-
-# Ejemplo de uso
-if __name__ == "__main__":
-    filename = "../test_code_files/grover.py"
-    test_data_filename = "../datasets/file_metrics.csv"
-    get_metrics(filename, test_data_filename)
+        return circuits_list

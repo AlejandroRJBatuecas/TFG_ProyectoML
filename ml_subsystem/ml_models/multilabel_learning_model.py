@@ -179,7 +179,7 @@ class MultilabelLearningModel(BaseMLModel):
     # Realizar predicción a partir de datos externos
     def get_prediction(self):
         # Obtener los datos a predecir
-        test_data = pd.read_csv(Path(ml_parameters.test_data_filename), delimiter=";")
+        test_data = pd.read_json(Path(ml_parameters.test_data_filename))
         # Obtener predicciones y probabilidades de los datos de prueba con el modelo entrenado
         predictions_proba = self.classifier.predict_proba(test_data)
         # Realizar predicciones con los datos de prueba
