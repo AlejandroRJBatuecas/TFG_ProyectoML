@@ -74,18 +74,18 @@ class MetricsAnalyzer:
     def _get_sqg_instructions_count(self, gate_name):
         # Conteo de puertas específicas
         if gate_name == 'x': # Pauli-X
-            self.metrics['Single Qubit Gates']['m.NoP-X'] += 1
-            self.metrics['Single Qubit Gates'][metrics_definition.m_TNoP] += 1
+            self.metrics[metrics_definition.single_qubit_gates]['m.NoP-X'] += 1
+            self.metrics[metrics_definition.single_qubit_gates][metrics_definition.m_TNoP] += 1
         elif gate_name == 'y': # Pauli-Y
-            self.metrics['Single Qubit Gates']['m.NoP-Y'] += 1
-            self.metrics['Single Qubit Gates'][metrics_definition.m_TNoP] += 1
+            self.metrics[metrics_definition.single_qubit_gates]['m.NoP-Y'] += 1
+            self.metrics[metrics_definition.single_qubit_gates][metrics_definition.m_TNoP] += 1
         elif gate_name == 'z': # Pauli-Z
-            self.metrics['Single Qubit Gates']['m.NoP-Z'] += 1
-            self.metrics['Single Qubit Gates'][metrics_definition.m_TNoP] += 1
+            self.metrics[metrics_definition.single_qubit_gates]['m.NoP-Z'] += 1
+            self.metrics[metrics_definition.single_qubit_gates][metrics_definition.m_TNoP] += 1
         elif gate_name == 'h': # Hadamard
-            self.metrics['Single Qubit Gates'][metrics_definition.m_NoH] += 1
+            self.metrics[metrics_definition.single_qubit_gates][metrics_definition.m_NoH] += 1
         else: # Resto de puertas simples
-            self.metrics['Single Qubit Gates'][metrics_definition.m_NoOtherSG] += 1
+            self.metrics[metrics_definition.single_qubit_gates][metrics_definition.m_NoOtherSG] += 1
 
     # Single Qubit Gates
     def _get_sqg_instructions(self, qargs, gate_name):
@@ -94,7 +94,7 @@ class MetricsAnalyzer:
             # # ya que la medición se utiliza un momento temporal para cada qubit
             self._set_maximum_time(self.circuit.qubits)
             # Contabilizar puerta y qubits medidos
-            self.metrics['Single Qubit Gates'][metrics_definition.m_NoOtherSG] += 1
+            self.metrics[metrics_definition.single_qubit_gates][metrics_definition.m_NoOtherSG] += 1
             self.metrics['Measurement Gates']['m.NoM'] += 1
             for qubit in qargs:
                 self.qubits_measured.add(qubit._index)
@@ -114,14 +114,14 @@ class MetricsAnalyzer:
     # Conteo de puertas simples específicas
     def _get_mqg_instructions_count(self, qargs, gate_name):
         if gate_name == 'ccx': # Toffoli
-            self.metrics['Multiple Qubit Gates']['m.NoToff'] += 1
+            self.metrics[metrics_definition.multiple_qubit_gates]['m.NoToff'] += 1
             for qubit in qargs:
                 self.qubits_in_toffoli.add(qubit._index)
                 self.qubits_in_toffoli_count[qubit._index] += 1
         else: # Puertas simples controladas
-            self.metrics['Single Qubit Gates']['m.TNoCSQG'] += 1
+            self.metrics[metrics_definition.single_qubit_gates]['m.TNoCSQG'] += 1
             if gate_name == 'cx': # CNOT
-                self.metrics['Multiple Qubit Gates']['m.NoCNOT'] += 1
+                self.metrics[metrics_definition.multiple_qubit_gates]['m.NoCNOT'] += 1
                 for qubit in qargs:
                     self.qubits_in_cnot.add(qubit._index)
                     self.qubits_in_cnot_count[qubit._index] += 1
@@ -130,7 +130,7 @@ class MetricsAnalyzer:
     def _get_mqg_instructions(self, qargs, gate_name):
         if 'c' in gate_name: # Puertas controladas
             controlled_gate = gate_name.lstrip('c')
-            self.metrics['All Gates']['m.NoCGates'] += 1
+            self.metrics[metrics_definition.all_gates]['m.NoCGates'] += 1
 
             # Si se quiere almacenar un conteo individual de las puertas controladas
             if 'Controlled Gates Count' in self.metrics:
@@ -140,7 +140,7 @@ class MetricsAnalyzer:
             self._get_mqg_instructions_count(qargs, gate_name)
         else: # Resto de puertas múltiples
             if gate_name == 'swap': # SWAP
-                self.metrics['Multiple Qubit Gates']['m.NoSWAP'] += 1
+                self.metrics[metrics_definition.multiple_qubit_gates]['m.NoSWAP'] += 1
 
     # Cálculo de las métricas de densidad y superposición
     def _calculate_density_and_superposition_metrics(self):
@@ -151,33 +151,33 @@ class MetricsAnalyzer:
         # Calcular %SpposQ = No Qubits con la primera puerta H / Total Qubits
         # # Ponemos los qubits a 0 si hay alguno en False (es decir, que no se le ha aplicado ninguna instrucción)
         self.qubit_in_superposition_state[:] = [0 if qubit is False else qubit for qubit in self.qubit_in_superposition_state]
-        self.metrics['Single Qubit Gates']['m.%SpposQ'] = round(sum(self.qubit_in_superposition_state) / self.circuit.num_qubits, 3)
+        self.metrics[metrics_definition.single_qubit_gates]['m.%SpposQ'] = round(sum(self.qubit_in_superposition_state) / self.circuit.num_qubits, 3)
 
     # Cálculo del resto de las métricas
     def _calculate_the_rest_metrics(self):
         # Calcular TNoSQG = TNo-P + NoH + NoOtherSG
-        self.metrics['Single Qubit Gates'][metrics_definition.m_TNoSQG] = self.metrics['Single Qubit Gates'][metrics_definition.m_TNoP] + self.metrics['Single Qubit Gates'][metrics_definition.m_NoH] + self.metrics['Single Qubit Gates'][metrics_definition.m_NoOtherSG]
+        self.metrics[metrics_definition.single_qubit_gates][metrics_definition.m_TNoSQG] = self.metrics[metrics_definition.single_qubit_gates][metrics_definition.m_TNoP] + self.metrics[metrics_definition.single_qubit_gates][metrics_definition.m_NoH] + self.metrics[metrics_definition.single_qubit_gates][metrics_definition.m_NoOtherSG]
 
         # Calcular %QInCNOT = Nº qubits afectados / Total Qubits
-        self.metrics['Multiple Qubit Gates']['m.%QInCNOT'] = round(len(self.qubits_in_cnot) / self.circuit.num_qubits, 3)
+        self.metrics[metrics_definition.multiple_qubit_gates]['m.%QInCNOT'] = round(len(self.qubits_in_cnot) / self.circuit.num_qubits, 3)
 
         # Calcular AvgCNOT = Sum(CNOT en cada qubit) / Total Qubits
-        self.metrics['Multiple Qubit Gates']['m.AvgCNOT'] = round(sum(self.qubits_in_cnot_count) / self.circuit.num_qubits, 3)
+        self.metrics[metrics_definition.multiple_qubit_gates]['m.AvgCNOT'] = round(sum(self.qubits_in_cnot_count) / self.circuit.num_qubits, 3)
 
         # Calcular MaxCNOT
-        self.metrics['Multiple Qubit Gates']['m.MaxCNOT'] = max(self.qubits_in_cnot_count)
+        self.metrics[metrics_definition.multiple_qubit_gates]['m.MaxCNOT'] = max(self.qubits_in_cnot_count)
 
         # Calcular %QInToff = Nº qubits afectados / Total Qubits
-        self.metrics['Multiple Qubit Gates']['m.%QInToff'] = round(len(self.qubits_in_toffoli) / self.circuit.num_qubits, 3)
+        self.metrics[metrics_definition.multiple_qubit_gates]['m.%QInToff'] = round(len(self.qubits_in_toffoli) / self.circuit.num_qubits, 3)
 
         # Calcular AvgToff = Sum(Toffoli en cada qubit) / Total Qubits
-        self.metrics['Multiple Qubit Gates']['m.AvgToff'] = round(sum(self.qubits_in_toffoli_count) / self.circuit.num_qubits, 3)
+        self.metrics[metrics_definition.multiple_qubit_gates]['m.AvgToff'] = round(sum(self.qubits_in_toffoli_count) / self.circuit.num_qubits, 3)
 
         # Calcular MaxToff
-        self.metrics['Multiple Qubit Gates']['m.MaxToff'] = max(self.qubits_in_toffoli_count)
+        self.metrics[metrics_definition.multiple_qubit_gates]['m.MaxToff'] = max(self.qubits_in_toffoli_count)
 
         # Calcular %SGates = Total de puertas simples (TNoSQG) / Total de puertas (NoGates)
-        self.metrics['All Gates']['m.%SGates'] = round(self.metrics['Single Qubit Gates'][metrics_definition.m_TNoSQG] / self.metrics['All Gates'][metrics_definition.m_NoGates], 3)
+        self.metrics[metrics_definition.all_gates]['m.%SGates'] = round(self.metrics[metrics_definition.single_qubit_gates][metrics_definition.m_TNoSQG] / self.metrics[metrics_definition.all_gates][metrics_definition.m_NoGates], 3)
 
         # Calcular %QM = Nº qubits medidos / Total Qubits
         self.metrics['Measurement Gates']['m.%QM'] = round(len(self.qubits_measured) / self.circuit.num_qubits, 3)
@@ -200,7 +200,7 @@ class MetricsAnalyzer:
             self._get_qubit_instruction_count(qargs, gate_name)
 
             # Añadir la puerta al conteo de puertas y al conteo específico de puertas
-            self.metrics['All Gates'][metrics_definition.m_NoGates] += 1
+            self.metrics[metrics_definition.all_gates][metrics_definition.m_NoGates] += 1
             self.gate_count_dict[gate_name] += 1
 
             # Single Qubit Gates

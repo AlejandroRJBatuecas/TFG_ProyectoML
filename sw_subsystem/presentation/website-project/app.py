@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, render_template
-from sw_subsystem.business.metrics import define_metrics
+from config import metrics_definition
 
 app = Flask(__name__)
 app.json.sort_keys = False
@@ -14,14 +14,9 @@ def inject_global_vars():
 def index():
     return render_template('index.html')
 
-@app.route('/obtener_metricas')
-def obtain_metrics():
-    metrics = define_metrics()
-    return jsonify(metrics)
-
 @app.route('/analisis_patrones')
 def pattern_analysis():
-    metrics = define_metrics()
+    metrics = metrics_definition
     return render_template('/pattern_analysis/pattern_analysis.html', metrics=metrics)
 
 @app.route('/modelos_ml')

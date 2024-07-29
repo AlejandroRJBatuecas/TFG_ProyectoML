@@ -1,5 +1,5 @@
-var metrics_json = null;
-var circuit_count = 1;
+let metrics_json = null;
+let circuit_count = 1;
 
 // Función para generar el formulario dinámicamente
 function generateForm(metrics_json) {

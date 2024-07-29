@@ -3,6 +3,12 @@ Fichero de definición del diccionario de las métricas de circuitos cúanticos
 """
 
 # Constantes para el análisis de métricas
+single_qubit_gates = 'Single Qubit Gates'
+""" Categoría que agrupa las métricas de puertas simples """
+multiple_qubit_gates = 'Multiple Qubit Gates'
+""" Categoría que agrupa las métricas de puertas múltiples """
+all_gates = 'All Gates'
+""" Categoría que agrupa las métricas de todas las puertas """
 m_TNoP = 'm.TNo-P'
 """ Número total de puertas Pauli-X """
 m_NoH = 'm.NoH'
