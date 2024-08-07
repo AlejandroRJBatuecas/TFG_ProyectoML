@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, render_template
-from config import metrics_definition
+from config import metrics_definition, ml_trained_model_paths
 
 app = Flask(__name__)
 app.json.sort_keys = False
@@ -21,7 +21,8 @@ def obtain_metrics():
 @app.route('/analisis_patrones')
 def pattern_analysis():
     circuit_metrics = metrics_definition.circuit_metrics
-    return render_template('/pattern_analysis/pattern_analysis.html', circuit_metrics=circuit_metrics)
+    trained_models = ml_trained_model_paths.trained_models
+    return render_template('/pattern_analysis/pattern_analysis.html', circuit_metrics=circuit_metrics, trained_models=trained_models)
 
 @app.route('/modelos_ml')
 def ml_models():
