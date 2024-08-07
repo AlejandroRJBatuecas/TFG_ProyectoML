@@ -14,10 +14,14 @@ def inject_global_vars():
 def index():
     return render_template('index.html')
 
+@app.route('/obtener_metricas')
+def obtain_metrics():
+    return jsonify(metrics_definition.circuit_metrics)
+
 @app.route('/analisis_patrones')
 def pattern_analysis():
-    metrics = metrics_definition
-    return render_template('/pattern_analysis/pattern_analysis.html', metrics=metrics)
+    circuit_metrics = metrics_definition.circuit_metrics
+    return render_template('/pattern_analysis/pattern_analysis.html', circuit_metrics=circuit_metrics)
 
 @app.route('/modelos_ml')
 def ml_models():

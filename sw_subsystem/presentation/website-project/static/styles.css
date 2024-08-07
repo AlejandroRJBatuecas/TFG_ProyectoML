@@ -4,5 +4,13 @@
 }
 
 .div-bg-color {
-    background-color: #d3eff6;
+    background-color: #f4fdff;
+}
+
+.metric-col-height {
+    height: 80px;
+}
+
+.full-height {
+    height: 100%;
 }

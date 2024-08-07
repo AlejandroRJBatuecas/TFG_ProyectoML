@@ -3,28 +3,56 @@
 {% block title %}Análisis de patrones{% endblock %}
 
 {% block content %}
-    <div class="container-fluid text-center p-3">
+    <div class="container-fluid p-3">
         <div class="row justify-content-center text-center">
             <div class="col-12">
                 <h1 class="display-3">Análisis de patrones</h1>
                 <hr/>
             </div>
         </div>
-        <div class="row justify-content-center mt-3">
+        <div class="row justify-content-center">
             <div class="col-12 d-grid p-1">
-                <p>Puedes importar un fichero JSON con las métricas, un fichero de código qiskit para analizar o insertar las métricas manualmente</p>
+                <p class="text-center mb-0">Puedes importar un fichero JSON con las métricas, un fichero de código qiskit para analizar o insertar las métricas manualmente</p>
             </div>
         </div>
-        <div class="row justify-content-around mt-3">
-            <div class="col-8 col-md-5 d-grid p-1">
+        <div class="row justify-content-center mt-3">
+            <div class="col-10 col-md-5 col-xl-4 d-grid p-1">
                 <button type="button" class="btn btn-primary">Importar JSON de métricas</button>
             </div>
-            <div class="col-8 col-md-5 d-grid p-1">
+            <div class="col-10 col-md-5 col-xl-4 d-grid p-1">
                 <button type="button" class="btn btn-primary">Importar fichero de código</button>
             </div>
         </div>
-        <div class="row justify-content-center mt-3" id="metrics-form">
-            <!-- Contenedor de los formularios de métricas -->
+        <!-- Contenedor de los formularios de métricas -->
+        <div class="row justify-content-center mt-3" id="metrics-container">
+            <div class="col-11 div-bg-color border border-dark"> <!-- col-md-11 col-lg-10 col-xl-8 -->
+                <!-- Encabezado de la tabla -->
+                <div class="row justify-content-between align-items-center bg-dark border border-white p-1" id="metrics-header">
+                    <div class="col-12 col-sm-8 col-lg-10 p-1 bg-white text-dark">
+                        <h2 class="text-center mb-0">TABLA DE MÉTRICAS</h2>
+                    </div>
+                    <div class="col-12 col-sm-4 col-lg-2 d-grid p-1">
+                        <button type="button" class="btn btn-success" id="metrics-add-circuit-button">Añadir circuito</button>
+                    </div>
+                </div>
+                <form class="p-0">
+                    <div class="row border-top border-dark" id="metrics-body">
+                        <!-- Columna de categorías y métricas generada por JS -->
+                        <!-- Columnas de los circuitos generados por JS -->
+                    </div>
+                </form>
+                <!-- Footer de la tabla -->
+                <div class="row justify-content-center text-center text-white bg-dark p-2" id="metrics-footer">
+                    <div class="col-12 p-1">
+                        <h5 class="mb-0">Exportar las métricas a un fichero JSON</h5>
+                    </div>
+                    <div class="col-12 col-sm-8 col-md-6 col-lg-4 col-xl-2 p-1 d-grid">
+                        <button type="button" class="btn btn-primary">Exportar métricas</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+    <!-- Script personalizado -->
+    <script src="../static/pattern_analysis.js"></script>
 {% endblock %}
