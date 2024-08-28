@@ -8,7 +8,11 @@ from ml_subsystem.ml_models import KNNClassifierModel, KNNOvsRClassifierModel, R
 app = Flask(__name__)
 app.json.sort_keys = False
 
+# Nombre de la aplicación
 app_name = "QuantumPatternsML"
+
+# Constantes
+pattern_analysis_path = '/pattern_analysis/pattern_analysis.html'
 
 def get_or_create_model(trained_model):
     # Obtener la ruta de almacenamiento del modelo
@@ -43,7 +47,7 @@ def obtain_metrics():
 
 @app.route('/analisis_patrones')
 def pattern_analysis():
-    return render_template('/pattern_analysis/pattern_analysis.html', trained_models=ml_trained_model_paths.trained_models)
+    return render_template(pattern_analysis_path, trained_models=ml_trained_model_paths.trained_models)
 
 @app.route('/predecir', methods=['POST'])
 def predict():
@@ -67,7 +71,7 @@ def predict():
 
     if selected_models_num == 0:
         circuits_list = "No se ha seleccionado ningún modelo"
-        return render_template('/pattern_analysis/pattern_analysis.html', trained_models=ml_trained_model_paths.trained_models, circuits_list=circuits_list)
+        return render_template(pattern_analysis_path, trained_models=ml_trained_model_paths.trained_models, circuits_list=circuits_list)
 
     # Crear los diccionarios de métricas de cada circuito y añadirlos a la lista
     list_index = 0
@@ -78,9 +82,9 @@ def predict():
             metric_name = form_keys[list_index].split("_")[0]
             try:
                 circuit_dict[metric_name] = float(form_values[list_index])
-            except:
+            except (ValueError, TypeError):
                 circuits_list = "Los valores de las métricas deben ser numéricos"
-                return render_template('/pattern_analysis/pattern_analysis.html', trained_models=ml_trained_model_paths.trained_models, circuits_list=circuits_list)
+                return render_template(pattern_analysis_path, trained_models=ml_trained_model_paths.trained_models, circuits_list=circuits_list)
             list_index+=1
 
         # Añadir el diccionario a la lista

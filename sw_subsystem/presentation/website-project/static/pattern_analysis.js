@@ -12,6 +12,7 @@ let circuit_count = 0;
 let circuits = [];
 let metrics_column_count = 0;
 
+/*
 function resizeColumns() {
     const metrics_columns_total = circuit_count + 1; // Número de circuitos 
     const metrics_columns_width = Math.floor(bootstrap_columns_num/metrics_columns_total);
@@ -21,13 +22,12 @@ function resizeColumns() {
     const header_row_children = header_row.children;
     const colClassPattern = /^col-\d+$/;
 
-    for (children of header_row_children) {
+    header_row_children.forEach(function(children) {
         const classList = children.classList;
 
         // Buscar la clase que coincide con el patrón `col-x`
-        for (let i = 0; i < classList.length; i++) {
-            if (colClassPattern.test(classList[i])) {
-                const currentClass = classList[i];
+        for (let currentClass of classList) {
+            if (colClassPattern.test(currentClass)) {
                 console.log(currentClass);
                 // Asegurarse de que el nuevo número de columna esté dentro de un rango válido (por ejemplo, de 1 a 12)
                 if (metrics_columns_width >= 1 && metrics_columns_width <= 12) {
@@ -37,13 +37,14 @@ function resizeColumns() {
                 break;
             }
         }
-    }
+    });
 }
 
 function resizeTable() {
     // Redimensionar columnas
     resizeColumns();
 }
+*/
 
 function eliminateCircuitColumn(event) {
     // Obtener el id del elemento clicado
@@ -85,7 +86,7 @@ function findInsertionPosition() {
     
     // Buscar el índice de la primera posición libre cuya posición anterior esté ocupada, para añadir el circuito en esa posición
     // Restar 1 al final, ya que se ha insertado un true al principio del array auxiliar
-    return extended_circuits.findIndex((_, index) => extended_circuits[index] == false && extended_circuits[index-1] == true) - 1
+    return extended_circuits.findIndex((_, index) => !extended_circuits[index] && extended_circuits[index-1]) - 1
 }
 
 function generateCircuitColumn() {
@@ -292,13 +293,12 @@ formulario.addEventListener('submit', function(event) {
     if (is_valid && checkbox_checked) {
         formulario.submit();
     } else {
-        title_string = "";
-        error_string = "";
+        let title_string = "";
+        let error_string = "";
 
         // Obtener los elementos de texto para mostrar el error
         const error_info_title = document.getElementById('error-info-title');
         const error_info_text = document.getElementById('error-info-text');
-        
 
         if (!checkbox_checked) {
             // Establecer el título y el texto del error
@@ -310,7 +310,7 @@ formulario.addEventListener('submit', function(event) {
 
             // Obtener todos los campos no válidos y añadirlos al mensaje de error
             not_valid_inputs.forEach(function(not_valid_input) {
-                splitted_name = not_valid_input.split("_");
+                const splitted_name = not_valid_input.split("_");
                 // splitted_name[0] contiene el nombre de la métrica y splitted_name[2] contiene el número del circuito
                 error_string += 'Circuito '+splitted_name[2]+' - '+splitted_name[0].replace("m.", "")+'\n'
             });
