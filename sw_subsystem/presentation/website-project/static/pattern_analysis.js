@@ -1,14 +1,16 @@
 const bootstrap_columns_num = 12; // Número máximo de columnas para una fila
 
+// Formulario de la tabla de métricas
+const formulario = document.getElementById('metrics-form');
+// Cuerpo de la tabla de métricas
 const metrics_body = document.getElementById('metrics-body');
+// Encabezado de la tabla de métricas
+const header_row = document.getElementById('metrics-header-row');
 
 let metrics_json = null;
 let circuit_count = 0;
 let circuits = [];
 let metrics_column_count = 0;
-
-// Encabezado de la tabla de métricas
-const header_row = document.getElementById('metrics-header-row');
 
 function resizeColumns() {
     const metrics_columns_total = circuit_count + 1; // Número de circuitos 
@@ -144,7 +146,7 @@ function generateCircuitColumn() {
 
                     const metric_row_content = `
                         <div class="col-12 p-2 metric-col-height text-truncate border border-dark d-flex justify-content-center align-items-center">
-                            <input type="text" class="form-control" id="${metric}-circuit-${circuit_number}-value" name="${metric}-circuit-${circuit_number}-value" value="${metrics[metric]}">
+                            <input type="text" class="form-control" id="${metric}_circuit_${circuit_number}_value" name="${metric}_circuit_${circuit_number}_value" value="${metrics[metric]}" required="required">
                         </div>
                     `;
                     metric_row.insertAdjacentHTML("afterbegin", metric_row_content)
@@ -246,3 +248,82 @@ window.onload = getMetrics;
 
 // Evento para añadir un nuevo circuito
 document.getElementById('metrics-add-circuit-button').addEventListener('click', generateCircuitColumn);
+
+// Evento submit del formulario, para la validación de los campos numéricos
+formulario.addEventListener('submit', function(event) {
+    // Prevenir el envío por defecto
+    event.preventDefault();
+
+    // Obtener todos los inputs del formulario
+    const inputs = formulario.querySelectorAll('input[type="text"]');
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+
+    // Variable para verificar si todos los campos son válidos
+    let is_valid = true;
+    let not_valid_inputs = [];
+
+    // Variable para verificar si existe algún checkbox marcado
+    let checkbox_checked = false;
+
+    // Recorrer cada input y validar si es un número
+    inputs.forEach(function(input) {
+        const valor = input.value.trim(); // Obtener el valor del input y quitar espacios en blanco
+
+        // Validar si el valor es un número
+        if (valor === '' || isNaN(valor)) {
+            is_valid = false;
+            input.style.borderColor = 'red'; // Marcar el input en rojo si no es válido
+            input.classList.add('border', 'border-danger', 'border-3');
+            not_valid_inputs.push(input.name);
+        } else {
+            input.style.borderColor = ''; // Restablecer el borde si es válido
+            input.classList.remove('border', 'border-danger', 'border-3');
+        }
+    });
+
+    // Comprobar si al menos un checkbox está marcado
+    checkboxes.forEach(function(checkbox) {
+        if (checkbox.checked) {
+            checkbox_checked = true;
+        }
+    });
+
+    // Si todos los inputs son válidos, enviar el formulario
+    if (is_valid && checkbox_checked) {
+        formulario.submit();
+    } else {
+        title_string = "";
+        error_string = "";
+
+        // Obtener los elementos de texto para mostrar el error
+        const error_info_title = document.getElementById('error-info-title');
+        const error_info_text = document.getElementById('error-info-text');
+        
+
+        if (!checkbox_checked) {
+            // Establecer el título y el texto del error
+            title_string = "No se ha seleccionado ningún modelo";
+            error_string = "Debe seleccionar al menos uno de los modelos de ML propuestos";
+        } else {
+            // Establecer el título del error
+            title_string = "Los valores de las siguientes métricas deben ser numéricos:";
+
+            // Obtener todos los campos no válidos y añadirlos al mensaje de error
+            not_valid_inputs.forEach(function(not_valid_input) {
+                splitted_name = not_valid_input.split("_");
+                // splitted_name[0] contiene el nombre de la métrica y splitted_name[2] contiene el número del circuito
+                error_string += 'Circuito '+splitted_name[2]+' - '+splitted_name[0].replace("m.", "")+'\n'
+            });
+        }
+
+        // Establecer los mensajes de error
+        error_info_title.innerText = title_string;
+        error_info_text.innerText = error_string;
+
+        // Modal para la información de errores en el formulario
+        const error_info_modal = new bootstrap.Modal(document.getElementById('error-info-modal'));
+
+        // Mostrar el modal
+        error_info_modal.show();
+    }
+});

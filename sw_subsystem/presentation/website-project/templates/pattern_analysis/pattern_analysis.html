@@ -10,6 +10,11 @@
                 <hr/>
             </div>
         </div>
+        {% if circuits_list %}
+        <div class="alert alert-danger text-center" role="alert">
+            <h5 class="mb-0">{{circuits_list}}</h5>
+        </div>
+        {% endif %}
         <div class="row justify-content-center">
             <div class="col-12 d-grid p-1">
                 <p class="text-center mb-0">Puedes importar un fichero JSON con las métricas, un fichero de código qiskit para analizar o insertar las métricas manualmente</p>
@@ -36,7 +41,7 @@
                     </div>
                 </div>
                 <!-- Cuerpo (formulario) de la tabla -->
-                <form class="p-0">
+                <form action="{{url_for('predict')}}" method="post" class="p-0" id="metrics-form">
                     <div class="row border-top border-dark" id="metrics-body">
                         <!-- Columna de categorías y métricas generada por JS -->
                         <!-- Columnas de los circuitos generados por JS -->
@@ -55,20 +60,37 @@
                             <ul class="flex-column p-1">
                             {% for label, value in trained_models.items() %}
                                 <div class="form-check text-start">
-                                    <input class="form-check-input" type="checkbox" value="{{value}}" id="metrics-model-checkbox-{{value}}">
+                                    <input class="form-check-input" type="checkbox" value="{{value}}" name="metrics-model-checkbox-{{value}}" id="metrics-model-checkbox-{{value}}">
                                     <label class="form-check-label" for="metrics-model-checkbox-{{value}}">{{label}}</label>
                                 </div>
                             {% endfor %}
                             </ul>
                         </div>
                         <div class="col-12 p-1 d-grid">
-                            <button type="button" class="btn btn-primary btn-lg" id="metrics-prediction-button">Realizar predicción</button>
+                            <button type="submit" class="btn btn-primary btn-lg" id="metrics-prediction-button">Realizar predicción</button>
                         </div>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+    <div class="modal fade" tabindex="-1" id="error-info-modal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Error en el formulario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h5 id="error-info-title"></h5>
+                    <p id="error-info-text"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
     <!-- Script personalizado -->
     <script src="../static/pattern_analysis.js"></script>
 {% endblock %}

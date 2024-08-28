@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Resultados de la predicción{% endblock %}
+
+{% block content %}
+    <div class="container-fluid p-3">
+        <div class="row justify-content-center text-center">
+            <div class="col-12">
+                <h1 class="display-3">Resultados de la predicción</h1>
+                <hr/>
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-12 d-grid p-1">
+            <p class="text-center mb-0">
+                {{ circuits_list }}
+            </p>
+        </div>
+    </div>
+{% endblock %}
