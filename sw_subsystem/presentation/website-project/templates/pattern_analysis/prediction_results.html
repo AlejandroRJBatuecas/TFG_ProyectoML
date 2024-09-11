@@ -10,12 +10,71 @@
                 <hr/>
             </div>
         </div>
-    </div>
-    <div class="row justify-content-center">
-        <div class="col-12 d-grid p-1">
-            <p class="text-center mb-0">
-                {{ circuits_list }}
-            </p>
+        <div class="row justify-content-around">
+            <div class="col-10 col-md-7">
+                <h1 class="mb-3 mt-3">Predicciones por circuito</h1>
+                {% set column_width = (12/(patterns_list|length+1))|int %}
+                {% set circuit_number = 0 %}
+                {% for circuit in circuits_predictions %}
+                    {% set circuit_number = loop.index %}
+                    <div class="row justify-content-around" id="results-circuit-{{circuit_number}}-header-row">
+                        <h1 class="display-6 mb-3 mt-3">Circuito {{circuit_number}}</h1>
+                        <div class="col-{{column_width}} p-2 border border-dark text-white bg-secondary">
+                            <h5 class="mb-0 text-truncate" title="Modelos / Patrones">Modelos / Patrones</h5>
+                        </div>
+                        {% for pattern in patterns_list %}
+                            <div class="col-{{column_width}} p-2 border border-dark text-white bg-primary">
+                                <h5 class="mb-0 text-truncate" title="{{pattern|replace('p.', '')|capitalize}}">{{pattern|replace('p.', '')|capitalize}}</h5>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% for model, patterns in circuit.items() %}
+                        <div class="row justify-content-around text-white bg-secondary border border-dark" id="results-circuit-{{circuit_number}}-model-{{model}}-row">
+                            <div class="col-{{column_width}} p-2 border border-dark text-white bg-primary">
+                                <h6 class="mb-0 text-truncate" title="{{model}}">{{model}}</h6>
+                            </div>
+                            {% for pattern, results in patterns.items() %}
+                                <div class="col-{{column_width}} p-2 border border-dark text-white bg-info">
+                                    <div class="row">
+                                        <div class="col-12 col-lg-5">
+                                            <h6 class="mb-0 text-truncate" title="{{results.result}}">{{results.result}}</h6>
+                                        </div>
+                                        <div class="col-12 col-lg-7">
+                                            <h6 class="mb-0 text-truncate" title="({{results.probability}}%)">({{results.probability}}%)</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            <div class="col-10 col-md-4">
+                {% set metrics_column_width = (12/(circuits_predictions|length+1))|int %}
+                <div class="row justify-content-around" id="results-metrics-header-row">
+                    <h1 class="mb-3 mt-3">Métricas utilizadas</h1>
+                    <div class="col-{{metrics_column_width}} p-2 border border-dark text-white bg-secondary">
+                        <h5 class="mb-0 text-truncate" title="Métrica">Métrica</h5>
+                    </div>
+                    {% for circuit in circuits_list %}
+                        {% set circuit_number = loop.index %}
+                        <div class="col-{{metrics_column_width}} p-2 border border-dark text-white bg-primary">
+                            <h5 class="mb-0 text-truncate" title="C{{circuit_number}}">C{{circuit_number}}</h5>
+                        </div>
+                    {% endfor %}
+                    {% for metric in circuits_metrics %}
+                        <div class="col-{{metrics_column_width}} p-2 border border-dark text-white bg-primary">
+                            <h6 class="mb-0 text-truncate" title="{{metric}}">{{metric}}</h6>
+                        </div>
+                        {% for circuit in circuits_list %}
+                            {% set circuit_number = loop.index0 %}
+                            <div class="col-{{metrics_column_width}} p-2 border border-dark text-white bg-info">
+                                <h6 class="mb-0 text-truncate" title="{{circuits_list[circuit_number][metric]}}">{{circuits_list[circuit_number][metric]}}</h6>
+                            </div>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
         </div>
     </div>
 {% endblock %}

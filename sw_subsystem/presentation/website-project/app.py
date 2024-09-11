@@ -9,7 +9,7 @@ app = Flask(__name__)
 app.json.sort_keys = False
 
 # Nombre de la aplicación
-app_name = "QuantumPatternsML"
+app_name = "QPatternsML"
 
 # Constantes
 pattern_analysis_path = '/pattern_analysis/pattern_analysis.html'
@@ -54,8 +54,6 @@ def predict():
     circuits_list = [] # Lista de las métricas de los circuitos
     selected_models = [] # Lista de modelos seleccionados
 
-    print(request.form)
-
     # Obtener las claves y valores del formulario
     form_keys = list(request.form.keys())
     form_values = list(request.form.values())
@@ -64,10 +62,7 @@ def predict():
     circuit_metrics_total_values = sum(len(sub_dict) for sub_dict in metrics_definition.circuit_metrics.values())
     circuits_number = int(len(request.form) / circuit_metrics_total_values)
 
-    print(circuit_metrics_total_values, " x ", circuits_number, " -- ", len(request.form))
-
     selected_models_num = len(request.form)-circuit_metrics_total_values*circuits_number
-    print(selected_models_num)
 
     if selected_models_num == 0:
         circuits_list = "No se ha seleccionado ningún modelo"
@@ -94,19 +89,20 @@ def predict():
     with open(ml_parameters.test_data_filename, 'w') as json_file:
         json.dump(circuits_list, json_file, indent=4)
 
-    print(circuits_list)
-
-    # Obtener los circuitos seleccionados
+    # Obtener los modelos seleccionados
     for i in range(0, len(request.form)-list_index):
         selected_models.append(form_values[list_index+i])
 
-    print(selected_models)
+    circuits_predictions = [{} for _ in range(circuits_number)] # Lista que contiene las predicciones de los circuitos
     
     for selected_model in selected_models:
         model = get_or_create_model(selected_model)
-        model.get_prediction()
+        model_predictions_list = model.get_prediction()
+        for i, value in enumerate(model_predictions_list):
+            circuits_predictions[i][selected_model] = value
 
-    return render_template('/pattern_analysis/prediction_results.html', circuits_list=circuits_list)
+    circuits_metrics = list(circuits_list[0].keys())
+    return render_template('/pattern_analysis/prediction_results.html', circuits_predictions=circuits_predictions, patterns_list=ml_parameters.patterns_list, circuits_metrics=circuits_metrics, circuits_list=circuits_list)
 
 @app.route('/modelos_ml')
 def ml_models():

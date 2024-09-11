@@ -184,19 +184,37 @@ class MultilabelLearningModel(BaseMLModel):
         predictions_proba = self.classifier.predict_proba(test_data)
         # Realizar predicciones con los datos de prueba
         best_features_predictions_proba = self.best_features_classifier.predict_proba(test_data)
+
+        predictions_list = [] # Lista que contiene los resultados de las predicciones para cada circuito y patrón
+
         # Imprimir los porcentajes de predicción
-        for i in range(len(predictions_proba[0])):
-            print(f"\nInstancia {i+1}:")
-            for j in range(len(predictions_proba)):
+        for i in range(len(predictions_proba[0])): # Para cada circuito
+            print(f"\nCircuito {i+1}:")
+            circuit_dict = {} # Diccionario que almacena los resultados por patrón de una circuito
+            for j in range(len(predictions_proba)): # Para cada patrón
                 print(f"Patrón {ml_parameters.patterns_list[j]}: ")
+                results_dict = {
+                    'result': True,
+                    'probability': 0.0
+                }
                 if len(predictions_proba[j][i]) > 1 and (predictions_proba[j][i][1] > predictions_proba[j][i][0]):
                     print(f"Modelo normal --> Cumple el patrón en un {round(predictions_proba[j][i][1]*100, 2)}%")
                 else:
                     print(f"Modelo normal --> No cumple el patrón en un {round(predictions_proba[j][i][0]*100, 2)}%")
+                
                 if len(best_features_predictions_proba[j][i]) > 1 and (best_features_predictions_proba[j][i][1] > best_features_predictions_proba[j][i][0]):
                     print(f"Modelo mejorado --> Cumple el patrón en un {round(best_features_predictions_proba[j][i][1]*100, 2)}%")
+                    results_dict['probability'] = round(best_features_predictions_proba[j][i][1]*100, 2)
                 else:
                     print(f"Modelo mejorado --> No cumple el patrón en un {round(best_features_predictions_proba[j][i][0]*100, 2)}%")
+                    results_dict['result'] = False
+                    results_dict['probability'] = round(best_features_predictions_proba[j][i][0]*100, 2)
+
+                circuit_dict[ml_parameters.patterns_list[j]] = results_dict
+
+            predictions_list.append(circuit_dict)
+
+        return predictions_list
 
 class KNNClassifierModel(MultilabelLearningModel):
     def __init__(self, data_filename=ml_parameters.data_filename, test_size=ml_parameters.test_set_size):

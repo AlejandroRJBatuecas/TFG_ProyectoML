@@ -128,9 +128,9 @@ function generateCircuitColumn() {
             const metric_category_header_content = `
                 <div class="col-12 p-2 border border-dark bg-primary">
                     <!-- Nombre de circuito abreviado para pantallas pequeñas -->
-                    <h4 class="mb-0 text-truncate d-md-none">C${circuit_number}</h4>
+                    <h4 class="mb-0 text-truncate d-md-none" title="C${circuit_number}">C${circuit_number}</h4>
                     <!-- Nombre de circuito completo para pantallas grandes -->
-                    <h4 class="mb-0 text-truncate d-none d-md-block">Circuito ${circuit_number}</h4>
+                    <h4 class="mb-0 text-truncate d-none d-md-block" title="Circuito ${circuit_number}">Circuito ${circuit_number}</h4>
                 </div>
             `;
             metric_category_header.insertAdjacentHTML("afterbegin", metric_category_header_content)
@@ -203,7 +203,7 @@ function generateMetricsColumn() {
             metric_category_header.id = "metrics-category-"+category+"-header";
 
             const metric_category_header_content = `
-                <div class="col-12 p-2 border border-dark text-truncate bg-primary">
+                <div class="col-12 p-2 border border-dark bg-primary">
                     <h4 class="mb-0 text-truncate" title="${category}">${category}</h4>
                 </div>
             `;

@@ -213,23 +213,43 @@ class OneVsRestModel(BaseMLModel):
         # Obtener los datos a predecir
         test_data = pd.read_json(Path(ml_parameters.test_data_filename))
 
+        predictions_list = [] # Lista que contiene los resultados de las predicciones para cada circuito y patrón
+
         for pattern in ml_parameters.patterns_list:
             # Obtener predicciones y probabilidades de los datos de prueba con el modelo entrenado
             predictions_proba = self.classifiers[pattern].predict_proba(test_data)
             # Realizar predicciones con los datos de prueba
             best_features_predictions_proba = self.best_features_classifiers[pattern].predict_proba(test_data)
+
             # Imprimir los porcentajes de predicción
             for i in range(len(predictions_proba)):
-                print(f"\nInstancia {i+1}: {pattern}")
+                print(f"\nCircuito {i+1}: {pattern}")
+                results_dict = {
+                    'result': True,
+                    'probability': 0.0
+                }
+                
                 if predictions_proba[i][1] > predictions_proba[i][0]:
-                    print(f"Modelo normal --> Cumple el patrón en un {round(predictions_proba[i][1]*100, 3)}%")
+                    print(f"Modelo normal --> Cumple el patrón en un {round(predictions_proba[i][1]*100, 2)}%")
                 else:
-                    print(f"Modelo normal --> No cumple el patrón en un {round(predictions_proba[i][0]*100, 3)}%")
+                    print(f"Modelo normal --> No cumple el patrón en un {round(predictions_proba[i][0]*100, 2)}%")
 
                 if best_features_predictions_proba[i][1] > best_features_predictions_proba[i][0]:
-                    print(f"Modelo mejorado --> Cumple el patrón en un {round(best_features_predictions_proba[i][1]*100, 3)}%")
+                    print(f"Modelo mejorado --> Cumple el patrón en un {round(best_features_predictions_proba[i][1]*100, 2)}%")
+                    results_dict['probability'] = round(best_features_predictions_proba[i][1]*100, 2)
                 else:
-                    print(f"Modelo mejorado --> No cumple el patrón en un {round(best_features_predictions_proba[i][0]*100, 3)}%")
+                    print(f"Modelo mejorado --> No cumple el patrón en un {round(best_features_predictions_proba[i][0]*100, 2)}%")
+                    results_dict['result'] = False
+                    results_dict['probability'] = round(best_features_predictions_proba[i][0]*100, 2)
+
+                try: # Se intenta añadir los resultados de la predicción del patrón a su circuito
+                    predictions_list[i][pattern] = results_dict
+                except IndexError: # Si da excepción de índice, es la primera iteración y por tanto, se crea el diccionario del circuito
+                    predictions_list.append({
+                        pattern: results_dict
+                    })
+
+        return predictions_list
 
 class KNNOvsRClassifierModel(OneVsRestModel):
     def __init__(self, data_filename=ml_parameters.data_filename, test_size=ml_parameters.test_set_size):
