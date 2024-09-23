@@ -89,7 +89,7 @@ function findInsertionPosition() {
     return extended_circuits.findIndex((_, index) => !extended_circuits[index] && extended_circuits[index-1]) - 1
 }
 
-function generateCircuitColumn() {
+function generateCircuitColumn(circuit_metrics = null) {
     // Incrementar el contador de circuitos
     circuit_count += 1;
 
@@ -144,12 +144,22 @@ function generateCircuitColumn() {
                     const metric_row = document.createElement('div');
                     metric_row.classList.add('row');
                     metric_row.id = "metrics-metric-"+metric+"-circuit-"+circuit_number+"-row";
-
-                    const metric_row_content = `
+                    
+                    // Generar los inputs por defecto
+                    let metric_row_content = `
                         <div class="col-12 p-2 metric-col-height text-truncate border border-dark d-flex justify-content-center align-items-center">
                             <input type="text" class="form-control" id="${metric}_circuit_${circuit_number}_value" name="${metric}_circuit_${circuit_number}_value" value="${metrics[metric]}" required="required">
                         </div>
                     `;
+                    
+                    if (circuit_metrics) { // Si se han obtenido datos del json, modificar el value de los inputs
+                        metric_row_content = `
+                            <div class="col-12 p-2 metric-col-height text-truncate border border-dark d-flex justify-content-center align-items-center">
+                                <input type="text" class="form-control" id="${metric}_circuit_${circuit_number}_value" name="${metric}_circuit_${circuit_number}_value" value="${circuit_metrics[metric]}" required="required">
+                            </div>
+                        `;
+                    }
+                    
                     metric_row.insertAdjacentHTML("afterbegin", metric_row_content)
 
                     circuit_column.appendChild(metric_row);
@@ -221,7 +231,7 @@ function generateMetricsColumn() {
 
                     const metric_row_content = `
                         <div class="col-12 metric-col-height border border-dark d-flex justify-content-center align-items-center">
-                            <h5 class="mb-0">${metric.replace(/m\./g, "")}</h5>
+                            <h5 class="mb-0" title="${metric.replace(/m\./g, "")}">${metric.replace(/m\./g, "")}</h5>
                         </div>
                     `;
                     metric_row.insertAdjacentHTML("afterbegin", metric_row_content)
@@ -236,12 +246,48 @@ function generateMetricsColumn() {
     metrics_body.appendChild(metrics_column);
 }
 
+function openFileImportModal(file_type) {
+    // Modal para la importación de fichero
+    const file_import_modal = new bootstrap.Modal(document.getElementById('file-import-modal'));
+
+    // Span para modificar la extensión del fichero requerida
+    const file_extension_type_span = document.getElementById('file-extension-type');
+    file_extension_type_span.innerText = file_type
+
+    // Modificar el accept del input del fichero
+    const file_input = document.getElementById('file-input');
+    const file_extension = file_type == "json" ? ".json" : file_type == "python" ? ".py" : file_type;
+    file_input.accept = file_extension
+
+    // Modificar el accept del input del fichero
+    const file_extension_allowed = document.getElementById('file-extension-allowed')
+    file_extension_allowed.value = file_extension
+
+    // Mostrar el modal
+    file_import_modal.show();
+}
+
 // Obtener los datos de las métricas del JSON desde el servidor
 async function getMetrics() {
     const response = await fetch('/obtener_metricas');
     metrics_json = await response.json();
-    generateMetricsColumn()
-    generateCircuitColumn();
+
+    // Generar la columna de las métricas
+    generateMetricsColumn();
+
+    // Accedemos al div que contiene los datos
+    const circuit_metrics_div = document.getElementById('circuit-metrics');
+    
+    if (circuit_metrics_div) { // Si se están obteniendo datos, modificar los circuitos y valores
+        // Obtener los datos del atributo "data-datos" y los parseamos como JSON
+        const circuit_metrics = JSON.parse(circuit_metrics_div.getAttribute('circuit-metrics-data'));
+        // Generar una columna por circuito
+        for (const circuit in circuit_metrics) {
+            generateCircuitColumn(circuit_metrics[circuit])
+        } 
+    } else { // Si no, generar la columna de circuito por defecto
+        generateCircuitColumn();
+    }
 }
 
 // Llamar a la función para obtener los datos cuando la página cargue
@@ -249,6 +295,16 @@ window.onload = getMetrics;
 
 // Evento para añadir un nuevo circuito
 document.getElementById('metrics-add-circuit-button').addEventListener('click', generateCircuitColumn);
+
+// Evento para abrir el modal con el botón Importar fichero JSON
+document.getElementById('json-file-import-button').addEventListener('click', function() {
+    openFileImportModal("json");
+});
+
+// Evento para abrir el modal con el botón Importar fichero de código
+document.getElementById('code-file-import-button').addEventListener('click', function() {
+    openFileImportModal("python");
+});
 
 // Evento submit del formulario, para la validación de los campos numéricos
 formulario.addEventListener('submit', function(event) {

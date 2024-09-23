@@ -2,4 +2,6 @@ utils
 sw_subsystem/presentation/website-env
 ml_subsystem/test_ml_models
 ml_subsystem/images/correlation_matrix.png
+ml_subsystem/datasets/jsons
 ml_subsystem/datasets/file_metrics.json
+**/__pycache__/

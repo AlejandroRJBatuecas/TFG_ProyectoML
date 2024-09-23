@@ -10,10 +10,15 @@
                 <hr/>
             </div>
         </div>
-        {% if circuits_list %}
-        <div class="alert alert-danger text-center" role="alert">
-            <h5 class="mb-0">{{circuits_list}}</h5>
-        </div>
+        {% if error_message %}
+            <div class="alert alert-danger text-center" role="alert">
+                <h5 class="mb-0">{{error_message}}</h5>
+            </div>
+        {% endif %}
+        {% if circuit_metrics %}
+            <div class="alert alert-success text-center" role="alert">
+                <h5 class="mb-0">El fichero se ha importado correctamente</h5>
+            </div>
         {% endif %}
         <div class="row justify-content-center">
             <div class="col-12 d-grid p-1">
@@ -22,10 +27,10 @@
         </div>
         <div class="row justify-content-center mt-3">
             <div class="col-10 col-md-5 col-xl-4 d-grid p-1">
-                <button type="button" class="btn btn-primary">Importar JSON de métricas</button>
+                <button type="button" class="btn btn-primary" id="json-file-import-button">Importar JSON de métricas</button>
             </div>
             <div class="col-10 col-md-5 col-xl-4 d-grid p-1">
-                <button type="button" class="btn btn-primary">Importar fichero de código</button>
+                <button type="button" class="btn btn-primary" id="code-file-import-button">Importar fichero de código</button>
             </div>
         </div>
         <!-- Contenedor de los formularios de métricas -->
@@ -88,6 +93,27 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" tabindex="-1" id="file-import-modal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title">Importación de fichero</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{url_for('import_file')}}" method="post" enctype="multipart/form-data" class="p-0" id="file-import-form">
+                    <div class="modal-body d-grid">
+                        <label class="form-label fw-bold">Seleccione un fichero (solo ficheros <span id="file-extension-type"></span>)</label>
+                        <input class="form-control" type="file" name="file" required="required" id="file-input">
+                        <input type="hidden" name="file_extension" id="file-extension-allowed">
+                        <button type="submit" class="btn btn-primary mt-3" id="file-import-button">Importar fichero</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% if circuit_metrics %}
+        <div id="circuit-metrics" circuit-metrics-data='{{ circuit_metrics | tojson }}' style="display: none;"></div>
+    {% endif %}
 {% endblock %}
 
 {% block scripts %}

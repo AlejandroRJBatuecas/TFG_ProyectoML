@@ -1,4 +1,4 @@
-import json, joblib
+import json, joblib, os
 
 from flask import Flask, jsonify, render_template, request
 from pathlib import Path
@@ -9,10 +9,20 @@ app = Flask(__name__)
 app.json.sort_keys = False
 
 # Nombre de la aplicación
-app_name = "QPatternsML"
+APP_NAME = "QPatternsML"
 
 # Constantes
-pattern_analysis_path = '/pattern_analysis/pattern_analysis.html'
+PATTERN_ANALYSIS_HTML_FILE = '/pattern_analysis/pattern_analysis.html'
+
+def get_simplified_circuit():
+    # Nuevo diccionario para almacenar solo los valores
+    simplified_circuit_metrics = {}
+
+    for category, metrics in metrics_definition.circuit_metrics.items():
+        for metric, value in metrics.items():
+            simplified_circuit_metrics[metric] = value
+        
+    return simplified_circuit_metrics
 
 def get_or_create_model(trained_model):
     # Obtener la ruta de almacenamiento del modelo
@@ -35,7 +45,7 @@ def get_or_create_model(trained_model):
 
 @app.context_processor
 def inject_global_vars():
-    return dict(app_name=app_name)
+    return dict(app_name=APP_NAME)
 
 @app.route('/')
 def index():
@@ -47,7 +57,7 @@ def obtain_metrics():
 
 @app.route('/analisis_patrones')
 def pattern_analysis():
-    return render_template(pattern_analysis_path, trained_models=ml_trained_model_paths.trained_models)
+    return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models)
 
 @app.route('/predecir', methods=['POST'])
 def predict():
@@ -66,7 +76,7 @@ def predict():
 
     if selected_models_num == 0:
         circuits_list = "No se ha seleccionado ningún modelo"
-        return render_template(pattern_analysis_path, trained_models=ml_trained_model_paths.trained_models, circuits_list=circuits_list)
+        return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, circuits_list=circuits_list)
 
     # Crear los diccionarios de métricas de cada circuito y añadirlos a la lista
     list_index = 0
@@ -79,7 +89,7 @@ def predict():
                 circuit_dict[metric_name] = float(form_values[list_index])
             except (ValueError, TypeError):
                 circuits_list = "Los valores de las métricas deben ser numéricos"
-                return render_template(pattern_analysis_path, trained_models=ml_trained_model_paths.trained_models, circuits_list=circuits_list)
+                return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, circuits_list=circuits_list)
             list_index+=1
 
         # Añadir el diccionario a la lista
@@ -103,6 +113,97 @@ def predict():
 
     circuits_metrics = list(circuits_list[0].keys())
     return render_template('/pattern_analysis/prediction_results.html', circuits_predictions=circuits_predictions, patterns_list=ml_parameters.patterns_list, circuits_metrics=circuits_metrics, circuits_list=circuits_list)
+
+def allowed_file(filename, file_extension):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() == file_extension
+
+def get_json_file_metrics(file_data):
+    circuit_metrics = []
+    # Obtener el circuito base simplificado
+    simplified_circuit = get_simplified_circuit()
+
+    # Recorrer cada elemento de la lista
+    for circuit in file_data:
+        # Comprobar si es un diccionario
+        if isinstance(circuit, dict):
+            circuit_dict = {}
+            # Recorrer las métricas del diccionario original buscando los elementos en el diccionario del json
+            for metric in simplified_circuit.keys():
+                if metric in circuit: # Si encuentra la clave, se añade el valor al diccionario
+                    circuit_dict[metric] = circuit[metric]
+                else:
+                    circuit_dict[metric] = "Sin Definir"
+
+            # Añadir el circuito a la lista de métricas
+            circuit_metrics.append(circuit_dict)
+
+    return circuit_metrics
+
+def read_json_file(file):
+    circuit_metrics = None
+
+    # Leer el contenido del archivo
+    try:
+        file_content = json.load(file)
+    except json.JSONDecodeError:
+        return circuit_metrics
+
+    # Comprobar si el fichero contiene una lista 
+    if isinstance(file_content, list):
+        # Obtener las métricas del fichero
+        circuit_metrics = get_json_file_metrics(file_content)
+    elif isinstance(file_content, dict):
+        # Añadir el diccionario a una lista
+        file_content = [file_content]
+        # Obtener las métricas del fichero
+        circuit_metrics = get_json_file_metrics(file_content)
+
+    return circuit_metrics
+
+def read_python_file(file):
+    print("read python file")
+
+@app.route('/importar_fichero', methods=['POST'])
+def import_file():
+    print(request.files)
+
+    error_message = "Error al importar el archivo"
+
+    # Verificar si se ha enviado un archivo
+    if 'file' not in request.files:
+        return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, error_message=error_message)
+
+    # Obtener el archivo del formulario
+    file = request.files['file']
+
+    # Verificar si se ha seleccionado un archivo
+    if file.filename == '':
+        error_message= "No se ha seleccionado ningún archivo"
+        return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, error_message=error_message)
+
+    # Obtener la extensión del archivo requerido
+    file_extension = request.form['file_extension']
+
+    # Verificar la extensión del archivo
+    if not allowed_file(file.filename, file_extension.replace(".", "")):
+        error_message= "El archivo no tiene la extensión indicada"
+        return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, error_message=error_message)
+
+    # Lectura del archivo dependiendo de su extensión
+    if file_extension == ".json":
+        circuit_metrics = read_json_file(file)
+    elif file_extension == ".py":
+        circuit_metrics = read_python_file(file)
+    else:
+        error_message= "El archivo no tiene la extensión indicada"
+        return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, error_message=error_message)
+
+    if not circuit_metrics:
+        error_message= "El archivo no tiene el formato indicado"
+        return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, error_message=error_message)
+
+    return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, circuit_metrics=circuit_metrics)
 
 @app.route('/modelos_ml')
 def ml_models():
