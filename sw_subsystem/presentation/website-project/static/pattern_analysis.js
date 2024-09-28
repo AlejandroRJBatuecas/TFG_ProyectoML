@@ -89,6 +89,36 @@ function findInsertionPosition() {
     return extended_circuits.findIndex((_, index) => !extended_circuits[index] && extended_circuits[index-1]) - 1
 }
 
+function addFormInputs(metrics, circuit_number, circuit_metrics, circuit_column) {
+    for (const metric in metrics) {
+        if (metrics.hasOwnProperty(metric)) {
+            const metric_row = document.createElement('div');
+            metric_row.classList.add('row');
+            metric_row.id = "metrics-metric-"+metric+"-circuit-"+circuit_number+"-row";
+
+            // Generar los inputs por defecto
+            let metric_row_content = `
+                <div class="col-12 p-1 input-col-height text-truncate border border-dark d-flex justify-content-center align-items-center">
+                    <input type="text" class="form-control-sm w-75" id="${metric}_circuit_${circuit_number}_value" name="${metric}_circuit_${circuit_number}_value" value="${metrics[metric]}" required="required">
+                </div>
+            `;
+
+            // Si se han obtenido datos del json, modificar el value de los inputs
+            if (circuit_metrics?.circuit_metrics[metric]) { // circuit_metrics?.circuit_metrics[metric] == circuit_metrics && circuit_metrics[metric]
+                metric_row_content = `
+                    <div class="col-12 p-1 input-col-height text-truncate border border-dark d-flex justify-content-center align-items-center">
+                        <input type="text" class="form-control-sm w-75" id="${metric}_circuit_${circuit_number}_value" name="${metric}_circuit_${circuit_number}_value" value="${circuit_metrics[metric]}" required="required">
+                    </div>
+                `;
+            }
+            
+            metric_row.insertAdjacentHTML("afterbegin", metric_row_content)
+
+            circuit_column.appendChild(metric_row);
+        }
+    }
+}
+
 function generateCircuitColumn(circuit_metrics = null) {
     // Incrementar el contador de circuitos
     circuit_count += 1;
@@ -139,33 +169,7 @@ function generateCircuitColumn(circuit_metrics = null) {
 
             const metrics = metrics_json[category];
 
-            for (const metric in metrics) {
-                if (metrics.hasOwnProperty(metric)) {
-                    const metric_row = document.createElement('div');
-                    metric_row.classList.add('row');
-                    metric_row.id = "metrics-metric-"+metric+"-circuit-"+circuit_number+"-row";
-
-                    // Generar los inputs por defecto
-                    let metric_row_content = `
-                        <div class="col-12 p-1 input-col-height text-truncate border border-dark d-flex justify-content-center align-items-center">
-                            <input type="text" class="form-control-sm w-75" id="${metric}_circuit_${circuit_number}_value" name="${metric}_circuit_${circuit_number}_value" value="${metrics[metric]}" required="required">
-                        </div>
-                    `;
-
-                    if (circuit_metrics && circuit_metrics[metric]) { // Si se han obtenido datos del json, modificar el value de los inputs
-                        console.log(circuit_metrics[metric])
-                        metric_row_content = `
-                            <div class="col-12 p-1 input-col-height text-truncate border border-dark d-flex justify-content-center align-items-center">
-                                <input type="text" class="form-control-sm w-75" id="${metric}_circuit_${circuit_number}_value" name="${metric}_circuit_${circuit_number}_value" value="${circuit_metrics[metric]}" required="required">
-                            </div>
-                        `;
-                    }
-                    
-                    metric_row.insertAdjacentHTML("afterbegin", metric_row_content)
-
-                    circuit_column.appendChild(metric_row);
-                }
-            }
+            addFormInputs(metrics, circuit_number, circuit_metrics, circuit_column);
         }
     }
 
@@ -247,6 +251,13 @@ function generateMetricsColumn() {
     metrics_body.appendChild(metrics_column);
 }
 
+function getFileExtension(file_type) {
+    if (file_type == "json") {
+        return ".json"
+    }
+    return file_type == "python" ? ".py" : file_type
+}
+
 function openFileImportModal(file_type) {
     // Modal para la importación de fichero
     const file_import_modal = new bootstrap.Modal(document.getElementById('file-import-modal'));
@@ -255,9 +266,11 @@ function openFileImportModal(file_type) {
     const file_extension_type_span = document.getElementById('file-extension-type');
     file_extension_type_span.innerText = file_type
 
-    // Modificar el accept del input del fichero
+    // Obtener el input del fichero
     const file_input = document.getElementById('file-input');
-    const file_extension = file_type == "json" ? ".json" : file_type == "python" ? ".py" : file_type;
+    // Obtener la extensión del fichero
+    const file_extension = getFileExtension(file_type)
+    // Modificar el accept del input del fichero
     file_input.accept = file_extension
 
     // Modificar el accept del input del fichero
