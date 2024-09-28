@@ -3,12 +3,16 @@
     text-align: justify;
 }
 
-.div-bg-color {
+.lightblue-bg-color {
     background-color: #f4fdff;
 }
 
 .metric-col-height {
-    height: 80px;
+    height: 68px;
+}
+
+.input-col-height {
+    height: 42px;
 }
 
 .full-height {

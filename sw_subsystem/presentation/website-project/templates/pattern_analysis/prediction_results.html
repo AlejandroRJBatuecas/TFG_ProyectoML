@@ -34,7 +34,7 @@
                                 <h6 class="mb-0 text-truncate" title="{{model}}">{{model}}</h6>
                             </div>
                             {% for pattern, results in patterns.items() %}
-                                <div class="col-{{column_width}} p-2 border border-dark text-white bg-info">
+                                <div class="col-{{column_width}} p-2 border border-dark text-dark lightblue-bg-color">
                                     <div class="row">
                                         <div class="col-12 col-lg-5">
                                             <h6 class="mb-0 text-truncate" title="{{results.result}}">{{results.result}}</h6>
@@ -68,7 +68,7 @@
                         </div>
                         {% for circuit in circuits_list %}
                             {% set circuit_number = loop.index0 %}
-                            <div class="col-{{metrics_column_width}} p-2 border border-dark text-white bg-info">
+                            <div class="col-{{metrics_column_width}} p-2 border border-dark text-dark lightblue-bg-color">
                                 <h6 class="mb-0 text-truncate" title="{{circuits_list[circuit_number][metric]}}">{{circuits_list[circuit_number][metric]}}</h6>
                             </div>
                         {% endfor %}

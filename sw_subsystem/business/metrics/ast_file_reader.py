@@ -149,11 +149,14 @@ class QiskitAnalyzer(ast.NodeVisitor):
         self.generic_visit(node)
 
 class ASTFileReader:
-    def __init__(self, filename: str):
+    def __init__(self, filename: str, file_code: str = ""):
         self.filename = filename
 
         # Leer el fichero para obtener el código
-        self.code = self._read_file()
+        if file_code == "":
+            self.code = self._read_file()
+        else:
+            self.code = file_code
 
         # Obtener el analizador de qiskit, para obtener todas las variables
         self.qiskit_analyzer = self._analyze_code()
@@ -198,8 +201,14 @@ class ASTFileReader:
                 print(circuit.data)
                 
                 # Analizar el circuito y añadirlo a la lista
-                metrics_analyzer = MetricsAnalyzer(circuit, draw_circuit=True)
-                circuits_list.append(metrics_analyzer.simplified_circuit)
+                metrics_analyzer = MetricsAnalyzer(circuit)
+
+                circuit_data = {
+                    "name": circuit_name,
+                    "circuit_metrics": metrics_analyzer.simplified_circuit,
+                    "circuit_draw": metrics_analyzer.circuit_draw
+                }
+                circuits_list.append(circuit_data)
         else:
             print("No hay importaciones de qiskit")
 

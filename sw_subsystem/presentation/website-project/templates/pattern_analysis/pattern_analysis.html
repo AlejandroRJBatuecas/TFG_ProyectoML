@@ -6,7 +6,7 @@
     <div class="container-fluid p-3">
         <div class="row justify-content-center text-center">
             <div class="col-12">
-                <h1 class="display-3">Análisis de patrones</h1>
+                <h1 class="display-6">Análisis de patrones</h1>
                 <hr/>
             </div>
         </div>
@@ -21,27 +21,24 @@
             </div>
         {% endif %}
         <div class="row justify-content-center">
-            <div class="col-12 d-grid p-1">
+            <div class="col-11 d-grid p-1">
                 <p class="text-center mb-0">Puedes importar un fichero JSON con las métricas, un fichero de código qiskit para analizar o insertar las métricas manualmente</p>
             </div>
         </div>
         <div class="row justify-content-center mt-3">
-            <div class="col-10 col-md-5 col-xl-4 d-grid p-1">
+            <div class="col-11 col-md-5 col-xl-4 d-grid p-1">
                 <button type="button" class="btn btn-primary" id="json-file-import-button">Importar JSON de métricas</button>
             </div>
-            <div class="col-10 col-md-5 col-xl-4 d-grid p-1">
+            <div class="col-11 col-md-5 col-xl-4 d-grid p-1">
                 <button type="button" class="btn btn-primary" id="code-file-import-button">Importar fichero de código</button>
             </div>
         </div>
         <!-- Contenedor de los formularios de métricas -->
-        <div class="row justify-content-center mt-3" id="metrics-container">
-            <div class="col-11 div-bg-color border border-dark"> <!-- col-md-11 col-lg-10 col-xl-8 -->
+        <div class="row justify-content-around mt-3" id="metrics-container">
+            <div class="col-11 col-lg-7 lightblue-bg-color border border-dark"> <!-- col-md-11 col-lg-10 col-xl-8 -->
                 <!-- Encabezado de la tabla -->
-                <div class="row justify-content-between align-items-center bg-dark border border-white p-1" id="metrics-header">
-                    <div class="col-12 col-sm-8 col-lg-10 p-1 bg-white text-dark">
-                        <h2 class="text-center mb-0">TABLA DE MÉTRICAS</h2>
-                    </div>
-                    <div class="col-12 col-sm-4 col-lg-2 d-grid p-1">
+                <div class="row justify-content-between align-items-center bg-dark border border-dark p-1" id="metrics-header">
+                    <div class="col-12 d-grid p-1">
                         <button type="button" class="btn btn-success" id="metrics-add-circuit-button">Añadir circuito</button>
                     </div>
                 </div>
@@ -77,6 +74,34 @@
                     </div>
                 </form>
             </div>
+            {% if file_content and file_extension %}
+                <div class="col-11 col-lg-4 lightblue-bg-color border border-dark h-auto">
+                    <!-- Encabezado -->
+                    <div class="row justify-content-between align-items-center bg-dark border border-white p-1" id="metrics-header">
+                        <div class="col-12 p-1 bg-white text-dark">
+                            <h2 class="text-center mb-0">
+                                {% if file_extension == "json" %}
+                                    FICHERO IMPORTADO
+                                {% elif file_extension == "py" %}
+                                    CÓDIGO ANALIZADO
+                                {% endif %}
+                            </h2>
+                        </div>
+                        <div class="col-12 p-1 bg-white text-dark">
+                            <pre><code class="language-{{file_extension}} line-numbers">{{ file_content | safe }}</code></pre>
+                        </div>
+                        {% if circuits_list %}
+                            <div class="col-12 p-1 bg-white text-dark">
+                                {% for circuit in circuits_list %}
+                                    <h5 class="mb-2">Circuito {{circuit.name}}</h5>
+                                    <img src="data:image/png;base64, {{ circuit.circuit_draw }}" alt="Circuito Cuántico" class="img-fluid">
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        
+                    </div>
+                </div>
+            {% endif %}
         </div>
     </div>
     <div class="modal fade" tabindex="-1" id="error-info-modal">
@@ -96,13 +121,13 @@
     <div class="modal fade" tabindex="-1" id="file-import-modal">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header bg-info text-white">
+                <div class="modal-header bg-secondary text-white">
                     <h5 class="modal-title">Importación de fichero</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form action="{{url_for('import_file')}}" method="post" enctype="multipart/form-data" class="p-0" id="file-import-form">
                     <div class="modal-body d-grid">
-                        <label class="form-label fw-bold">Seleccione un fichero (solo ficheros <span id="file-extension-type"></span>)</label>
+                        <label class="form-label fw-bold" for="file-input">Seleccione un fichero (solo ficheros <span id="file-extension-type"></span>)</label>
                         <input class="form-control" type="file" name="file" required="required" id="file-input">
                         <input type="hidden" name="file_extension" id="file-extension-allowed">
                         <button type="submit" class="btn btn-primary mt-3" id="file-import-button">Importar fichero</button>
@@ -114,9 +139,14 @@
     {% if circuit_metrics %}
         <div id="circuit-metrics" circuit-metrics-data='{{ circuit_metrics | tojson }}' style="display: none;"></div>
     {% endif %}
+    {% if circuits_list%}
+        <div id="circuits-list" circuits-list-data='{{ circuits_list | tojson }}' style="display: none;"></div>
+    {% endif %}
 {% endblock %}
 
 {% block scripts %}
     <!-- Script personalizado -->
-    <script src="../static/pattern_analysis.js"></script>
+    <script src="../../static/pattern_analysis.js"></script>
+    <!-- Script de prismjs para colorear el código -->
+    <script src="../../static/prism.js"></script>
 {% endblock %}

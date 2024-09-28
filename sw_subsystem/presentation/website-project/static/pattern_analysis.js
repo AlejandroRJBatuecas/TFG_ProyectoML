@@ -99,14 +99,14 @@ function generateCircuitColumn(circuit_metrics = null) {
 
     // Crear la columna del circuito
     const circuit_column = document.createElement('div');
-    circuit_column.classList.add('col-2', 'text-white', 'text-center', 'bg-info');
+    circuit_column.classList.add('col-2', 'text-center');
     circuit_column.id = "metrics-circuit-"+circuit_number+"-column";
 
     // Crear y añadir el encabezado del circuito
     const circuit_header = `
         <div class="row justify-content-around text-white bg-secondary border border-dark" id="metrics-circuit-${circuit_number}-header">
             <div class="col-12 p-2 metric-col-height d-flex justify-content-center align-items-center">
-                <button type="button" class="btn btn-danger w-100 full-height" id="metrics-remove-circuit-${circuit_number}-button">
+                <button type="button" class="btn btn-danger btn-sm w-100 full-height" id="metrics-remove-circuit-${circuit_number}-button">
                     <!-- Nombre del botón de eliminar circuito abreviado para pantallas pequeñas -->
                     <span class="d-md-none pe-none">X</span>
                     <!-- Nombre del botón de eliminar circuito completo para pantallas grandes -->
@@ -126,11 +126,11 @@ function generateCircuitColumn(circuit_metrics = null) {
             metric_category_header.id = "metrics-category-"+category+"-circuit-"+circuit_number+"-header";
 
             const metric_category_header_content = `
-                <div class="col-12 p-2 border border-dark bg-primary">
+                <div class="col-12 p-2 border border-dark bg-primary text-white">
                     <!-- Nombre de circuito abreviado para pantallas pequeñas -->
-                    <h4 class="mb-0 text-truncate d-md-none" title="C${circuit_number}">C${circuit_number}</h4>
+                    <span class="mb-0 fw-bold text-truncate d-md-none" title="C${circuit_number}">C${circuit_number}</span>
                     <!-- Nombre de circuito completo para pantallas grandes -->
-                    <h4 class="mb-0 text-truncate d-none d-md-block" title="Circuito ${circuit_number}">Circuito ${circuit_number}</h4>
+                    <span class="mb-0 fw-bold text-truncate d-none d-md-block" title="Circuito ${circuit_number}">Circuito ${circuit_number}</span>
                 </div>
             `;
             metric_category_header.insertAdjacentHTML("afterbegin", metric_category_header_content)
@@ -144,18 +144,19 @@ function generateCircuitColumn(circuit_metrics = null) {
                     const metric_row = document.createElement('div');
                     metric_row.classList.add('row');
                     metric_row.id = "metrics-metric-"+metric+"-circuit-"+circuit_number+"-row";
-                    
+
                     // Generar los inputs por defecto
                     let metric_row_content = `
-                        <div class="col-12 p-2 metric-col-height text-truncate border border-dark d-flex justify-content-center align-items-center">
-                            <input type="text" class="form-control" id="${metric}_circuit_${circuit_number}_value" name="${metric}_circuit_${circuit_number}_value" value="${metrics[metric]}" required="required">
+                        <div class="col-12 p-1 input-col-height text-truncate border border-dark d-flex justify-content-center align-items-center">
+                            <input type="text" class="form-control-sm w-75" id="${metric}_circuit_${circuit_number}_value" name="${metric}_circuit_${circuit_number}_value" value="${metrics[metric]}" required="required">
                         </div>
                     `;
-                    
-                    if (circuit_metrics) { // Si se han obtenido datos del json, modificar el value de los inputs
+
+                    if (circuit_metrics && circuit_metrics[metric]) { // Si se han obtenido datos del json, modificar el value de los inputs
+                        console.log(circuit_metrics[metric])
                         metric_row_content = `
-                            <div class="col-12 p-2 metric-col-height text-truncate border border-dark d-flex justify-content-center align-items-center">
-                                <input type="text" class="form-control" id="${metric}_circuit_${circuit_number}_value" name="${metric}_circuit_${circuit_number}_value" value="${circuit_metrics[metric]}" required="required">
+                            <div class="col-12 p-1 input-col-height text-truncate border border-dark d-flex justify-content-center align-items-center">
+                                <input type="text" class="form-control-sm w-75" id="${metric}_circuit_${circuit_number}_value" name="${metric}_circuit_${circuit_number}_value" value="${circuit_metrics[metric]}" required="required">
                             </div>
                         `;
                     }
@@ -192,14 +193,14 @@ function generateMetricsColumn() {
 
     // Crear la columna de las métricas
     const metrics_column = document.createElement('div');
-    metrics_column.classList.add('col-4', 'text-white', 'text-center', 'bg-info');
+    metrics_column.classList.add('col-4', 'text-center');
     metrics_column.id = "metrics-category-column-"+metrics_column_count;
 
     // Crear y añadir el encabezado del circuito
     const metrics_header = `
         <div class="row justify-content-around text-white bg-secondary border border-dark" id="metrics-header-row">
             <div class="col-12 p-2 metric-col-height d-flex justify-content-center align-items-center">
-                <h3 class="mb-0">Métricas</h3>
+                <h5 class="mb-0 fw-bold text-truncate">Métricas</h5>
             </div>
         </div>
     `;
@@ -213,8 +214,8 @@ function generateMetricsColumn() {
             metric_category_header.id = "metrics-category-"+category+"-header";
 
             const metric_category_header_content = `
-                <div class="col-12 p-2 border border-dark bg-primary">
-                    <h4 class="mb-0 text-truncate" title="${category}">${category}</h4>
+                <div class="col-12 p-2 border border-dark bg-primary text-white">
+                    <span class="mb-0 fw-bold text-truncate" title="${category}">${category}</span>
                 </div>
             `;
             metric_category_header.insertAdjacentHTML("afterbegin", metric_category_header_content)
@@ -230,8 +231,8 @@ function generateMetricsColumn() {
                     metric_row.id = "metrics-metric-"+metric+"-row";
 
                     const metric_row_content = `
-                        <div class="col-12 metric-col-height border border-dark d-flex justify-content-center align-items-center">
-                            <h5 class="mb-0" title="${metric.replace(/m\./g, "")}">${metric.replace(/m\./g, "")}</h5>
+                        <div class="col-12 p-1 input-col-height border border-dark d-flex justify-content-center align-items-center">
+                            <span class="mb-0 fw-bold text-truncate" title="${metric.replace(/m\./g, "")}">${metric.replace(/m\./g, "")}</span>
                         </div>
                     `;
                     metric_row.insertAdjacentHTML("afterbegin", metric_row_content)
@@ -275,15 +276,22 @@ async function getMetrics() {
     // Generar la columna de las métricas
     generateMetricsColumn();
 
-    // Accedemos al div que contiene los datos
     const circuit_metrics_div = document.getElementById('circuit-metrics');
-    
-    if (circuit_metrics_div) { // Si se están obteniendo datos, modificar los circuitos y valores
-        // Obtener los datos del atributo "data-datos" y los parseamos como JSON
+    const circuits_list_div = document.getElementById('circuits-list');
+
+    if (circuit_metrics_div) { // Si se están obteniendo datos de un archivo JSON, modificar los circuitos y valores
+        // Obtener los datos del atributo "circuit-metrics-data" y los parseamos como JSON
         const circuit_metrics = JSON.parse(circuit_metrics_div.getAttribute('circuit-metrics-data'));
         // Generar una columna por circuito
         for (const circuit in circuit_metrics) {
             generateCircuitColumn(circuit_metrics[circuit])
+        } 
+    } else if (circuits_list_div) { // Si se están obteniendo datos de un archivo python, modificar los circuitos y valores
+        // Obtener los datos del atributo "circuits-list-data" y los parseamos como JSON
+        const circuits_list = JSON.parse(circuits_list_div.getAttribute('circuits-list-data'));
+        // Generar una columna por circuito
+        for (const circuit in circuits_list) {
+            generateCircuitColumn(circuits_list[circuit])
         } 
     } else { // Si no, generar la columna de circuito por defecto
         generateCircuitColumn();

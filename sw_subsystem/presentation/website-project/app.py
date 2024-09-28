@@ -1,9 +1,10 @@
-import json, joblib, os
+import json, joblib
 
 from flask import Flask, jsonify, render_template, request
 from pathlib import Path
 from config import metrics_definition, ml_trained_model_paths, ml_parameters
 from ml_subsystem.ml_models import KNNClassifierModel, KNNOvsRClassifierModel, RandomForestClassifierModel, store_model
+from sw_subsystem.business.metrics import ASTFileReader
 
 app = Flask(__name__)
 app.json.sort_keys = False
@@ -141,13 +142,14 @@ def get_json_file_metrics(file_data):
     return circuit_metrics
 
 def read_json_file(file):
+    file_content_string = None
     circuit_metrics = None
 
     # Leer el contenido del archivo
     try:
         file_content = json.load(file)
     except json.JSONDecodeError:
-        return circuit_metrics
+        return file_content_string, circuit_metrics
 
     # Comprobar si el fichero contiene una lista 
     if isinstance(file_content, list):
@@ -159,10 +161,20 @@ def read_json_file(file):
         # Obtener las métricas del fichero
         circuit_metrics = get_json_file_metrics(file_content)
 
-    return circuit_metrics
+    # Devolver el contenido del archivo para mostrarlo
+    file_content_string = json.dumps(file_content, indent=4)
+
+    return file_content_string, circuit_metrics
 
 def read_python_file(file):
-    print("read python file")
+    # Obtener el nombre del archivo y su contenido
+    file_name = file.filename
+    file_content = file.read().decode('utf-8')
+
+    # Obtener las métricas de los circuitos y sus imágenes
+    circuits_list = ASTFileReader(file_name, file_content).circuits_list
+
+    return file_content, circuits_list
 
 @app.route('/importar_fichero', methods=['POST'])
 def import_file():
@@ -192,18 +204,24 @@ def import_file():
 
     # Lectura del archivo dependiendo de su extensión
     if file_extension == ".json":
-        circuit_metrics = read_json_file(file)
+        file_content, circuit_metrics = read_json_file(file)
+        # Si se han obtenido las métricas correctamente, devolver el archivo y las métricas
+        if circuit_metrics:
+            return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, file_content=file_content, file_extension=file_extension.replace(".", ""), circuit_metrics=circuit_metrics)
+        else:
+            error_message= "El archivo no tiene el formato indicado"
+            return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, error_message=error_message)
     elif file_extension == ".py":
-        circuit_metrics = read_python_file(file)
+        file_content, circuits_list = read_python_file(file)
+        # Si se han obtenido las métricas correctamente, devolver el archivo y las métricas
+        if circuits_list:
+            return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, file_content=file_content, file_extension=file_extension.replace(".", ""), circuits_list=circuits_list)
+        else:
+            error_message= "El archivo no tiene el formato indicado"
+            return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, error_message=error_message)
     else:
         error_message= "El archivo no tiene la extensión indicada"
         return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, error_message=error_message)
-
-    if not circuit_metrics:
-        error_message= "El archivo no tiene el formato indicado"
-        return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, error_message=error_message)
-
-    return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, circuit_metrics=circuit_metrics)
 
 @app.route('/modelos_ml')
 def ml_models():

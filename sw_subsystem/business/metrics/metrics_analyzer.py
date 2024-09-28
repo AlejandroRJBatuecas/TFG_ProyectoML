@@ -1,11 +1,12 @@
-import matplotlib.pyplot as plt
+import base64
 
+from io import BytesIO
 from config import metrics_definition
 from qiskit.visualization import circuit_drawer
 from collections import defaultdict
 
 class MetricsAnalyzer:
-    def __init__(self, circuit, draw_circuit: bool = False):
+    def __init__(self, circuit):
         # Establecimiento del circuito y del conjunto de métricas
         self.circuit = circuit
         self.metrics = self._define_metrics()
@@ -29,18 +30,27 @@ class MetricsAnalyzer:
         # Obtener el circuito simplificado (sin categorías)
         self.simplified_circuit = self._get_simplified_circuit()
 
-        # Dibujar el circuito, si se requiere
-        if draw_circuit:
-            self._draw_circuit()
+        # Obtener el circuito
+        self.circuit_draw = self._get_circuit_draw()
 
     # Obtención del diccionario de métricas
     def _define_metrics(self):
         return metrics_definition.circuit_metrics
 
     # Dibujar el circuito
-    def _draw_circuit(self):
-        circuit_drawer(circuit=self.circuit, output="mpl", cregbundle=False)
-        plt.show()
+    def _get_circuit_draw(self):
+        # Dibujar el circuito con Matplotlib
+        circuit_draw = circuit_drawer(circuit=self.circuit, output="mpl", cregbundle=False)
+
+        # Guardar la imagen en un objeto BytesIO
+        image_stream = BytesIO()
+        circuit_draw.savefig(image_stream, format='png')
+        image_stream.seek(0)  # Volver al inicio del buffer
+
+        # Codificar la imagen en base64
+        image_base64 = base64.b64encode(image_stream.getvalue()).decode('utf-8')
+
+        return image_base64
 
     def _set_maximum_time(self, qargs):
         # Añadir puerta al momento temporal del circuito y a las líneas temporales de los qubits
