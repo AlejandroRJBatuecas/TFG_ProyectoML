@@ -18,3 +18,10 @@
 .full-height {
     height: 100%;
 }
+
+/* Fijar la primera columna de la tabla de métricas */
+.sticky {
+    position: sticky;      /* Fija el elemento cuando se hace scroll */
+    left: 0;               /* Fija el elemento en la parte izquierda */
+    z-index: 1;            /* Asegura que esté por encima de otros elementos */
+}

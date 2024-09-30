@@ -51,27 +51,45 @@
             </div>
             <div class="col-10 col-md-4">
                 {% set metrics_column_width = (12/(circuits_predictions|length+1))|int %}
-                <div class="row justify-content-around" id="results-metrics-header-row">
-                    <h1 class="mb-3 mt-3">Métricas utilizadas</h1>
-                    <div class="col-{{metrics_column_width}} p-2 border border-dark text-white bg-secondary">
-                        <h5 class="mb-0 text-truncate" title="Métrica">Métrica</h5>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h1>Métricas utilizadas</h1>
                     </div>
-                    {% for circuit in circuits_list %}
-                        {% set circuit_number = loop.index %}
-                        <div class="col-{{metrics_column_width}} p-2 border border-dark text-white bg-primary">
-                            <h5 class="mb-0 text-truncate" title="C{{circuit_number}}">C{{circuit_number}}</h5>
+                </div>
+                <!-- Tabla de métricas de los circuitos -->
+                <div class="row mt-3 d-flex flex-nowrap overflow-scroll" id="metrics-body">
+                    <!-- Columna de métricas -->
+                    <div class="col-3 sticky" id="results-metrics-column">
+                        <div class="row" id="results-metrics-header-row">
+                            <div class="col p-2 border border-dark text-white bg-secondary">
+                                <h5 class="mb-0 text-truncate" title="Métricas">Métricas</h5>
+                            </div>
                         </div>
-                    {% endfor %}
-                    {% for metric in circuits_metrics %}
-                        <div class="col-{{metrics_column_width}} p-2 border border-dark text-white bg-primary">
-                            <h6 class="mb-0 text-truncate" title="{{metric}}">{{metric}}</h6>
-                        </div>
-                        {% for circuit in circuits_list %}
-                            {% set circuit_number = loop.index0 %}
-                            <div class="col-{{metrics_column_width}} p-2 border border-dark text-dark lightblue-bg-color">
-                                <h6 class="mb-0 text-truncate" title="{{circuits_list[circuit_number][metric]}}">{{circuits_list[circuit_number][metric]}}</h6>
+                        {% for metric in circuits_metrics %}
+                            <div class="row" id="results-metrics-metrics-{{metric}}-row">
+                                <div class="col p-2 border border-dark text-white bg-primary text-truncate">
+                                    <span class="mb-0 fw-bold" title="{{metric}}">{{metric}}</span>
+                                </div>
                             </div>
                         {% endfor %}
+                    </div>
+                    <!-- Columnas de circuitos -->
+                    {% for circuit in circuits_list %}
+                        {% set circuit_number = loop.index %}
+                        <div class="col" id="results-metrics-circuit-{{circuit_number}}-column">
+                            <div class="row" id="results-metrics-circuit-{{circuit_number}}-header">
+                                <div class="col p-2 border border-dark text-white bg-primary">
+                                    <h5 class="mb-0 text-truncate" title="C{{circuit_number}}">C{{circuit_number}}</h5>
+                                </div>
+                            </div>
+                            {% for metric in circuits_metrics %}
+                                <div class="row" id="results-metrics-metric-{{metric}}-circuit-{{circuit_number}}-row">
+                                    <div class="col p-2 border border-dark text-dark lightblue-bg-color text-truncate">
+                                        <span class="mb-0 fw-bold" title="{{circuits_list[circuit_number-1][metric]}}">{{circuits_list[circuit_number-1][metric]}}</span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
                     {% endfor %}
                 </div>
             </div>
