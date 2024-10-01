@@ -3,9 +3,9 @@ Fichero de configuración que contiene las rutas donde están almacenados los mo
 """
 
 trained_models = {
-    "Clasificador KNN multietiqueta": "knn_classifier",
-    "Clasificador KNN individual": "knn_one_vs_rest_classifier",
-    "Clasificador Random Forest individual": "random_forest_classifier"
+    "Multi-label KNN classifier": "knn_classifier",
+    "Individual KNN classifier": "knn_one_vs_rest_classifier",
+    "Individual Random Forest classifier": "random_forest_classifier"
 }
 
 # Directorio de almacenamiento de los modelos

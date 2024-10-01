@@ -52,15 +52,15 @@ def inject_global_vars():
 def index():
     return render_template('index.html')
 
-@app.route('/obtener_metricas')
+@app.route('/get_metrics')
 def obtain_metrics():
     return jsonify(metrics_definition.circuit_metrics)
 
-@app.route('/analisis_patrones')
+@app.route('/pattern_analysis')
 def pattern_analysis():
     return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models)
 
-@app.route('/predecir', methods=['POST'])
+@app.route('/predict', methods=['POST'])
 def predict():
     circuits_list = [] # Lista de las métricas de los circuitos
     selected_models = [] # Lista de modelos seleccionados
@@ -76,7 +76,7 @@ def predict():
     selected_models_num = len(request.form)-circuit_metrics_total_values*circuits_number
 
     if selected_models_num == 0:
-        circuits_list = "No se ha seleccionado ningún modelo"
+        circuits_list = "No model selected"
         return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, circuits_list=circuits_list)
 
     # Crear los diccionarios de métricas de cada circuito y añadirlos a la lista
@@ -89,7 +89,7 @@ def predict():
             try:
                 circuit_dict[metric_name] = float(form_values[list_index])
             except (ValueError, TypeError):
-                circuits_list = "Los valores de las métricas deben ser numéricos"
+                circuits_list = "Metric values must be numeric"
                 return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, circuits_list=circuits_list)
             list_index+=1
 
@@ -134,7 +134,7 @@ def get_json_file_metrics(file_data):
                 if metric in circuit: # Si encuentra la clave, se añade el valor al diccionario
                     circuit_dict[metric] = circuit[metric]
                 else:
-                    circuit_dict[metric] = "Sin Definir"
+                    circuit_dict[metric] = "Undefined"
 
             # Añadir el circuito a la lista de métricas
             circuit_metrics.append(circuit_dict)
@@ -176,11 +176,11 @@ def read_python_file(file):
 
     return file_content, circuits_list
 
-@app.route('/importar_fichero', methods=['POST'])
+@app.route('/import_file', methods=['POST'])
 def import_file():
     print(request.files)
 
-    error_message = "Error al importar el archivo"
+    error_message = "Error importing file"
 
     # Verificar si se ha enviado un archivo
     if 'file' not in request.files:
@@ -191,7 +191,7 @@ def import_file():
 
     # Verificar si se ha seleccionado un archivo
     if file.filename == '':
-        error_message= "No se ha seleccionado ningún archivo"
+        error_message = "No file selected" 
         return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, error_message=error_message)
 
     # Obtener la extensión del archivo requerido
@@ -199,7 +199,7 @@ def import_file():
 
     # Verificar la extensión del archivo
     if not allowed_file(file.filename, file_extension.replace(".", "")):
-        error_message= "El archivo no tiene la extensión indicada"
+        error_message = "The file does not have the specified extension"
         return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, error_message=error_message)
 
     # Lectura del archivo dependiendo de su extensión
@@ -209,7 +209,7 @@ def import_file():
         if circuit_metrics:
             return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, file_content=file_content, file_extension=file_extension.replace(".", ""), circuit_metrics=circuit_metrics)
         else:
-            error_message= "El archivo no tiene el formato indicado"
+            error_message = "The file does not have the specified format"
             return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, error_message=error_message)
     elif file_extension == ".py":
         file_content, circuits_list = read_python_file(file)
@@ -217,13 +217,13 @@ def import_file():
         if circuits_list:
             return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, file_content=file_content, file_extension=file_extension.replace(".", ""), circuits_list=circuits_list)
         else:
-            error_message= "El archivo no tiene el formato indicado"
+            error_message = "The file does not have the specified format"
             return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, error_message=error_message)
     else:
-        error_message= "El archivo no tiene la extensión indicada"
+        error_message= "The file does not have the specified extension"
         return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, error_message=error_message)
 
-@app.route('/modelos_ml')
+@app.route('/ml_models')
 def ml_models():
     return render_template('/ml_models/ml_models.html')
 

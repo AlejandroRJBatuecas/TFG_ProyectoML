@@ -1,26 +1,26 @@
 {% extends 'base.html' %}
 
-{% block title %}Resultados de la predicción{% endblock %}
+{% block title %}Prediction results{% endblock %}
 
 {% block content %}
     <div class="container-fluid p-3">
         <div class="row justify-content-center text-center">
             <div class="col-12">
-                <h1 class="display-3">Resultados de la predicción</h1>
+                <h1 class="display-3">Prediction results</h1>
                 <hr/>
             </div>
         </div>
         <div class="row justify-content-around">
             <div class="col-10 col-md-7">
-                <h1 class="mb-3 mt-3">Predicciones por circuito</h1>
+                <h1 class="mb-3 mt-3">Predictions by circuit</h1>
                 {% set column_width = (12/(patterns_list|length+1))|int %}
                 {% set circuit_number = 0 %}
                 {% for circuit in circuits_predictions %}
                     {% set circuit_number = loop.index %}
                     <div class="row justify-content-around" id="results-circuit-{{circuit_number}}-header-row">
-                        <h1 class="display-6 mb-3 mt-3">Circuito {{circuit_number}}</h1>
+                        <h1 class="display-6 mb-3 mt-3">Circuit {{circuit_number}}</h1>
                         <div class="col-{{column_width}} p-2 border border-dark text-white bg-secondary">
-                            <h5 class="mb-0 text-truncate" title="Modelos / Patrones">Modelos / Patrones</h5>
+                            <h5 class="mb-0 text-truncate" title="Models / Patterns">Models / Patterns</h5>
                         </div>
                         {% for pattern in patterns_list %}
                             <div class="col-{{column_width}} p-2 border border-dark text-white bg-primary">
@@ -50,10 +50,9 @@
                 {% endfor %}
             </div>
             <div class="col-10 col-md-4">
-                {% set metrics_column_width = (12/(circuits_predictions|length+1))|int %}
                 <div class="row mt-3">
                     <div class="col-12">
-                        <h1>Métricas utilizadas</h1>
+                        <h1>Metrics used</h1>
                     </div>
                 </div>
                 <!-- Tabla de métricas de los circuitos -->
@@ -62,7 +61,7 @@
                     <div class="col-3 sticky" id="results-metrics-column">
                         <div class="row" id="results-metrics-header-row">
                             <div class="col p-2 border border-dark text-white bg-secondary">
-                                <h5 class="mb-0 text-truncate" title="Métricas">Métricas</h5>
+                                <h5 class="mb-0 text-truncate" title="Metrics">Metrics</h5>
                             </div>
                         </div>
                         {% for metric in circuits_metrics %}
@@ -78,13 +77,13 @@
                         {% set circuit_number = loop.index %}
                         <div class="col" id="results-metrics-circuit-{{circuit_number}}-column">
                             <div class="row" id="results-metrics-circuit-{{circuit_number}}-header">
-                                <div class="col p-2 border border-dark text-white bg-primary">
+                                <div class="col p-2 border border-dark text-end text-white bg-primary">
                                     <h5 class="mb-0 text-truncate" title="C{{circuit_number}}">C{{circuit_number}}</h5>
                                 </div>
                             </div>
                             {% for metric in circuits_metrics %}
                                 <div class="row" id="results-metrics-metric-{{metric}}-circuit-{{circuit_number}}-row">
-                                    <div class="col p-2 border border-dark text-dark lightblue-bg-color text-truncate">
+                                    <div class="col p-2 border border-dark text-end text-dark lightblue-bg-color text-truncate">
                                         <span class="mb-0 fw-bold" title="{{circuits_list[circuit_number-1][metric]}}">{{circuits_list[circuit_number-1][metric]}}</span>
                                     </div>
                                 </div>

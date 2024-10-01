@@ -38,10 +38,10 @@ function eliminateCircuitColumn(event) {
             // Decrementar el contador de circuitos
             circuit_count -= 1;
         } else {
-            console.log('El elemento no existe.');
+            console.log('The element does not exist');
         }
     } else {
-        console.log('No se encontró ningún número en la cadena.');
+        console.log('No number was found in the string');
     }
 
 }
@@ -112,7 +112,7 @@ function generateCircuitColumn(circuit_metrics = null) {
                     <!-- Nombre del botón de eliminar circuito abreviado para pantallas pequeñas -->
                     <span class="d-md-none pe-none">X</span>
                     <!-- Nombre del botón de eliminar circuito completo para pantallas grandes -->
-                    <span class="d-none d-md-block pe-none">Eliminar circuito</span>
+                    <span class="d-none d-md-block pe-none">Delete circuit</span>
                 </button>
                 
             </div>
@@ -132,7 +132,7 @@ function generateCircuitColumn(circuit_metrics = null) {
                     <!-- Nombre de circuito abreviado para pantallas pequeñas -->
                     <span class="mb-0 fw-bold d-md-none" title="C${circuit_number}">C${circuit_number}</span>
                     <!-- Nombre de circuito completo para pantallas grandes -->
-                    <span class="mb-0 fw-bold d-none d-md-block" title="Circuito ${circuit_number}">Circuito ${circuit_number}</span>
+                    <span class="mb-0 fw-bold d-none d-md-block" title="Circuit ${circuit_number}">Circuit ${circuit_number}</span>
                 </div>
             `;
             metric_category_header.insertAdjacentHTML("afterbegin", metric_category_header_content)
@@ -173,7 +173,7 @@ function generateMetricsColumn() {
     const metrics_header = `
         <div class="row justify-content-around text-white bg-secondary border border-dark" id="metrics-header-row">
             <div class="col p-2 metric-col-height d-flex justify-content-center align-items-center">
-                <h5 class="mb-0 fw-bold text-truncate">Métricas</h5>
+                <h5 class="mb-0 fw-bold text-truncate">Metrics</h5>
             </div>
         </div>
     `;
@@ -252,7 +252,7 @@ function openFileImportModal(file_type) {
 
 // Obtener los datos de las métricas del JSON desde el servidor
 async function getMetrics() {
-    const response = await fetch('/obtener_metricas');
+    const response = await fetch('/get_metrics');
     metrics_json = await response.json();
 
     // Generar la columna de las métricas
@@ -348,17 +348,17 @@ formulario.addEventListener('submit', function(event) {
 
         if (!checkbox_checked) {
             // Establecer el título y el texto del error
-            title_string = "No se ha seleccionado ningún modelo";
-            error_string = "Debe seleccionar al menos uno de los modelos de ML propuestos";
+            title_string = "No model selected";
+            error_string = "You must select at least one of the proposed ML models";
         } else {
             // Establecer el título del error
-            title_string = "Los valores de las siguientes métricas deben ser numéricos:";
+            title_string = "The values ​​for the following metrics must be numeric:";
 
             // Obtener todos los campos no válidos y añadirlos al mensaje de error
             not_valid_inputs.forEach(function(not_valid_input) {
                 const splitted_name = not_valid_input.split("_");
                 // splitted_name[0] contiene el nombre de la métrica y splitted_name[2] contiene el número del circuito
-                error_string += 'Circuito '+splitted_name[2]+' - '+splitted_name[0].replace("m.", "")+'\n'
+                error_string += 'Circuit '+splitted_name[2]+' - '+splitted_name[0].replace("m.", "")+'\n'
             });
         }
 
