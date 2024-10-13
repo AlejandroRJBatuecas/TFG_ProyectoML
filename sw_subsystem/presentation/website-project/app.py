@@ -10,20 +10,10 @@ app = Flask(__name__)
 app.json.sort_keys = False
 
 # Nombre de la aplicación
-APP_NAME = "QPatternsML"
+APP_NAME = "QPP-ML"
 
 # Constantes
 PATTERN_ANALYSIS_HTML_FILE = '/pattern_analysis/pattern_analysis.html'
-
-def get_simplified_circuit():
-    # Nuevo diccionario para almacenar solo los valores
-    simplified_circuit_metrics = {}
-
-    for category, metrics in metrics_definition.circuit_metrics.items():
-        for metric, value in metrics.items():
-            simplified_circuit_metrics[metric] = value
-        
-    return simplified_circuit_metrics
 
 def get_or_create_model(trained_model):
     # Obtener la ruta de almacenamiento del modelo
@@ -60,6 +50,16 @@ def obtain_metrics():
 def pattern_analysis():
     return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models)
 
+def get_simplified_circuit(metric_detail):
+    # Nuevo diccionario para almacenar solo los valores
+    simplified_circuit_metrics = {}
+
+    for category, metrics in metrics_definition.circuit_metrics.items():
+        for metric, metric_details in metrics.items():
+            simplified_circuit_metrics[metric] = metric_details[metric_detail]
+        
+    return simplified_circuit_metrics
+
 @app.route('/predict', methods=['POST'])
 def predict():
     circuits_list = [] # Lista de las métricas de los circuitos
@@ -80,12 +80,13 @@ def predict():
         return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, circuits_list=circuits_list)
 
     # Crear los diccionarios de métricas de cada circuito y añadirlos a la lista
-    list_index = 0
+    list_index = selected_models_num
     for _ in range(0, circuits_number): # Para cada circuito
         circuit_dict = {} # Crear el diccionario de métricas
         for _ in range(0, circuit_metrics_total_values): # Para cada métrica
             # Obtener el nombre de la métrica y añadirla con su valor al diccionario
             metric_name = form_keys[list_index].split("_")[0]
+
             try:
                 circuit_dict[metric_name] = float(form_values[list_index])
             except (ValueError, TypeError):
@@ -101,8 +102,8 @@ def predict():
         json.dump(circuits_list, json_file, indent=4)
 
     # Obtener los modelos seleccionados
-    for i in range(0, len(request.form)-list_index):
-        selected_models.append(form_values[list_index+i])
+    for i in range(0, selected_models_num):
+        selected_models.append(form_values[i])
 
     circuits_predictions = [{} for _ in range(circuits_number)] # Lista que contiene las predicciones de los circuitos
     
@@ -112,7 +113,7 @@ def predict():
         for i, value in enumerate(model_predictions_list):
             circuits_predictions[i][selected_model] = value
 
-    circuits_metrics = list(circuits_list[0].keys())
+    circuits_metrics = get_simplified_circuit("Descriptive name")
     return render_template('/pattern_analysis/prediction_results.html', circuits_predictions=circuits_predictions, patterns_list=ml_parameters.patterns_list, circuits_metrics=circuits_metrics, circuits_list=circuits_list)
 
 def allowed_file(filename, file_extension):
@@ -122,7 +123,7 @@ def allowed_file(filename, file_extension):
 def get_json_file_metrics(file_data):
     circuit_metrics = []
     # Obtener el circuito base simplificado
-    simplified_circuit = get_simplified_circuit()
+    simplified_circuit = get_simplified_circuit("Value")
 
     # Recorrer cada elemento de la lista
     for circuit in file_data:
@@ -207,7 +208,7 @@ def import_file():
         file_content, circuit_metrics = read_json_file(file)
         # Si se han obtenido las métricas correctamente, devolver el archivo y las métricas
         if circuit_metrics:
-            return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, file_content=file_content, file_extension=file_extension.replace(".", ""), circuit_metrics=circuit_metrics)
+            return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, file_name=file.filename, file_content=file_content, file_extension=file_extension.replace(".", ""), circuit_metrics=circuit_metrics)
         else:
             error_message = "The file does not have the specified format"
             return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, error_message=error_message)
@@ -215,7 +216,7 @@ def import_file():
         file_content, circuits_list = read_python_file(file)
         # Si se han obtenido las métricas correctamente, devolver el archivo y las métricas
         if circuits_list:
-            return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, file_content=file_content, file_extension=file_extension.replace(".", ""), circuits_list=circuits_list)
+            return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, file_name=file.filename, file_content=file_content, file_extension=file_extension.replace(".", ""), circuits_list=circuits_list)
         else:
             error_message = "The file does not have the specified format"
             return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, error_message=error_message)

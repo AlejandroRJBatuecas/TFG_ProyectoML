@@ -1,10 +1,36 @@
-.justify-text {
-    text-indent: 2rem;
-    text-align: justify;
+/* Paleta de colores */
+.darkblue-bg-color {
+    background-color: #022B3A;
+}
+
+.blue-green-bg-color {
+    background-color: #1F7A8C;
 }
 
 .lightblue-bg-color {
-    background-color: #f4fdff;
+    background-color: #BFDBF7;
+}
+
+.grey-bg-color {
+    background-color: #E1E5F2;
+}
+
+.blue-bg-color {
+    background-color: #a7bff1;
+}
+
+.dropdown-item:hover {
+    color: #212529 !important;
+}
+
+.dropdown-item:active {
+    background-color: #e9ecef !important;
+}
+
+
+.justify-text {
+    text-indent: 2rem;
+    text-align: justify;
 }
 
 .metric-col-height {
@@ -24,4 +50,9 @@
     position: sticky;      /* Fija el elemento cuando se hace scroll */
     left: 0;               /* Fija el elemento en la parte izquierda */
     z-index: 1;            /* Asegura que esté por encima de otros elementos */
+}
+
+.fixed-content {
+    margin-top: 56px;
+    z-index: 900;
 }

@@ -3,40 +3,40 @@
 {% block title %}Index{% endblock %}
 
 {% block content %}
-    <div class="container-fluid p-3">
-        <div class="row justify-content-center">
-            <div class="col-12">
-                <h1 class="display-5 text-center">Welcome to {{app_name}}</h1>
-                <hr/>
-            </div>
-        </div>
-        <div class="row justify-content-center mt-3">
-            <div class="col-10">
-                <h3 class="text-center">Machine Learning Tool for Detection and Prediction of Design Patterns in Quantum Software</h3>
-            </div>
-            <div class="col-10 mt-3">
-                <p class="justify-text">
-                    Defining and using software patterns has proven to be key to developing quality software in a systematic way. These patterns are good solutions to common problems that developers encounter. There are a large number of design patterns in the literature that have been shown to work well and achieve their purpose.
-                </p>
-                <p class="justify-text">
-                    On the other hand, with the rise of quantum computing, and the beginning of research in the field of quantum software engineering, it has been observed that there are still no well-documented and validated design patterns in the industry for quantum software, whose nature (radically different from traditional software) makes existing patterns invalid.
-                </p>
-                <p class="justify-text">
-                    Because of this, this tool based on Machine Learning algorithms allows to analyze existing quantum software and detect or predict the use of certain proposed design patterns for quantum software.
-                </p>
-            </div>
-        </div>
-        <div class="row justify-content-center mt-3">
-            <div class="col-10 col-lg-5 p-2 d-grid">
-                <button type="button" class="btn btn-primary p-1" onclick="window.location.href='/pattern_analysis';">
-                        <h3 class="mb-0">Perform pattern analysis</h3>
-                </button>
-            </div>
-            <div class="col-10 col-lg-5 p-2 d-grid">
-                <button type="button" class="btn btn-primary p-1" onclick="window.location.href='/ml_models';">
-                    <h3 class="mb-0">See model statistics</h3>
-                </button>
-            </div>
+<div class="container-fluid p-3">
+    <div class="row justify-content-center fixed-content">
+        <div class="col-12">
+            <h1 class="display-5 text-center">Welcome to {{app_name}}</h1>
+            <hr/>
         </div>
     </div>
+    <div class="row justify-content-center mt-3">
+        <div class="col-10">
+            <h3 class="text-center">Machine Learning Tool for Detection and Prediction of Design Patterns in Quantum Software</h3>
+        </div>
+        <div class="col-10 mt-3">
+            <p class="justify-text">
+                Defining and using software patterns has proven to be key to developing quality software in a systematic way. These patterns are good solutions to common problems that developers encounter. There are a large number of design patterns in the literature that have been shown to work well and achieve their purpose.
+            </p>
+            <p class="justify-text">
+                On the other hand, with the rise of quantum computing, and the beginning of research in the field of quantum software engineering, it has been observed that there are still no well-documented and validated design patterns in the industry for quantum software, whose nature (radically different from traditional software) makes existing patterns invalid.
+            </p>
+            <p class="justify-text">
+                Because of this, this tool based on Machine Learning algorithms allows to analyze existing quantum software and detect or predict the use of certain proposed design patterns for quantum software.
+            </p>
+        </div>
+    </div>
+    <div class="row justify-content-center mt-3">
+        <div class="col-10 col-lg-5 p-2 d-grid">
+            <button type="button" class="btn blue-green-bg-color text-white p-1" onclick="window.location.href='/pattern_analysis';">
+                    <h3 class="mb-0">Perform pattern analysis</h3>
+            </button>
+        </div>
+        <div class="col-10 col-lg-5 p-2 d-grid">
+            <button type="button" class="btn blue-green-bg-color text-white p-1" onclick="window.location.href='/ml_models';">
+                <h3 class="mb-0">See model statistics</h3>
+            </button>
+        </div>
+    </div>
+</div>
 {% endblock %}

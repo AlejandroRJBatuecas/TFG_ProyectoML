@@ -1,28 +1,28 @@
 <!-- Barra de navegación -->
-<nav class="navbar sticky-top navbar-expand-lg bg-primary">
+<nav class="navbar fixed-top navbar-expand-lg darkblue-bg-color" id="main-navbar">
     <div class="container-fluid">
         <a class="navbar-brand text-white" href="/">{{app_name}}</a>
-        <button class="navbar-toggler navbar-light" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler navbar-dark" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-                <a class="nav-link text-white" href="/pattern_analysis">Pattern analysis</a>
-            </li>
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle text-white" href="" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                    ML models
-                </a>
-            <ul class="dropdown-menu bg-primary" aria-labelledby="navbarDropdown">
-                <li><button class="dropdown-item text-white" onclick="window.location.href='/ml_models';">Model comparison</button></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><button class="dropdown-item text-white" onclick="window.location.href='#';">KNN classifier</button></li>
-                <li><button class="dropdown-item text-white" onclick="window.location.href='#';">Single KNN classifier</button></li>
-                <li><button class="dropdown-item text-white" onclick="window.location.href='#';">Individual Random Forest classifier</button></li>
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="/pattern_analysis">Pattern analysis</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-white" href="" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        ML models
+                    </a>
+                <ul class="dropdown-menu darkblue-bg-color" aria-labelledby="navbarDropdown">
+                    <li><button class="dropdown-item text-white" onclick="window.location.href='/ml_models';">Model comparison</button></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><button class="dropdown-item text-white" onclick="window.location.href='#';">KNN classifier</button></li>
+                    <li><button class="dropdown-item text-white" onclick="window.location.href='#';">Single KNN classifier</button></li>
+                    <li><button class="dropdown-item text-white" onclick="window.location.href='#';">Individual Random Forest classifier</button></li>
+                </ul>
+                </li>
             </ul>
-            </li>
-        </ul>
         </div>
     </div>
 </nav>
