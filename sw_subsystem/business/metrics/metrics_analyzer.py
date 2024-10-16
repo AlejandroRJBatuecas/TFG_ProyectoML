@@ -1,4 +1,4 @@
-import base64
+import base64, copy
 
 from io import BytesIO
 from config import metrics_definition
@@ -35,7 +35,8 @@ class MetricsAnalyzer:
 
     # Obtención del diccionario de métricas
     def _define_metrics(self):
-        return metrics_definition.circuit_metrics
+        circuit_metrics_definition = copy.deepcopy(metrics_definition.circuit_metrics)
+        return circuit_metrics_definition
 
     # Dibujar el circuito
     def _get_circuit_draw(self):
@@ -234,7 +235,7 @@ class MetricsAnalyzer:
         # Nuevo diccionario para almacenar solo los valores
         simplified_circuit_metrics = {}
 
-        for category, metrics in metrics_definition.circuit_metrics.items():
+        for category, metrics in self.metrics.items():
             for metric, metric_details in metrics.items():
                 simplified_circuit_metrics[metric] = metric_details["Value"]
             

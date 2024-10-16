@@ -126,7 +126,7 @@
                 <h5 class="modal-title">Importing a file</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{url_for('import_file')}}" method="post" enctype="multipart/form-data" class="p-0" id="file-import-form">
+            <form action="{{url_for('pattern_analysis')}}" method="post" enctype="multipart/form-data" class="p-0" id="file-import-form">
                 <div class="modal-body d-grid">
                     <label class="form-label fw-bold" for="file-input">Select a file (<span id="file-extension-type"></span> files only)</label>
                     <input class="form-control" type="file" name="file" required="required" id="file-input">

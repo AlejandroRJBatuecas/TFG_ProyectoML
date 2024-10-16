@@ -7,7 +7,7 @@ const metrics_body = document.getElementById('metrics-body');
 // Encabezado de la tabla de métricas
 const header_row = document.getElementById('metrics-header-row');
 
-let metrics_json = null;
+let circuit_metrics_definition = null;
 let circuit_count = 0;
 let circuits = [];
 
@@ -69,12 +69,13 @@ function addFormInputs(metrics, circuit_number, circuit_metrics, circuit_column)
             `;
 
             // Si se han obtenido datos del json y existe la métrica, modificar el value de los inputs
-            if (circuit_metrics?.[metric])
+            if (circuit_metrics?.[metric]) {
                 metric_row_content = `
                     <div class="col p-1 input-col-height text-truncate border border-dark d-flex justify-content-center align-items-center">
                         <input type="text" class="form-control-sm w-75" id="${metric}_circuit_${circuit_number}_value" name="${metric}_circuit_${circuit_number}_value" value="${circuit_metrics[metric]}" required="required">
                     </div>
                 `;
+            }
             
             metric_row.insertAdjacentHTML("afterbegin", metric_row_content)
 
@@ -102,6 +103,8 @@ function generateCircuitColumn(circuit_metrics = null) {
     circuit_column.classList.add('col', 'text-center');
     circuit_column.id = "metrics-circuit-"+circuit_number+"-column";
 
+    const circuit_name = circuit_metrics?.["name"] ? '"'+circuit_metrics["name"]+'"' : circuit_number
+
     // Crear y añadir el encabezado del circuito
     const circuit_header = `
         <div class="row justify-content-around text-white lightblue-bg-color border border-dark" id="metrics-circuit-${circuit_number}-header">
@@ -119,8 +122,8 @@ function generateCircuitColumn(circuit_metrics = null) {
     circuit_column.insertAdjacentHTML("afterbegin", circuit_header);
 
     // Añadir cada una de las métricas y sus categorías
-    for (const category in metrics_json) {
-        if (metrics_json.hasOwnProperty(category)) {
+    for (const category in circuit_metrics_definition) {
+        if (circuit_metrics_definition.hasOwnProperty(category)) {
             const metric_category_header = document.createElement('div');
             metric_category_header.classList.add('row');
             metric_category_header.id = "metrics-category-"+category+"-circuit-"+circuit_number+"-header";
@@ -130,16 +133,19 @@ function generateCircuitColumn(circuit_metrics = null) {
                     <!-- Nombre de circuito abreviado para pantallas pequeñas -->
                     <span class="mb-0 fw-bold d-md-none" title="C${circuit_number}">C${circuit_number}</span>
                     <!-- Nombre de circuito completo para pantallas grandes -->
-                    <span class="mb-0 fw-bold d-none d-md-block" title="Circuit ${circuit_number}">Circuit ${circuit_number}</span>
+                    <span class="mb-0 fw-bold d-none d-md-block" title="Circuit ${circuit_name}">Circuit ${circuit_name}</span>
                 </div>
             `;
             metric_category_header.insertAdjacentHTML("afterbegin", metric_category_header_content)
 
             circuit_column.appendChild(metric_category_header);
 
-            const metrics = metrics_json[category];
+            const metrics = circuit_metrics_definition[category];
 
-            addFormInputs(metrics, circuit_number, circuit_metrics, circuit_column);
+            if (circuit_metrics?.["circuit_metrics"]) // Si existe la clave, pasar solo ese diccionario (para archivos de código)
+                addFormInputs(metrics, circuit_number, circuit_metrics["circuit_metrics"], circuit_column);
+            else // Para archivos JSON
+                addFormInputs(metrics, circuit_number, circuit_metrics, circuit_column);
         }
     }
 
@@ -178,8 +184,8 @@ function generateMetricsColumn() {
     metrics_column.insertAdjacentHTML("afterbegin", metrics_header);
 
     // Añadir cada una de las métricas y sus categorías
-    for (const category in metrics_json) {
-        if (metrics_json.hasOwnProperty(category)) {
+    for (const category in circuit_metrics_definition) {
+        if (circuit_metrics_definition.hasOwnProperty(category)) {
             const metric_category_header = document.createElement('div');
             metric_category_header.classList.add('row');
             metric_category_header.id = "metrics-category-"+category+"-header";
@@ -193,7 +199,7 @@ function generateMetricsColumn() {
 
             metrics_column.appendChild(metric_category_header);
 
-            const metrics = metrics_json[category];
+            const metrics = circuit_metrics_definition[category];
 
             for (const metric in metrics) {
                 if (metrics.hasOwnProperty(metric)) {
@@ -250,16 +256,13 @@ function openFileImportModal(file_type) {
 
 // Obtener los datos de las métricas del JSON desde el servidor
 async function getMetrics() {
-    metrics_json = null
-
-    const response = await fetch('/get_metrics');
-    metrics_json = await response.json();
-
-    // Generar la columna de las métricas
+    const response = await fetch('/get_circuit_metrics_definition');
+    circuit_metrics_definition = await response.json();
+            
+    // Generar la columna de métricas
     generateMetricsColumn();
 
     const circuit_metrics_div = document.getElementById('circuit-metrics');
-    const circuits_list_div = document.getElementById('circuits-list');
 
     if (circuit_metrics_div) { // Si se están obteniendo datos de un archivo JSON, modificar los circuitos y valores
         // Obtener los datos del atributo "circuit-metrics-data" y los parseamos como JSON
@@ -268,15 +271,20 @@ async function getMetrics() {
         for (const circuit in circuit_metrics) {
             generateCircuitColumn(circuit_metrics[circuit])
         } 
-    } else if (circuits_list_div) { // Si se están obteniendo datos de un archivo python, modificar los circuitos y valores
-        // Obtener los datos del atributo "circuits-list-data" y los parseamos como JSON
-        const circuits_list = JSON.parse(circuits_list_div.getAttribute('circuits-list-data'));
-        // Generar una columna por circuito
-        for (const circuit in circuits_list) {
-            generateCircuitColumn(circuits_list[circuit])
-        } 
-    } else { // Si no, generar la columna de circuito por defecto
-        generateCircuitColumn();
+    } else {
+        const circuits_list_div = document.getElementById('circuits-list');
+
+        if (circuits_list_div) { // Si se están obteniendo datos de un archivo python, modificar los circuitos y valores
+            // Obtener los datos del atributo "circuits-list-data" y parsearlos como JSON
+            const circuits_list = JSON.parse(circuits_list_div.getAttribute('circuits-list-data'));
+            // Generar una columna por circuito
+            for (const circuit in circuits_list) {
+                generateCircuitColumn(circuits_list[circuit])
+            } 
+        } else { // Si no, generar la columna de circuito por defecto
+            // Generar la columna del circuito por defecto
+            generateCircuitColumn();
+        }
     }
 }
 

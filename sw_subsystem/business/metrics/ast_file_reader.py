@@ -116,14 +116,11 @@ class QiskitAnalyzer(ast.NodeVisitor):
         for arg in node.value.args:
             # Si se referencia un QuantumRegister
             if isinstance(arg, ast.Subscript):
-                print(arg)
                 # Obtener la variable y la posicion del registro
                 register_var = arg.value.id
                 register_pos = arg.slice.value
-                print(f"{register_var}[{register_pos}]")
                 # Obtener la variable y el index
                 register = self.registers[register_var][register_pos]
-                print(register)
                 # Almacenar el registro en los argumentos de la instrucción
                 if isinstance(register, Qubit):
                     instruction_args['num_qubits'] += 1
@@ -175,7 +172,7 @@ class ASTFileReader:
 
     def _analyze_code(self):
         tree = ast.parse(self.code)
-        print(ast.dump(tree, indent=4)) # Muestra el código en forma de árbol para debug
+        #print(ast.dump(tree, indent=4)) # Muestra el código en forma de árbol para debug
         visitor = QiskitAnalyzer()
         visitor.visit(tree)
 
