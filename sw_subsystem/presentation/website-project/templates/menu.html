@@ -10,17 +10,26 @@
                 <li class="nav-item">
                     <a class="nav-link text-white" href="/pattern_analysis_configuration">Pattern analysis configuration</a>
                 </li>
+                {% if last_analysis %}
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="/prediction_results">Prediction results</a>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link text-white disabled disabled-custom" href="/prediction_results">Prediction results</a>
+                </li>
+                {% endif %}
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle text-white" href="" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle text-white" href="/ml_models" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                         ML models
                     </a>
-                <ul class="dropdown-menu darkblue-bg-color" aria-labelledby="navbarDropdown">
-                    <li><button class="dropdown-item text-white" onclick="window.location.href='/ml_models';">Model comparison</button></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><button class="dropdown-item text-white" onclick="window.location.href='#';">KNN classifier</button></li>
-                    <li><button class="dropdown-item text-white" onclick="window.location.href='#';">Single KNN classifier</button></li>
-                    <li><button class="dropdown-item text-white" onclick="window.location.href='#';">Individual Random Forest classifier</button></li>
-                </ul>
+                    <ul class="dropdown-menu darkblue-bg-color" aria-labelledby="navbarDropdown">
+                        <li><button class="dropdown-item text-white" onclick="window.location.href='/ml_models';">Model comparison</button></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><button class="dropdown-item text-white" onclick="window.location.href='#';">KNN classifier</button></li>
+                        <li><button class="dropdown-item text-white" onclick="window.location.href='#';">Single KNN classifier</button></li>
+                        <li><button class="dropdown-item text-white" onclick="window.location.href='#';">Individual Random Forest classifier</button></li>
+                    </ul>
                 </li>
             </ul>
         </div>

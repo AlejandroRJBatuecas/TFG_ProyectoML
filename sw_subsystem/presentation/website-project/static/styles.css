@@ -47,12 +47,23 @@
 
 /* Fijar la primera columna de la tabla de métricas */
 .sticky {
-    position: sticky;      /* Fija el elemento cuando se hace scroll */
-    left: 0;               /* Fija el elemento en la parte izquierda */
-    z-index: 1;            /* Asegura que esté por encima de otros elementos */
+    position: sticky;      /* Fijar el elemento cuando se hace scroll */
+    left: 0;               /* Fijar el elemento en la parte izquierda */
+    z-index: 1;            /* Asegurar que esté por encima de otros elementos */
 }
 
 .fixed-content {
     margin-top: 56px;
     z-index: 900;
+}
+
+.active-custom {
+    background-color: #a7bff1;
+    color: black !important; 
+    font-weight: bold;
+    border-radius: 5px;
+}
+
+.disabled-custom {
+    color: grey !important;
 }

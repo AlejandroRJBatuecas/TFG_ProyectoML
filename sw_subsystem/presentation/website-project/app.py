@@ -16,6 +16,9 @@ APP_NAME = "QPP-ML"
 # Constantes
 PATTERN_ANALYSIS_HTML_FILE = '/pattern_analysis/pattern_analysis_configuration.html'
 
+# Variable global para almacenar el último análisis realizado
+last_analysis = None
+
 def get_or_create_model(trained_model):
     # Obtener la ruta de almacenamiento del modelo
     trained_model_path = ml_trained_model_paths.trained_model_base_path+trained_model+ml_trained_model_paths.trained_model_extension
@@ -37,7 +40,7 @@ def get_or_create_model(trained_model):
 
 @app.context_processor
 def inject_global_vars():
-    return dict(app_name=APP_NAME)
+    return dict(app_name=APP_NAME, last_analysis=last_analysis)
 
 @app.route('/')
 def index():
@@ -172,61 +175,72 @@ def pattern_analysis():
     else:
         return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models)
 
-@app.route('/prediction_results', methods=['POST'])
+@app.route('/prediction_results', methods=['GET', 'POST'])
 def predict():
-    circuits_list = [] # Lista de las métricas de los circuitos
-    selected_models = [] # Lista de modelos seleccionados
+    # Si es una petición de predicción
+    if request.method == 'POST':
+        circuits_list = [] # Lista de las métricas de los circuitos
+        selected_models = [] # Lista de modelos seleccionados
 
-    # Obtener las claves y valores del formulario
-    form_keys = list(request.form.keys())
-    form_values = list(request.form.values())
-    
-    # Obtener el número de métricas de un circuito y el número de circuitos en el formulario
-    circuit_metrics_total_values = sum(len(sub_dict) for sub_dict in metrics_definition.circuit_metrics.values())
-    circuits_number = int(len(request.form) / circuit_metrics_total_values)
+        # Obtener las claves y valores del formulario
+        form_keys = list(request.form.keys())
+        form_values = list(request.form.values())
+        
+        # Obtener el número de métricas de un circuito y el número de circuitos en el formulario
+        circuit_metrics_total_values = sum(len(sub_dict) for sub_dict in metrics_definition.circuit_metrics.values())
+        circuits_number = int(len(request.form) / circuit_metrics_total_values)
 
-    selected_models_num = len(request.form)-circuit_metrics_total_values*circuits_number
+        selected_models_num = len(request.form)-circuit_metrics_total_values*circuits_number
 
-    if selected_models_num == 0:
-        circuits_list = "No model selected"
-        return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, circuits_list=circuits_list)
+        if selected_models_num == 0:
+            circuits_list = "No model selected"
+            return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, circuits_list=circuits_list)
 
-    # Crear los diccionarios de métricas de cada circuito y añadirlos a la lista
-    list_index = selected_models_num
-    for _ in range(0, circuits_number): # Para cada circuito
-        circuit_dict = {} # Crear el diccionario de métricas
-        for _ in range(0, circuit_metrics_total_values): # Para cada métrica
-            # Obtener el nombre de la métrica y añadirla con su valor al diccionario
-            metric_name = form_keys[list_index].split("_")[0]
+        # Crear los diccionarios de métricas de cada circuito y añadirlos a la lista
+        list_index = selected_models_num
+        for _ in range(0, circuits_number): # Para cada circuito
+            circuit_dict = {} # Crear el diccionario de métricas
+            for _ in range(0, circuit_metrics_total_values): # Para cada métrica
+                # Obtener el nombre de la métrica y añadirla con su valor al diccionario
+                metric_name = form_keys[list_index].split("_")[0]
 
-            try:
-                circuit_dict[metric_name] = float(form_values[list_index])
-            except (ValueError, TypeError):
-                circuits_list = "Metric values must be numeric"
-                return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, circuits_list=circuits_list)
-            list_index+=1
+                try:
+                    circuit_dict[metric_name] = float(form_values[list_index])
+                except (ValueError, TypeError):
+                    circuits_list = "Metric values must be numeric"
+                    return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, circuits_list=circuits_list)
+                list_index+=1
 
-        # Añadir el diccionario a la lista
-        circuits_list.append(circuit_dict)
+            # Añadir el diccionario a la lista
+            circuits_list.append(circuit_dict)
 
-    # Guardar los circuitos en un archivo JSON
-    with open(ml_parameters.test_data_filename, 'w') as json_file:
-        json.dump(circuits_list, json_file, indent=4)
+        # Guardar los circuitos en un archivo JSON
+        with open(ml_parameters.test_data_filename, 'w') as json_file:
+            json.dump(circuits_list, json_file, indent=4)
 
-    # Obtener los modelos seleccionados
-    for i in range(0, selected_models_num):
-        selected_models.append(form_values[i])
+        # Obtener los modelos seleccionados
+        for i in range(0, selected_models_num):
+            selected_models.append(form_values[i])
 
-    circuits_predictions = [{} for _ in range(circuits_number)] # Lista que contiene las predicciones de los circuitos
-    
-    for selected_model in selected_models:
-        model = get_or_create_model(selected_model)
-        model_predictions_list = model.get_prediction()
-        for i, value in enumerate(model_predictions_list):
-            circuits_predictions[i][selected_model] = value
+        circuits_predictions = [{} for _ in range(circuits_number)] # Lista que contiene las predicciones de los circuitos
+        
+        for selected_model in selected_models:
+            model = get_or_create_model(selected_model)
+            model_predictions_list = model.get_prediction()
+            for i, value in enumerate(model_predictions_list):
+                circuits_predictions[i][selected_model] = value
 
-    circuits_metrics = get_simplified_circuit("Descriptive name")
-    return render_template('/pattern_analysis/prediction_results.html', circuits_predictions=circuits_predictions, patterns_list=ml_parameters.patterns_list, circuits_metrics=circuits_metrics, circuits_list=circuits_list)
+        circuits_metrics = get_simplified_circuit("Descriptive name")
+
+        # Almacenar el análisis en la variable global
+        global last_analysis
+        last_analysis = {
+            'Circuit Predictions': circuits_predictions,
+            'Circuit Metrics': circuits_metrics,
+            'Circuit List': circuits_list
+        }
+
+    return render_template('/pattern_analysis/prediction_results.html', patterns_list=ml_parameters.patterns_list)
 
 @app.route('/ml_models')
 def ml_models():

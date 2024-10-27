@@ -15,7 +15,7 @@
             <h1 class="mb-3 mt-3">Predictions by circuit</h1>
             {% set column_width = (12/(patterns_list|length+1))|int %}
             {% set circuit_number = 0 %}
-            {% for circuit in circuits_predictions %}
+            {% for circuit in last_analysis['Circuit Predictions'] %}
             {% set circuit_number = loop.index %}
             <div class="row justify-content-around" id="results-circuit-{{circuit_number}}-header-row">
                 <h1 class="display-6 mb-3 mt-3">Circuit {{circuit_number}}</h1>
@@ -64,7 +64,7 @@
                             <h5 class="mb-0 text-truncate" title="Metrics">Metrics</h5>
                         </div>
                     </div>
-                    {% for metric, metric_name in circuits_metrics.items() %}
+                    {% for metric, metric_name in last_analysis['Circuit Metrics'].items() %}
                     <div class="row" id="results-metrics-metrics-{{metric}}-row">
                         <div class="col p-2 border border-dark text-dark grey-bg-color text-truncate">
                             <span class="mb-0 fw-bold" title="{{metric_name}}">{{metric_name}}</span>
@@ -73,7 +73,7 @@
                     {% endfor %}
                 </div>
                 <!-- Columnas de circuitos -->
-                {% for circuit in circuits_list %}
+                {% for circuit in last_analysis['Circuit List'] %}
                 {% set circuit_number = loop.index %}
                 <div class="col" id="results-metrics-circuit-{{circuit_number}}-column">
                     <div class="row" id="results-metrics-circuit-{{circuit_number}}-header">
@@ -81,10 +81,10 @@
                             <h5 class="mb-0 text-truncate" title="C{{circuit_number}}">C{{circuit_number}}</h5>
                         </div>
                     </div>
-                    {% for metric, metric_name in circuits_metrics.items() %}
+                    {% for metric, metric_name in last_analysis['Circuit Metrics'].items() %}
                     <div class="row" id="results-metrics-metric-{{metric}}-circuit-{{circuit_number}}-row">
                         <div class="col p-2 border border-dark text-end text-dark lightblue-bg-color text-truncate">
-                            <span class="mb-0 fw-bold" title="{{circuits_list[circuit_number-1][metric]}}">{{circuits_list[circuit_number-1][metric]}}</span>
+                            <span class="mb-0 fw-bold" title="{{last_analysis['Circuit List'][circuit_number-1][metric]}}">{{last_analysis['Circuit List'][circuit_number-1][metric]}}</span>
                         </div>
                     </div>
                     {% endfor %}
