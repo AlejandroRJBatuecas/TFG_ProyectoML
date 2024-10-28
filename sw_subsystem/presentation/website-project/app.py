@@ -5,7 +5,6 @@ from pathlib import Path
 from config import metrics_definition, ml_trained_model_paths, ml_parameters
 from ml_subsystem.ml_models import KNNClassifierModel, KNNOvsRClassifierModel, RandomForestClassifierModel, store_model
 from sw_subsystem.business.metrics import ASTFileReader
-from collections import OrderedDict
 
 app = Flask(__name__)
 app.json.sort_keys = False
@@ -239,7 +238,7 @@ def predict():
             'Circuit Metrics': circuits_metrics,
             'Circuit List': circuits_list
         }
-
+        
     return render_template('/pattern_analysis/prediction_results.html', patterns_list=ml_parameters.patterns_list)
 
 @app.route('/ml_models')
