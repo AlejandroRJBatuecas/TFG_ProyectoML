@@ -8,36 +8,53 @@
         <div class="col-10 col-xl-7">
             <h1 class="mb-3 mt-3">Predictions by pattern</h1>
             {% for pattern in patterns_list %}
-            <div class="row mt-1" id="results-pattern-header-row">
-                <h1 class="display-6 mb-3 mt-3">Pattern {{pattern|replace('p.', '')|capitalize}}</h1>
-                <div class="col-4 p-2 border border-dark text-white darkblue-bg-color">
-                    <h5 class="mb-0 text-truncate" title="Models / Circuits">Models / Circuits</h5>
-                </div>
-                {% for i in range(last_analysis['Circuit Predictions']|length) %}
-                <div class="col p-2 border border-dark text-white blue-green-bg-color">
-                    <h5 class="mb-0 text-truncate" title="C{{i+1}}">C{{i+1}}</h5>
-                </div>
-                {% endfor %}
-            </div>
-            {% for model in last_analysis['Circuit Predictions'][0].keys() %}
-            <div class="row border border-dark" id="results-pattern-{{pattern|replace('p.', '')}}-model-{{model}}-row">
-                <div class="col-4 p-2 border border-dark text-dark grey-bg-color">
-                    <h6 class="mb-0 text-truncate" title="{{model}}">{{model}}</h6>
-                </div>
-                {% for circuit in last_analysis['Circuit Predictions'] %}
-                <div class="col p-2 border border-dark text-dark lightblue-bg-color">
-                    <div class="row">
-                        <div class="col-12 col-lg-5">
-                            <h6 class="mb-0 text-truncate" title="{{circuit[model][pattern].result}}">{{circuit[model][pattern].result}}</h6>
-                        </div>
-                        <div class="col-12 col-lg-7">
-                            <h6 class="mb-0 text-truncate" title="({{circuit[model][pattern].probability}}%)">({{circuit[model][pattern].probability}}%)</h6>
+            <h1 class="display-6 mb-3 mt-3">Pattern {{pattern|replace('p.', '')|capitalize}}</h1>
+            <!-- Tabla de resultados -->
+            <div class="row d-flex flex-nowrap overflow-scroll" id="results-pattern-{{pattern|replace('p.', '')}}-row">
+                <!-- Columna de modelos -->
+                <div class="col-3 sticky" id="results-models-column">
+                    <div class="row" id="results-models-header-column">
+                        <div class="col p-2 border border-dark text-white darkblue-bg-color">
+                            <h5 class="mb-0 text-truncate" title="Models / Circuits">Models / Circuits</h5>
                         </div>
                     </div>
+                    {% for model in last_analysis['Circuit Predictions'][0].keys() %}
+                    <div class="row" id="results-pattern-{{pattern|replace('p.', '')}}-model-{{model}}-row">
+                        <div class="col p-2 border border-dark text-dark grey-bg-color">
+                            <h6 class="mb-0 text-truncate" title="{{model}}">{{model}}</h6>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <!-- Columnas de circuitos -->
+                {% set circuit_number = 0 %}
+                {% for circuit in last_analysis['Circuit Predictions'] %}
+                {% set circuit_number = loop.index %}
+                <div class="col" id="results-pattern-{{pattern|replace('p.', '')}}-circuit-{{circuit_number}}-column">
+                    <div class="row" id="results-pattern-{{pattern|replace('p.', '')}}-circuit-{{circuit_number}}-header">
+                        <div class="col p-2 border border-dark text-white blue-green-bg-color">
+                            <h5 class="mb-0 text-truncate" title="C{{circuit_number}}">C{{circuit_number}}</h5>
+                        </div>
+                    </div>
+                    {% for model, model_predictions in last_analysis['Circuit Predictions'][circuit_number-1].items() %}
+                    <div class="row" id="results-pattern-{{pattern|replace('p.', '')}}-circuit-{{circuit_number}}-model-{{model}}-row">
+                        <div class="col p-2 border border-dark text-dark lightblue-bg-color">
+                            <!-- <h6 class="mb-0 text-truncate" title="{{circuit[model][pattern].result}} ({{circuit[model][pattern].probability}}%)">{{circuit[model][pattern].result}} ({{circuit[model][pattern].probability}}%)</h6> -->
+                            {% if circuit[model][pattern].result %}
+                            <div class="progress">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: {{circuit[model][pattern].probability}}%" aria-valuenow="{{circuit[model][pattern].probability}}" aria-valuemin="0" aria-valuemax="100">{{circuit[model][pattern].probability}}%</div>
+                            </div>
+                            {% else %}
+                            <div class="progress">
+                                <div class="progress-bar bg-danger" role="progressbar" style="width: {{circuit[model][pattern].probability}}%" aria-valuenow="{{circuit[model][pattern].probability}}" aria-valuemin="0" aria-valuemax="100">{{circuit[model][pattern].probability}}%</div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
                 </div>
                 {% endfor %}
             </div>
-            {% endfor %}
             {% endfor %}
         </div>
         <div class="col-10 col-xl-4">
