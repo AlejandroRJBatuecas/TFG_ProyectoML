@@ -109,13 +109,12 @@ function generateCircuitColumn(circuit_metrics = null) {
     const circuit_header = `
         <div class="row justify-content-around text-white lightblue-bg-color border border-dark" id="metrics-circuit-${circuit_number}-header">
             <div class="col p-2 metric-col-height d-flex justify-content-center align-items-center">
-                <button type="button" class="btn btn-danger btn-sm w-100 full-height" id="metrics-remove-circuit-${circuit_number}-button">
+                <button type="button" class="btn btn-sm w-100 full-height active-custom border border-dark" id="metrics-remove-circuit-${circuit_number}-button">
                     <!-- Nombre del botón de eliminar circuito abreviado para pantallas pequeñas -->
                     <span class="d-md-none pe-none">X</span>
                     <!-- Nombre del botón de eliminar circuito completo para pantallas grandes -->
                     <span class="d-none d-md-block pe-none">Delete circuit</span>
                 </button>
-                
             </div>
         </div>
     `;
@@ -130,10 +129,7 @@ function generateCircuitColumn(circuit_metrics = null) {
 
             const metric_category_header_content = `
                 <div class="col p-2 border border-dark blue-green-bg-color text-white text-truncate">
-                    <!-- Nombre de circuito abreviado para pantallas pequeñas -->
-                    <span class="mb-0 fw-bold d-md-none" title="C${circuit_number}">C${circuit_number}</span>
-                    <!-- Nombre de circuito completo para pantallas grandes -->
-                    <span class="mb-0 fw-bold d-none d-md-block" title="Circuit ${circuit_name}">Circuit ${circuit_name}</span>
+                    <h3 class="mb-0 fw-bold" title="Circuit ${circuit_name}">Circuit ${circuit_name}</h3>
                 </div>
             `;
             metric_category_header.insertAdjacentHTML("afterbegin", metric_category_header_content)
@@ -177,7 +173,7 @@ function generateMetricsColumn() {
     const metrics_header = `
         <div class="row justify-content-around text-white darkblue-bg-color border border-dark" id="metrics-header-row">
             <div class="col p-2 metric-col-height d-flex justify-content-center align-items-center">
-                <h5 class="mb-0 fw-bold text-truncate">Metrics</h5>
+                <h2 class="mb-0 fw-bold text-truncate">Metrics</h2>
             </div>
         </div>
     `;
@@ -192,7 +188,7 @@ function generateMetricsColumn() {
 
             const metric_category_header_content = `
                 <div class="col p-2 border border-dark blue-green-bg-color text-white text-truncate">
-                    <span class="mb-0 fw-bold" title="${category}">${category}</span>
+                    <h3 class="mb-0 fw-bold" title="${category}">${category}</h3>
                 </div>
             `;
             metric_category_header.insertAdjacentHTML("afterbegin", metric_category_header_content)

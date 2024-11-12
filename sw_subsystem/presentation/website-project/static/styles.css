@@ -1,3 +1,29 @@
+/* Estilos genéricos para las etiquetas principales */
+h1 {
+    font-size: 20px;
+}
+
+h2 {
+    font-size: 18px;
+}
+
+h3 {
+    font-size: 16px;
+    font-weight: normal;
+}
+
+p {
+    font-size: 14px;
+}
+
+span {
+    font-size: 14px;
+}
+
+a {
+    font-size: 14px;
+}
+
 /* Paleta de colores */
 .darkblue-bg-color {
     background-color: #022B3A;

@@ -10,22 +10,28 @@
                 <!-- Sección de importar y exportar datos -->
                 <div class="row mt-2 justify-content-center align-items-center">
                     <div class="col-3 p-1 d-none d-sm-block">
-                        <h5 class="mb-0 text-start">Actions</h5>
+                        <h2 class="mb-0 text-start">Actions</h2>
                     </div>
                     <div class="col p-1 d-grid">
-                        <button type="button" class="btn btn-sm blue-green-bg-color text-white" data-bs-toggle="tooltip" data-bs-placement="bottom" id="json-file-import-button" title="Import a JSON file with the metrics">Import JSON</button>
+                        <button type="button" class="btn btn-sm blue-green-bg-color text-white" data-bs-toggle="tooltip" data-bs-placement="bottom" id="json-file-import-button" title="Import a JSON file with the metrics">
+                            <span>Import JSON</span>
+                        </button>
                     </div>
                     <div class="col p-1 d-grid">
-                        <button type="button" class="btn btn-sm blue-green-bg-color text-white" data-bs-toggle="tooltip" data-bs-placement="bottom" id="code-file-import-button" title="Import a qiskit code file to analyze">Import code</button>
+                        <button type="button" class="btn btn-sm blue-green-bg-color text-white" data-bs-toggle="tooltip" data-bs-placement="bottom" id="code-file-import-button" title="Import a qiskit code file to analyze">
+                            <span>Import code</span>
+                        </button>
                     </div>
                     <div class="col p-1 d-grid">
-                        <button type="button" class="btn btn-sm blue-green-bg-color text-white" data-bs-toggle="tooltip" data-bs-placement="bottom" id="json-file-export-button" title="Export the table metrics to a JSON file">Export JSON</button>
+                        <button type="button" class="btn btn-sm blue-green-bg-color text-white" data-bs-toggle="tooltip" data-bs-placement="bottom" id="json-file-export-button" title="Export the table metrics to a JSON file">
+                            <span>Export JSON</span>
+                        </button>
                     </div>
                 </div>
                 <!-- Sección de selección de modelos -->
                 <div class="row mt-2">
                     <div class="col-3 p-1 d-none d-sm-block">
-                        <h5 class="mb-0 text-start text-truncate">ML model(s) to use</h5>
+                        <h2 class="mb-0 text-start text-truncate">ML model(s) to use</h2>
                     </div>
                     <div class="col-12 col-sm-9 p-1">
                         <div class="row">
@@ -37,15 +43,18 @@
                             {% endfor %}
                         </div>
                     </div>
-                    <div class="col-12 p-1 mt-2 d-grid">
-                        <button type="submit" class="btn blue-green-bg-color text-white" id="metrics-prediction-button">Make prediction</button>
-                    </div>
+                    
                 </div>
                 <hr/>
-                <!-- Botón de añadir circuito -->
+                <!-- Botón de añadir circuito y realizar predicción -->
                 <div class="row mt-2">
-                    <div class="col p-1 d-grid">
-                        <button type="button" class="btn btn-success" id="metrics-add-circuit-button">Add circuit</button>
+                    <div class="col-6 p-1 d-grid">
+                        <button type="button" class="btn btn-success" id="metrics-add-circuit-button">
+                            <span>Add circuit</span>
+                        </button>
+                    </div>
+                    <div class="col-6 p-1 d-grid">
+                        <button type="submit" class="btn blue-green-bg-color text-white fw-bold" id="metrics-prediction-button">Make prediction</button>
                     </div>
                 </div>
             </div>
@@ -56,12 +65,12 @@
             <div class="col-12">
                 {% if error_message %}
                 <div class="alert alert-danger text-center" role="alert">
-                    <h5 class="mb-0">{{error_message}}</h5>
+                    <h1 class="mb-0">{{error_message}}</h1>
                 </div>
                 {% endif %}
                 {% if circuit_metrics or circuits_list %}
                 <div class="alert alert-success text-center" role="alert">
-                    <h5 class="mb-0">The file has been imported successfully</h5>
+                    <h1 class="mb-0">The file has been imported successfully</h1>
                 </div>
                 {% endif %}
             </div>
@@ -86,13 +95,13 @@
                         </h2>
                     </div>
                     <div class="col-12 mt-3">
-                        <h5 class="mb-2">File "{{file_name}}"</h5>
+                        <h1 class="mb-2">File "{{file_name}}"</h1>
                         <pre><code class="language-{{file_extension}} line-numbers">{{ file_content | safe }}</code></pre>
                     </div>
                     {% if circuits_list %}
                     <div class="col-12 mt-3">
                         {% for circuit in circuits_list %}
-                        <h5 class="mb-2">Circuit "{{circuit.name}}"</h5>
+                        <h1 class="mb-2">Circuit "{{circuit.name}}"</h1>
                         <img src="data:image/png;base64, {{ circuit.circuit_draw }}" alt="Quantum Circuit" class="img-fluid">
                         {% endfor %}
                     </div>
@@ -107,13 +116,13 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title">Error in the form</h5>
+                <h1 class="modal-title">Error in the form</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <h5 id="error-info-title">
+                <h1 id="error-info-title">
                     Metric values ​​must be numeric and at least one model must be selected
-                </h5>
+                </h1>
                 <p id="error-info-text"></p>
             </div>
         </div>
@@ -123,7 +132,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header grey-bg-color text-dark">
-                <h5 class="modal-title">Importing a file</h5>
+                <h1 class="modal-title">Importing a file</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="{{url_for('pattern_analysis')}}" method="post" enctype="multipart/form-data" class="p-0" id="file-import-form">
