@@ -20,15 +20,16 @@
                 </li>
                 {% endif %}
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle text-white" href="/ml_models" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle text-white" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                         ML models
                     </a>
                     <ul class="dropdown-menu darkblue-bg-color" aria-labelledby="navbarDropdown">
-                        <li><button class="dropdown-item text-white" onclick="window.location.href='/ml_models';">Model comparison</button></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><button class="dropdown-item text-white" onclick="window.location.href='#';">KNN classifier</button></li>
-                        <li><button class="dropdown-item text-white" onclick="window.location.href='#';">Single KNN classifier</button></li>
-                        <li><button class="dropdown-item text-white" onclick="window.location.href='#';">Individual Random Forest classifier</button></li>
+                        <li class="p-1">
+                            <a class="nav-link text-white" href="/ml_models">Multilabel models</a>
+                        </li>
+                        <li class="p-1">
+                            <a class="nav-link text-white" href="/ovr_models">One vs Rest models</a>
+                        </li>
                     </ul>
                 </li>
             </ul>

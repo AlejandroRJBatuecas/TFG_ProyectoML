@@ -300,6 +300,45 @@ document.getElementById('code-file-import-button').addEventListener('click', fun
     openFileImportModal("python");
 });
 
+document.getElementById('json-file-export-button').addEventListener('click', () => {
+    // Capturar los datos del formulario
+    const form = document.getElementById('metrics-form');
+    const formData = new FormData(form);
+    const jsonObjectList = [];
+
+    // Convertir los datos del formulario a un objeto JSON
+    formData.forEach((value, key) => {
+        const metric_key = key.split("_")
+        const json_key = metric_key[0]
+        const circuit_number_position = parseInt(metric_key[2])-1
+
+        // Asegurar que exista un objeto para este circuito en la lista
+        if (!jsonObjectList[circuit_number_position]) {
+            jsonObjectList[circuit_number_position] = {};
+        }
+
+        // Determinar si el valor es decimal, entero o no numérico
+        const parsedValue = isNaN(value) ? value : (value.includes('.') ? parseFloat(value) : parseInt(value, 10));
+
+        // Añadir la métrica al objeto del circuito
+        jsonObjectList[circuit_number_position][json_key] = parsedValue;
+    });
+
+    // Crear un archivo JSON para descargar
+    const jsonString = JSON.stringify(jsonObjectList, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    // Crear un enlace para descargar el archivo
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'circuit_metrics.json'; // Nombre por defecto
+    a.click();
+
+    // Limpiar el objeto URL después de la descarga
+    URL.revokeObjectURL(url);
+});
+
 // Evento submit del formulario, para la validación de los campos numéricos
 formulario.addEventListener('submit', function(event) {
     // Prevenir el envío por defecto

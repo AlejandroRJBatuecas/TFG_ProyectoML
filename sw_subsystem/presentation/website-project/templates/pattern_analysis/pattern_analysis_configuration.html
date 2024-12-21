@@ -94,10 +94,7 @@
                             {% endif %}
                         </h2>
                     </div>
-                    <div class="col-12 mt-3">
-                        <h1 class="mb-2">File "{{file_name}}"</h1>
-                        <pre><code class="language-{{file_extension}} line-numbers">{{ file_content | safe }}</code></pre>
-                    </div>
+                    <!-- Imagen (solo para importaciones de código) -->
                     {% if circuits_list %}
                     <div class="col-12 mt-3">
                         {% for circuit in circuits_list %}
@@ -106,6 +103,11 @@
                         {% endfor %}
                     </div>
                     {% endif %}
+                    <!-- Contenido del fichero -->
+                    <div class="col-12 mt-3">
+                        <h1 class="mb-2">File "{{file_name}}"</h1>
+                        <pre><code class="language-{{file_extension}} line-numbers">{{ file_content | safe }}</code></pre>
+                    </div>
                 </div>
             </div>
             {% endif %}

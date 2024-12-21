@@ -14,6 +14,8 @@ APP_NAME = "QPP-ML"
 
 # Constantes
 PATTERN_ANALYSIS_HTML_FILE = '/pattern_analysis/pattern_analysis_configuration.html'
+ML_MODELS_KEYS = ["Multi-label KNN classifier"]
+OVR_MODELS_KEYS = ["Individual KNN classifier", "Individual Random Forest classifier"]
 
 # Variable global para almacenar el último análisis realizado
 last_analysis = None
@@ -37,9 +39,51 @@ def get_or_create_model(trained_model):
 
     return model
 
+def get_metric_descriptive_name(circuit_metrics_dict, metric):
+    for category, metrics in circuit_metrics_dict.items():
+        if metric in metrics:
+            # Si se encuentra la métrica, devolver el nombre descriptivo
+            return metrics[metric].get("Descriptive name")
+    return None  # No se encontró la métrica
+
+def get_best_features_descriptive_names(best_features_list):
+    best_features_descriptive_names = []
+
+    for metric in best_features_list:
+        descriptive_name = get_metric_descriptive_name(metrics_definition.circuit_metrics, metric)
+        if descriptive_name:
+            best_features_descriptive_names.append(descriptive_name)
+
+    return best_features_descriptive_names
+
+def get_all_models():
+    ml_models = {}
+    ml_models_dict = ml_trained_model_paths.trained_models.items()
+
+    for ml_model_name, ml_model_id in ml_models_dict:
+        model = get_or_create_model(ml_model_id)
+
+        # Obtener el nombre descriptivo de las mejores métricas para mostrarlos
+        if isinstance(model.best_features, dict):
+            for pattern in ml_parameters.patterns_list:
+                best_features_descriptive_names = get_best_features_descriptive_names(model.best_features[pattern])
+                # Reemplazar la lista anterior por la lista con los nombres descriptivos
+                model.best_features[pattern] = best_features_descriptive_names
+        else:
+            best_features_descriptive_names = get_best_features_descriptive_names(model.best_features)
+            # Reemplazar la lista anterior por la lista con los nombres descriptivos
+            model.best_features = best_features_descriptive_names
+        
+
+        ml_models[ml_model_name] = model
+
+    return ml_models
+
+ML_MODELS_DICT = get_all_models()
+
 @app.context_processor
 def inject_global_vars():
-    return dict(app_name=APP_NAME, last_analysis=last_analysis)
+    return dict(app_name=APP_NAME, last_analysis=last_analysis, pattern_links=ml_parameters.patterns_links)
 
 @app.route('/')
 def index():
@@ -243,7 +287,21 @@ def predict():
 
 @app.route('/ml_models')
 def ml_models():
-    return render_template('/ml_models/ml_models.html')
+    ml_models_values = ML_MODELS_KEYS
+
+    # Obtener los modelos requeridos
+    ml_models_dict = {model: ML_MODELS_DICT[model] for model in ml_models_values if model in ML_MODELS_DICT}
+
+    return render_template('/ml_models/ml_models.html', ml_models_dict=ml_models_dict)
+
+@app.route('/ovr_models')
+def ovr_models():
+    ml_models_values = OVR_MODELS_KEYS
+
+    # Obtener los modelos requeridos
+    ml_models_dict = {model: ML_MODELS_DICT[model] for model in ml_models_values if model in ML_MODELS_DICT}
+
+    return render_template('/ml_models/ovr_models.html', ml_models_dict=ml_models_dict, patterns_list=ml_parameters.patterns_list)
 
 if __name__ == "__main__":
     app.run(debug=True)

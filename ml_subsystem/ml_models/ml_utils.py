@@ -75,41 +75,69 @@ def normalize_confusion_matrix(mcm):
 # Evaluar el rendimiento del modelo
 def model_performance_data(data_labels_np_matrix, predictions, patterns_list):
     # Evaluar la exactitud
-    accuracy = accuracy_score(data_labels_np_matrix, predictions)
-    print(f"Exactitud: {round(accuracy*100, 3)}%")
+    accuracy = round(accuracy_score(data_labels_np_matrix, predictions)*100, 3)
+    print(f"Exactitud: {accuracy}%")
 
     # Evaluar la precisión = VP / (VP + FP), donde VP es (2,2) y FP es (1,2) de la matriz de confusión
-    precision = precision_score(data_labels_np_matrix, predictions, average="weighted", zero_division=np.nan)
-    print(f"Precisión: {round(precision*100, 3)}%")
+    precision = round(precision_score(data_labels_np_matrix, predictions, average="weighted", zero_division=np.nan)*100, 3)
+    print(f"Precisión: {precision}%")
 
     # Evaluar la sensibilidad = VP / (VP + FN), donde VP es (2,2) y FP es (2,1) de la matriz de confusión
-    recall = recall_score(data_labels_np_matrix, predictions, average="weighted", zero_division=np.nan)
-    print(f"Sensibilidad: {round(recall*100, 3)}%")
+    recall = round(recall_score(data_labels_np_matrix, predictions, average="weighted", zero_division=np.nan)*100, 3)
+    print(f"Sensibilidad: {recall}%")
 
     # Calcular el f1 score (media armónica entre precision y recall) = 2 / (1/Precision + 1/Recall)
-    f1 = f1_score(data_labels_np_matrix, predictions, average="weighted", zero_division=np.nan)
-    print(f"F1 score: {round(f1*100, 3)}%")
+    f1 = round(f1_score(data_labels_np_matrix, predictions, average="weighted", zero_division=np.nan)*100, 3)
+    print(f"F1 score: {f1}%")
+
+    confusion_matrix_dict = {}
+    normalized_confusion_matrix_dict = {}
 
     if len(data_labels_np_matrix.shape) > 1:
+        classification_report_dict = classification_report(data_labels_np_matrix, predictions, target_names=patterns_list, zero_division=np.nan, output_dict=True)
         # Imprimir el informe de clasificación
-        print("Informe de clasificación:\n",
-            classification_report(data_labels_np_matrix, predictions, target_names=patterns_list, zero_division=np.nan))
+        print("Informe de clasificación:\n", classification_report_dict)
         
         # Imprimir las matrices de confusión
-        multilabel_confusionmatrix = multilabel_confusion_matrix(data_labels_np_matrix, predictions)
-        normalized_mcm = np.round(normalize_confusion_matrix(multilabel_confusionmatrix), 3)
-        for i in range(len(multilabel_confusionmatrix)):
-            print("Matriz de Confusión:", patterns_list[i], "\n", multilabel_confusionmatrix[i])
-            print("Normalizada:\n", normalized_mcm[i])
+        confusion_matrix_ndarray = multilabel_confusion_matrix(data_labels_np_matrix, predictions)
+        normalized_confusion_matrix_ndarray = np.round(normalize_confusion_matrix(confusion_matrix_ndarray), 3)
+        for i in range(len(confusion_matrix_ndarray)):
+            print("Matriz de Confusión:", patterns_list[i], "\n", confusion_matrix_ndarray[i])
+            print("Normalizada:\n", normalized_confusion_matrix_ndarray[i])
+
+        # Obtener las matrices de confusión para cada patrón
+        for i, matrix in enumerate(confusion_matrix_ndarray):
+            confusion_matrix_dict[patterns_list[i]] = matrix
+
+        # Obtener las matrices de confusión normalizadas para cada patrón
+        for i, matrix in enumerate(normalized_confusion_matrix_ndarray):
+            normalized_confusion_matrix_dict[patterns_list[i]] = matrix
 
     else:
+        classification_report_dict = classification_report(data_labels_np_matrix, predictions, target_names=None, zero_division=np.nan, output_dict=True)
         # Imprimir el informe de clasificación
-        print("Informe de clasificación:\n",
-            classification_report(data_labels_np_matrix, predictions, target_names=None, zero_division=np.nan))
+        print("Informe de clasificación:\n", classification_report_dict)
         
         # Imprimir las matrices de confusión
-        print("Matriz de Confusión:\n", confusion_matrix(data_labels_np_matrix, predictions))
-        print("Normalizada:\n", np.round(confusion_matrix(data_labels_np_matrix, predictions, normalize='true'), 3))
+        confusion_matrix_ndarray = confusion_matrix(data_labels_np_matrix, predictions)
+        normalized_confusion_matrix_ndarray = np.round(confusion_matrix(data_labels_np_matrix, predictions, normalize='true'), 3)
+        print("Matriz de Confusión:\n", confusion_matrix_ndarray)
+        print("Normalizada:\n", normalized_confusion_matrix_ndarray)
+
+        confusion_matrix_dict = confusion_matrix_ndarray
+        normalized_confusion_matrix_dict = normalized_confusion_matrix_ndarray
+
+    model_performance_dict = {
+        "Accuracy": accuracy,
+        "Precision": precision,
+        "Recall": recall,
+        "F1": f1,
+        "Classification report": classification_report_dict,
+        "Confusion matrix": confusion_matrix_dict,
+        "Normalized confusion matrix": normalized_confusion_matrix_dict
+    }
+
+    return model_performance_dict
 
 def store_model(ml_model, trained_model_path):
     # Separar el directorio y el nombre del archivo

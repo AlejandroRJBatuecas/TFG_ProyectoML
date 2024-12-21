@@ -20,6 +20,10 @@ span {
     font-size: 14px;
 }
 
+.language-py span {
+    font-size: 16px;
+}
+
 a {
     font-size: 14px;
 }
@@ -53,7 +57,7 @@ a {
     background-color: #e9ecef !important;
 }
 
-
+/* Estilos específicos */
 .justify-text {
     text-indent: 2rem;
     text-align: justify;
@@ -84,7 +88,7 @@ a {
 }
 
 .active-custom {
-    background-color: #a7bff1;
+    background-color: #a7bff1 !important;
     color: black !important; 
     font-weight: bold;
     border-radius: 5px;
@@ -92,4 +96,9 @@ a {
 
 .disabled-custom {
     color: grey !important;
+}
+
+.chart-dimensions {
+    width: 175px;
+    height: 175px;
 }

@@ -8,9 +8,16 @@
         <div class="col-10 col-xl-7">
             <h1 class="mb-3 mt-3">Predictions by pattern</h1>
             {% for pattern in patterns_list %}
-            <h2 class="mb-3 mt-3">{{pattern|replace('p.', '')|capitalize}}</h2>
+            <div class="row mb-3 p-2 grey-bg-color">
+                <div class="col-12 p-0">
+                    <h2 class="mb-0 text-truncate p-2">
+                        <span class="text-white text-decoration-none blue-green-bg-color p-2">{{ pattern|replace('p.', '')|capitalize }}</span>
+                        <a class="text-decoration-none ms-1" href="{{ pattern_links[pattern] }}" target="_blank">Click to learn more</a>
+                    </h2>
+                </div>
+            </div>
             <!-- Tabla de resultados -->
-            <div class="row d-flex flex-nowrap overflow-scroll" id="results-pattern-{{pattern|replace('p.', '')}}-row">
+            <div class="row mb-3 d-flex flex-nowrap overflow-scroll" id="results-pattern-{{pattern|replace('p.', '')}}-row">
                 <!-- Columna de modelos -->
                 <div class="col-3 sticky" id="results-models-column">
                     <div class="row" id="results-models-header-column">
@@ -91,7 +98,11 @@
                     {% for metric, metric_name in last_analysis['Circuit Metrics'].items() %}
                     <div class="row" id="results-metrics-metric-{{metric}}-circuit-{{circuit_number}}-row">
                         <div class="col p-2 border border-dark text-end text-dark lightblue-bg-color text-truncate">
-                            <span class="mb-0 fw-bold" title="{{last_analysis['Circuit List'][circuit_number-1][metric]}}">{{last_analysis['Circuit List'][circuit_number-1][metric]}}</span>
+                            {% if metric_name.startswith('Circuit') or metric_name.startswith('Max') or metric_name.startswith('#') %}
+                            <span class="mb-0 fw-bold" title="{{ last_analysis['Circuit List'][circuit_number-1][metric] | int }}">{{ last_analysis['Circuit List'][circuit_number-1][metric] | int }}</span>
+                            {% else %}
+                            <span class="mb-0 fw-bold" title="{{ '%.2f'|format(last_analysis['Circuit List'][circuit_number-1][metric] | float | round(3)) }}">{{ "%.2f"|format(last_analysis['Circuit List'][circuit_number-1][metric] | float | round(3)) }}</span>
+                            {% endif %}
                         </div>
                     </div>
                     {% endfor %}

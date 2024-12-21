@@ -13,6 +13,12 @@ random_state_value = 42
 """ Valor de la seed de aleatoriedad, para asegurar reproducibilidad """
 patterns_list = ["p.initialization", "p.superposition", "p.oracle"]
 """ Lista de patrones a detectar """
+patterns_links = {
+    "p.initialization": "https://patternatlas.planqk.de/pattern-languages/af7780d5-1f97-4536-8da7-4194b093ab1d/312bc9d3-26c0-40ae-b90b-56effd136c0d", 
+    "p.superposition": "https://patternatlas.planqk.de/pattern-languages/af7780d5-1f97-4536-8da7-4194b093ab1d/2229a430-fe92-4411-9d72-d10dd1d8da14", 
+    "p.oracle": "https://patternatlas.planqk.de/pattern-languages/af7780d5-1f97-4536-8da7-4194b093ab1d/1cc7e9d6-ab37-412e-8afa-604a25de296e"
+}
+""" Diccionario con las URLs con la documentación de los patrones """
 eliminated_columns = ["id", "language", "extension", "author", "name", "path", "circuit"]
 """ Columnas eliminadas para realizar la matriz de correlación """
 eliminated_metrics = ["m.NoOr", "m.NoCOr", "m.%QInOr", "m.%QInCOr", "m.AvgOrD", "m.MaxOrD"]

@@ -24,6 +24,8 @@ class MultilabelLearningModel(BaseMLModel):
         self.pipeline, self.best_features_pipeline = self._create_pipelines()
         self.classifier, self.best_features_classifier = self._get_classifiers()
         self.best_features = self._get_feature_importance()
+        self.model_performance_data = self._evaluate_model_performance()
+        self.best_features_model_performance_data = self._evaluate_best_features_model_performance()
         self.predictions_proba = self.classifier.predict_proba(self.test_set_values)
         self.best_features_predictions_proba = self.best_features_classifier.predict_proba(self.test_set_values)
 
@@ -106,7 +108,9 @@ class MultilabelLearningModel(BaseMLModel):
         predictions = cross_val_predict(self.classifier, self.train_set_values, self.train_set_labels_np_matrix, cv=ml_parameters.cv_value)
         # Mostrar las medidas de rendimiento
         print("\nRendimiento del modelo entrenado")
-        model_performance_data(self.train_set_labels_np_matrix, predictions, ml_parameters.patterns_list)
+        model_performance_dict = model_performance_data(self.train_set_labels_np_matrix, predictions, ml_parameters.patterns_list)
+
+        return model_performance_dict
 
     # Evaluar el rendimiento del modelo con las mejores métricas
     def _evaluate_best_features_model_performance(self):
@@ -115,7 +119,9 @@ class MultilabelLearningModel(BaseMLModel):
         # Mostrar las medidas de rendimiento
         print(f"\nMétricas seleccionadas: {len(self.best_features)}\n{self.best_features}")
         print("\nRendimiento del modelo mejorado")
-        model_performance_data(self.train_set_labels_np_matrix, predictions, ml_parameters.patterns_list)
+        model_performance_dict = model_performance_data(self.train_set_labels_np_matrix, predictions, ml_parameters.patterns_list)
+
+        return model_performance_dict
     
     # Evaluar el rendimiento del modelo con el conjunto de prueba
     def _test_model_performance(self):

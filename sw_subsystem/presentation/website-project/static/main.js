@@ -6,15 +6,17 @@ function set_nav_bar_active_element() {
     const page = path.split("/").pop();
 
     // Seleccionar todos los elementos de la lista de navegación
-    const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+    const navLinks = document.querySelectorAll('.nav-link');
 
     // Recorrer cada enlace y verificar si el href coincide con la página actual
     navLinks.forEach(function(link) {
-        var linkHref = link.getAttribute('href').replace("/", "");
+        if (link.getAttribute('href')) {
+            var linkHref = link.getAttribute('href').replace("/", "");
 
-        // Si el href coincide con la página actual, añadir la clase 'active-custom'
-        if (linkHref === page) {
-            link.classList.add('active-custom');
+            // Si el href coincide con la página actual, añadir la clase 'active-custom'
+            if (linkHref === page) {
+                link.classList.add('active-custom');
+            }
         }
     });
 }

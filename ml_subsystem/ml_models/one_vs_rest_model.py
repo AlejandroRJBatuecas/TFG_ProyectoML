@@ -20,6 +20,8 @@ class OneVsRestModel(BaseMLModel):
         self.pipelines, self.best_features_pipelines = self._create_pipelines()
         self.classifiers, self.best_features_classifiers = self._get_classifiers()
         self.best_features = self._get_feature_importance()
+        self.model_performance_data = self._evaluate_model_performance()
+        self.best_features_model_performance_data = self._evaluate_best_features_model_performance()
         self.predictions_proba = {}
         self.best_features_predictions_proba = {}
         for pattern in ml_parameters.patterns_list:
@@ -125,6 +127,8 @@ class OneVsRestModel(BaseMLModel):
     
     # Evaluar el rendimiento del modelo
     def _evaluate_model_performance(self):
+        model_performance = {}
+
         for pattern in ml_parameters.patterns_list:
             # Obtener las etiquetas del patrón
             pattern_train_labels = self.train_set_labels[pattern]
@@ -132,10 +136,16 @@ class OneVsRestModel(BaseMLModel):
             predictions = cross_val_predict(self.classifiers[pattern], self.train_set_values, pattern_train_labels, cv=ml_parameters.cv_value)
             # Mostrar las medidas de rendimiento
             print(f"\nRendimiento del clasificador de {pattern}")
-            model_performance_data(pattern_train_labels, predictions, pattern)
+            pattern_model_performance = model_performance_data(pattern_train_labels, predictions, pattern)
+
+            model_performance[pattern] = pattern_model_performance
+
+        return model_performance
 
     # Evaluar el rendimiento del modelo con las mejores métricas
     def _evaluate_best_features_model_performance(self):
+        model_performance = {}
+
         for pattern in ml_parameters.patterns_list:
             # Obtener las etiquetas del patrón
             pattern_train_labels = self.train_set_labels[pattern]
@@ -144,7 +154,11 @@ class OneVsRestModel(BaseMLModel):
             # Mostrar las medidas de rendimiento
             print(f"\nMétricas seleccionadas para {pattern}: {len(self.best_features[pattern])}\n{self.best_features[pattern]}")
             print("\nRendimiento del modelo mejorado")
-            model_performance_data(pattern_train_labels, predictions, pattern)
+            pattern_model_performance = model_performance_data(pattern_train_labels, predictions, pattern)
+
+            model_performance[pattern] = pattern_model_performance
+
+        return model_performance
     
     # Evaluar el rendimiento del modelo con el conjunto de prueba
     def _test_model_performance(self):
