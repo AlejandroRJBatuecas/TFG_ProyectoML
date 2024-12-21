@@ -102,3 +102,7 @@ a {
     width: 175px;
     height: 175px;
 }
+
+.underline-hover:hover {
+    text-decoration: underline !important;
+}
