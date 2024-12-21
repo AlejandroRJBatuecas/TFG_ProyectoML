@@ -3,6 +3,7 @@ Fichero de definición del diccionario de las métricas de circuitos cúanticos
 """
 
 # Constantes para el análisis de métricas
+descriptive_name = 'Descriptive name'
 single_qubit_gates = 'Single Qubit Gates'
 """ Categoría que agrupa las métricas de puertas simples """
 multiple_qubit_gates = 'Multiple Qubit Gates'
@@ -23,135 +24,135 @@ m_NoGates = 'm.NoGates'
 circuit_metrics = {
     'Circuit Size': {
         'm.Width': {
-            'Descriptive name': 'Circuit Width',
+            descriptive_name: 'Circuit Width',
             'Description': 'Number of qubits in the circuit',
             'Value': 0
         },
         'm.Depth': {
-            'Descriptive name': 'Circuit Depth',
+            descriptive_name: 'Circuit Depth',
             'Description': 'Circuit depth (i.e., length of critical path)',
             'Value': 0
         }
     },
     'Circuit Density': {
         'm.MaxDens': {
-            'Descriptive name': 'Max. Density',
+            descriptive_name: 'Max. Density',
             'Description': 'Maximum number of operations applied to the circuit qubits in parallel',
             'Value': 0
         },
         'm.AvgDens': {
-            'Descriptive name': 'Avg. Density',
+            descriptive_name: 'Avg. Density',
             'Description': 'Average of the number of operations applied to the circuit qubits in parallel',
             'Value': 0.0
         }
     },
     'Single Qubit Gates': {
         'm.NoP-X': {
-            'Descriptive name': '# X gates',
+            descriptive_name: '# X gates',
             'Description': 'Number of Pauli-X (NOT) gates',
             'Value': 0
         },
         'm.NoP-Y': {
-            'Descriptive name': '# Y gates',
+            descriptive_name: '# Y gates',
             'Description': 'Number of Pauli-Y gates',
             'Value': 0
         },
         'm.NoP-Z': {
-            'Descriptive name': '# Z gates',
+            descriptive_name: '# Z gates',
             'Description': 'Number of Pauli-Z gates',
             'Value': 0
         },
         m_TNoP: {
-            'Descriptive name': '# Pauli gates',
+            descriptive_name: '# Pauli gates',
             'Description': 'Total number of Pauli gates in the circuit (calculated as the addition of the previous three)',
             'Value': 0
         },
         m_NoH: {
-            'Descriptive name': '# H gates',
+            descriptive_name: '# H gates',
             'Description': 'Number of Hadamard gates',
             'Value': 0
         }, 
         'm.%SpposQ': {
-            'Descriptive name': '% Qubits in Superposition',
+            descriptive_name: '% Qubits in Superposition',
             'Description': 'Ratio of qubits with a Hadamard gate as initial gate (qubits in superposition state)',
             'Value': 0
         },
         m_NoOtherSG: {
-            'Descriptive name': '# Other SQ gates',
+            descriptive_name: '# Other SQ gates',
             'Description': 'Number of other single-qubit gates in the circuit',
             'Value': 0
         },
         m_TNoSQG: {
-            'Descriptive name': '# SQ gates',
+            descriptive_name: '# SQ gates',
             'Description': 'Total number of single qubit gates',
             'Value': 0
         },
         'm.TNoCSQG': {
-            'Descriptive name': '# Controlled SQ gates',
+            descriptive_name: '# Controlled SQ gates',
             'Description': 'Total number of controlled single-qubit gates',
             'Value': 0
         }
     },
     'Multiple Qubit Gates': {
         'm.NoSWAP': {
-            'Descriptive name': '# SWAP gates',
+            descriptive_name: '# SWAP gates',
             'Description': 'Number of SWAP gates',
             'Value': 0
         },
         'm.NoCNOT': {
-            'Descriptive name': '# CNOT gates',
+            descriptive_name: '# CNOT gates',
             'Description': 'Number of Controlled NOT (CNOT) gates',
             'Value': 0
         },
         'm.%QInCNOT': {
-            'Descriptive name': '% Qubits in CNOT',
+            descriptive_name: '% Qubits in CNOT',
             'Description': 'Ratio of qubits affected by CNOT gates (both the controlled and the target qubit in a CNOT will be considered as affected for the calculation of this metric)',
             'Value': 0.0
         },
         'm.AvgCNOT': {
-            'Descriptive name': 'Avg. CNOT gates',
+            descriptive_name: 'Avg. CNOT gates',
             'Description': 'Average number of CNOT gates targeting any qubit of a circuit',
             'Value': 0.0
         },
         'm.MaxCNOT': {
-            'Descriptive name': 'Max. CNOT gates',
+            descriptive_name: 'Max. CNOT gates',
             'Description': 'Maximum number of CNOT gates targeting any qubit of a circuit',
             'Value': 0
         },
         'm.NoToff': {
-            'Descriptive name': '# Toffoli gates',
+            descriptive_name: '# Toffoli gates',
             'Description': 'Number of Toffoli gates',
             'Value': 0
         }, 
         'm.%QInToff': {
-            'Descriptive name': '% Qubits in Toffoli',
+            descriptive_name: '% Qubits in Toffoli',
             'Description': 'Ratio of qubits affected by Toffoli gates (the controlled qubit and the target qubits will be taken into account as affected for the calculation)',
             'Value': 0.0
         },
         'm.AvgToff': {
-            'Descriptive name': 'Avg. Toffoli gates',
+            descriptive_name: 'Avg. Toffoli gates',
             'Description': 'Average number of Toffoli gates targeting any qubit of a circuit',
             'Value': 0.0
         },
         'm.MaxToff': {
-            'Descriptive name': 'Max. Toffoli gates',
+            descriptive_name: 'Max. Toffoli gates',
             'Description': 'Maximum number of Toffoli gates targeting any qubit of a circuit',
             'Value': 0
         }
     },
     'All Gates': {
         m_NoGates: {
-            'Descriptive name': '# gates',
+            descriptive_name: '# gates',
             'Description': 'Total number of gates in the circuit',
             'Value': 0
         },
         'm.NoCGates': {
-            'Descriptive name': '# Controlled gates',
+            descriptive_name: '# Controlled gates',
             'Description': 'Total number of controlled gates in the circuit',
             'Value': 0
         },
         'm.%SGates': {
-            'Descriptive name': '% Single gates',
+            descriptive_name: '% Single gates',
             'Description': 'Ratio single vs total gates',
             'Value': 0.0
         }
@@ -159,12 +160,12 @@ circuit_metrics = {
     #'Oracles': { 'm.NoOr': 0 }
     'Measurement Gates': {
         'm.NoM': {
-            'Descriptive name': '# Measurement gates',
+            descriptive_name: '# Measurement gates',
             'Description': 'Number of measurement gates in the circuit',
             'Value': 0
         },
         'm.%QM': {
-            'Descriptive name': '% Qubits measured',
+            descriptive_name: '% Qubits measured',
             'Description': 'Ratio of qubits measured',
             'Value': 0.0
         }

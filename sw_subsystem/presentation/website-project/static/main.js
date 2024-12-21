@@ -11,7 +11,7 @@ function set_nav_bar_active_element() {
     // Recorrer cada enlace y verificar si el href coincide con la página actual
     navLinks.forEach(function(link) {
         if (link.getAttribute('href')) {
-            var linkHref = link.getAttribute('href').replace("/", "");
+            const linkHref = link.getAttribute('href').replace("/", "");
 
             // Si el href coincide con la página actual, añadir la clase 'active-custom'
             if (linkHref === page) {
@@ -40,13 +40,13 @@ window.addEventListener('load', function () {
 })
 
 // Habilitación de los tooltips
-var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
   return new bootstrap.Tooltip(tooltipTriggerEl)
 })
 
 // Habilitación de los popovers
-var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
-var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+const popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
   return new bootstrap.Popover(popoverTriggerEl)
 })

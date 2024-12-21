@@ -167,32 +167,38 @@ def read_python_file(file):
 
     return file_content, circuits_list
 
+def verify_file(file, file_extension):
+    error_message = None
+
+    # Verificar si se ha enviado un archivo
+    if 'file' not in request.files:
+        error_message = "Error importing file"
+
+    # Verificar si se ha seleccionado un archivo
+    if file.filename == '':
+        error_message = "No file selected"
+
+    # Verificar la extensión del archivo
+    if not allowed_file(file.filename, file_extension.replace(".", "")):
+        error_message = "The file does not have the specified extension"
+    
+    return error_message
+
 @app.route('/pattern_analysis_configuration', methods=['GET', 'POST'])
 def pattern_analysis():
     # Si es una petición de importar fichero
     if request.method == 'POST':
         print(request.files)
 
-        error_message = "Error importing file"
-
-        # Verificar si se ha enviado un archivo
-        if 'file' not in request.files:
-            return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, error_message=error_message)
-
         # Obtener el archivo del formulario
         file = request.files['file']
-
-        # Verificar si se ha seleccionado un archivo
-        if file.filename == '':
-            error_message = "No file selected" 
-            return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, error_message=error_message)
 
         # Obtener la extensión del archivo requerido
         file_extension = request.form['file_extension']
 
-        # Verificar la extensión del archivo
-        if not allowed_file(file.filename, file_extension.replace(".", "")):
-            error_message = "The file does not have the specified extension"
+        error_message = verify_file(file, file_extension)
+
+        if error_message:
             return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, error_message=error_message)
 
         # Lectura del archivo dependiendo de su extensión
@@ -217,6 +223,29 @@ def pattern_analysis():
             return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, error_message=error_message)
     else:
         return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models)
+    
+def create_metric_dicts(selected_models_num, circuits_number, circuit_metrics_total_values, form_keys, form_values):
+    circuits_list = []
+
+    # Crear los diccionarios de métricas de cada circuito y añadirlos a la lista
+    list_index = selected_models_num
+    for _ in range(0, circuits_number): # Para cada circuito
+        circuit_dict = {} # Crear el diccionario de métricas
+        for _ in range(0, circuit_metrics_total_values): # Para cada métrica
+            # Obtener el nombre de la métrica y añadirla con su valor al diccionario
+            metric_name = form_keys[list_index].split("_")[0]
+
+            try:
+                circuit_dict[metric_name] = float(form_values[list_index])
+            except (ValueError, TypeError):
+                circuits_list = "Metric values must be numeric"
+                return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, circuits_list=circuits_list)
+            list_index+=1
+
+        # Añadir el diccionario a la lista
+        circuits_list.append(circuit_dict)
+
+    return circuits_list
 
 @app.route('/prediction_results', methods=['GET', 'POST'])
 def predict():
@@ -240,22 +269,7 @@ def predict():
             return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, circuits_list=circuits_list)
 
         # Crear los diccionarios de métricas de cada circuito y añadirlos a la lista
-        list_index = selected_models_num
-        for _ in range(0, circuits_number): # Para cada circuito
-            circuit_dict = {} # Crear el diccionario de métricas
-            for _ in range(0, circuit_metrics_total_values): # Para cada métrica
-                # Obtener el nombre de la métrica y añadirla con su valor al diccionario
-                metric_name = form_keys[list_index].split("_")[0]
-
-                try:
-                    circuit_dict[metric_name] = float(form_values[list_index])
-                except (ValueError, TypeError):
-                    circuits_list = "Metric values must be numeric"
-                    return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, circuits_list=circuits_list)
-                list_index+=1
-
-            # Añadir el diccionario a la lista
-            circuits_list.append(circuit_dict)
+        circuits_list = create_metric_dicts(selected_models_num, circuits_number, circuit_metrics_total_values, form_keys, form_values)
 
         # Guardar los circuitos en un archivo JSON
         with open(ml_parameters.test_data_filename, 'w') as json_file:
