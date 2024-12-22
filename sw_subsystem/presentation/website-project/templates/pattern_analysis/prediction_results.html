@@ -45,14 +45,20 @@
                     </div>
                     {% for model, model_predictions in last_analysis['Circuit Predictions'][circuit_number-1].items() %}
                     <div class="row" id="results-pattern-{{pattern|replace('p.', '')}}-circuit-{{circuit_number}}-model-{{model}}-row">
-                        <div class="col p-2 border border-dark input-col-height text-dark lightblue-bg-color align-items-center">
+                        <div class="col p-2 border border-dark input-col-height text-white lightblue-bg-color align-items-center">
                             {% if circuit[model][pattern].result %}
-                            <div class="progress" style="height: 26px;">
-                                <div class="progress-bar bg-success" role="progressbar" style="width: {{circuit[model][pattern].probability}}%;" aria-valuenow="{{circuit[model][pattern].probability}}" aria-valuemin="0" aria-valuemax="100">True ({{circuit[model][pattern].probability}}%)</div>
+                            <div class="progress">
+                                <progress class="green-progress" value="{{circuit[model][pattern].probability}}" max="100" aria-valuenow="{{circuit[model][pattern].probability}}" aria-valuemin="0" aria-valuemax="100"></progress>
+                                <span class="progress-bar-text">
+                                    True ({{circuit[model][pattern].probability}}%)
+                                </span>
                             </div>
                             {% else %}
-                            <div class="progress" style="height: 26px;">
-                                <div class="progress-bar bg-danger" role="progressbar" style="width: {{circuit[model][pattern].probability}}%;" aria-valuenow="{{circuit[model][pattern].probability}}" aria-valuemin="0" aria-valuemax="100">False ({{circuit[model][pattern].probability}}%)</div>
+                            <div class="progress">
+                                <progress class="red-progress" value="{{circuit[model][pattern].probability}}" max="100" aria-valuenow="{{circuit[model][pattern].probability}}" aria-valuemin="0" aria-valuemax="100"></progress>
+                                <span class="progress-bar-text">
+                                    False ({{circuit[model][pattern].probability}}%)
+                                </span>
                             </div>
                             {% endif %}
                         </div>

@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
   
         // Crear la gráfica con Chart.js
-        new Chart(canvas, {
+        const pattern_chart = new Chart(canvas, {
             type: 'bar',
             data: chartData,
             options: {

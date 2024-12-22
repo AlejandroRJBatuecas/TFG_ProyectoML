@@ -110,3 +110,72 @@ a {
 .underline-hover:hover {
     text-decoration: underline !important;
 }
+
+.progress {
+    position: relative;
+    height: 26px;
+    background-color: #e9ecef;
+}
+
+progress {
+    width: 100%;
+    height: 100%;
+}
+
+/* Fondo de la barra de progreso */
+progress::-webkit-progress-bar {
+    background-color: #616060; /* Fondo gris claro */
+    border-radius: 4px; /* Bordes redondeados */
+}
+
+/* Color de la barra de progreso completada en Chrome, Edge y Safari */
+.green-progress::-webkit-progress-value {
+    background-color: green; /* Verde para resultado positivo */
+}
+
+.red-progress::-webkit-progress-value {
+    background-color: red; /* Rojo para resultado negativo */
+}
+
+/* Compatibilidad con Firefox */
+.green-progress::-moz-progress-bar {
+    background-color: green; /* Verde para resultado positivo */
+}
+
+.red-progress::-moz-progress-bar {
+    background-color: red; /* Rojo para resultado negativo */
+}
+
+/* Para navegadores que no admiten pseudo-clases (fallback) */
+.green-progress,
+.red-progress {
+    background-color: transparent; /* Elimina estilos predeterminados visibles */
+    position: relative;
+}
+
+.green-progress::after,
+.red-progress::after {
+    content: '';
+    position: absolute;
+    height: 100%;
+    left: 0;
+    top: 0;
+    width: calc(attr(value) * 1%);
+    background-color: inherit;
+    border-radius: 4px;
+}
+
+/* Texto superpuesto */
+.progress-bar-text {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 0.875rem;
+}

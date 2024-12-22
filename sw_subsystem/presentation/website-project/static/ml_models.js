@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const performanceRows = document.querySelectorAll('[id^="ml_models_performance_comparison-model-"][id$="-row"]');
   
     // Inicializar las métricas y datos por modelo
-    const models = [];
+    let models = [];
     const metrics = ['Accuracy', 'Precision', 'Recall', 'F1'];
     const dataByModel = {};
   
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
     // Generar la gráfica de barras verticales
     const ctx = document.getElementById('verticalBarChart').getContext('2d');
-    new Chart(ctx, {
+    const verticalBarChart = new Chart(ctx, {
       type: 'bar',
       data: {
         labels: metrics, // Agrupaciones principales (Métricas)

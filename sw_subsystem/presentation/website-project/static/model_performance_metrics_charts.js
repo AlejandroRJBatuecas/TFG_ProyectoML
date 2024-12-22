@@ -51,7 +51,7 @@ function createCharts() {
         const ctx = canvas.getContext('2d');
 
         // Crear la gráfica
-        new Chart(ctx, {
+        const model_performance_metrics_chart = new Chart(ctx, {
         ...commonConfig,
         data: {
             datasets: [

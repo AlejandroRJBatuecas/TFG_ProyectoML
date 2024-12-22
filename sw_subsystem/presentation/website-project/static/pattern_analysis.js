@@ -300,6 +300,13 @@ document.getElementById('code-file-import-button').addEventListener('click', fun
     openFileImportModal("python");
 });
 
+function getParsedValue(value) {
+    if (isNaN(value)) {
+        return value
+    }
+    return value.includes('.') ? parseFloat(value) : parseInt(value, 10)
+}
+
 document.getElementById('json-file-export-button').addEventListener('click', () => {
     // Capturar los datos del formulario
     const form = document.getElementById('metrics-form');
@@ -318,7 +325,7 @@ document.getElementById('json-file-export-button').addEventListener('click', () 
         }
 
         // Determinar si el valor es decimal, entero o no numérico
-        const parsedValue = isNaN(value) ? value : (value.includes('.') ? parseFloat(value) : parseInt(value, 10));
+        const parsedValue = getParsedValue(value)
 
         // Añadir la métrica al objeto del circuito
         jsonObjectList[circuit_number_position][json_key] = parsedValue;

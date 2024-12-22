@@ -184,12 +184,35 @@ def verify_file(file, file_extension):
     
     return error_message
 
+def read_import_file(file, file_extension):
+    imported_file_data = {
+        "file_content": None,
+        "circuit_metrics": None,
+        "cirucits_list": None,
+        "error_message": None
+    }
+
+    if file_extension == ".json":
+        # Si se han obtenido las métricas correctamente, devolver el archivo y las métricas
+        imported_file_data["file_content"], imported_file_data["circuit_metrics"] = read_json_file(file)
+        # Si no, devolver el mensaje de error
+        if not imported_file_data["circuit_metrics"]:
+            imported_file_data["error_message"] = "The file does not have the specified format"
+    elif file_extension == ".py":
+        # Si se han obtenido las métricas correctamente, devolver el archivo y las métricas
+        imported_file_data["file_content"], imported_file_data["circuits_list"] = read_python_file(file)
+        # Si no, devolver el mensaje de error
+        if not imported_file_data["circuits_list"]:
+            imported_file_data["error_message"] = "The file does not have the specified format"
+    else:
+        imported_file_data["error_message"]= "The file does not have the specified extension"
+    
+    return imported_file_data
+
 @app.route('/pattern_analysis_configuration', methods=['GET', 'POST'])
 def pattern_analysis():
     # Si es una petición de importar fichero
     if request.method == 'POST':
-        print(request.files)
-
         # Obtener el archivo del formulario
         file = request.files['file']
 
@@ -202,25 +225,15 @@ def pattern_analysis():
             return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, error_message=error_message)
 
         # Lectura del archivo dependiendo de su extensión
-        if file_extension == ".json":
-            file_content, circuit_metrics = read_json_file(file)
-            # Si se han obtenido las métricas correctamente, devolver el archivo y las métricas
-            if circuit_metrics:
-                return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, file_name=file.filename, file_content=file_content, file_extension=file_extension.replace(".", ""), circuit_metrics=circuit_metrics)
-            else:
-                error_message = "The file does not have the specified format"
-                return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, error_message=error_message)
-        elif file_extension == ".py":
-            file_content, circuits_list = read_python_file(file)
-            # Si se han obtenido las métricas correctamente, devolver el archivo y las métricas
-            if circuits_list:
-                return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, file_name=file.filename, file_content=file_content, file_extension=file_extension.replace(".", ""), circuits_list=circuits_list)
-            else:
-                error_message = "The file does not have the specified format"
-                return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, error_message=error_message)
-        else:
-            error_message= "The file does not have the specified extension"
+        imported_file_data = read_import_file(file, file_extension)
+
+        if imported_file_data["error_message"]:
             return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, error_message=error_message)
+        else:
+            if imported_file_data["circuit_metrics"]:
+                return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, file_name=file.filename, file_content=imported_file_data["file_content"], file_extension=file_extension.replace(".", ""), circuit_metrics=imported_file_data["circuit_metrics"])
+            elif imported_file_data["circuits_list"]:
+                return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, file_name=file.filename, file_content=imported_file_data["file_content"], file_extension=file_extension.replace(".", ""), circuits_list=imported_file_data["circuits_list"])
     else:
         return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models)
     
