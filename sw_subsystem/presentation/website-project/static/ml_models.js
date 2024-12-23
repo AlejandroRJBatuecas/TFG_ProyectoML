@@ -3,7 +3,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const performanceRows = document.querySelectorAll('[id^="ml_models_performance_comparison-model-"][id$="-row"]');
   
     // Inicializar las métricas y datos por modelo
-    let models = [];
     const metrics = ['Accuracy', 'Precision', 'Recall', 'F1'];
     const dataByModel = {};
   
@@ -12,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const modelName = row.querySelector('.col-4 span').textContent.trim();
       const metricCells = row.querySelectorAll('.col-2 span');
   
-      models.push(modelName);
       dataByModel[modelName] = metrics.map((_, index) =>
         parseFloat(metricCells[index].textContent.replace('%', ''))
       );
