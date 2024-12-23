@@ -210,11 +210,11 @@ def read_import_file(file, file_extension):
     return imported_file_data
 
 @app.route('/pattern_analysis_configuration', methods=['GET'])
-def pattern_analysis_GET():
+def pattern_analysis_get():
     return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models)
 
 @app.route('/pattern_analysis_configuration', methods=['POST'])
-def pattern_analysis_POST():
+def pattern_analysis_post():
     # Obtener el archivo del formulario
     file = request.files['file']
 
@@ -262,11 +262,11 @@ def create_metric_dicts(selected_models_num, circuits_number, circuit_metrics_to
     return circuits_list
 
 @app.route('/prediction_results', methods=['GET'])
-def predict_GET():
+def predict_get():
     return render_template('/pattern_analysis/prediction_results.html', patterns_list=ml_parameters.patterns_list)
 
 @app.route('/prediction_results', methods=['POST'])
-def predict_POST():
+def predict_post():
     # Inicialización de los listados
     circuits_list = [] # Lista de las métricas de los circuitos
     selected_models = [] # Lista de modelos seleccionados

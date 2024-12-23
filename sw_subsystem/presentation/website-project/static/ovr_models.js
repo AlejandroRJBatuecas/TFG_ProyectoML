@@ -79,5 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+
+        pattern_chart.update()
     });
 });

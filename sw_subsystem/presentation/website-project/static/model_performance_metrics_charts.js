@@ -63,6 +63,8 @@ function createCharts() {
             ],
         },
         });
+
+        model_performance_metrics_chart.update();
     });
 }
 

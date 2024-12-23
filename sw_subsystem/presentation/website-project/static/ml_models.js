@@ -67,4 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     });
+
+    verticalBarChart.update(); // Usando la variable para actualizar el gráfico
 });
