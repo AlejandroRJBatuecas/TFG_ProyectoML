@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="container-fluid p-3">
-    <form action="{{url_for('predict')}}" method="post" class="p-0" id="metrics-form">
+    <form action="{{url_for('predict_POST')}}" method="post" class="p-0" id="metrics-form">
         <div class="row justify-content-center text-center lightblue-bg-color fixed-top fixed-content" id="fixed-content">
             <div class="col-11 p-3">
                 <!-- Sección de importar y exportar datos -->
@@ -137,7 +137,7 @@
                 <h1 class="modal-title">Importing a file</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{url_for('pattern_analysis')}}" method="post" enctype="multipart/form-data" class="p-0" id="file-import-form">
+            <form action="{{url_for('pattern_analysis_POST')}}" method="post" enctype="multipart/form-data" class="p-0" id="file-import-form">
                 <div class="modal-body d-grid">
                     <label class="form-label fw-bold" for="file-input">Select a file (<span id="file-extension-type"></span> files only)</label>
                     <input class="form-control" type="file" name="file" required="required" id="file-input">
