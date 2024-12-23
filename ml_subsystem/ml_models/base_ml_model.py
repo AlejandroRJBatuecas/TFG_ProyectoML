@@ -38,6 +38,9 @@ class BaseMLModel(ABC):
     
     # Obtener los valores y etiquetas en conjuntos de entrenamiento y prueba
     def _get_datasets(self):
+        print(self.data_values)
+        print(self.data_labels)
+
         # Obtener el conjunto de entrenamiento y de prueba
         train_set_values, test_set_values, train_set_labels, test_set_labels = train_test_split(self.data_values, self.data_labels, test_size=ml_parameters.test_set_size, random_state=ml_parameters.random_state_value, stratify=self.data_labels)
 
