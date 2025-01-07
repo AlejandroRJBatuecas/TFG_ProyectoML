@@ -1,416 +1,336 @@
-{% extends 'base.html' %}
+{% extends 'ml_models/ml_models_base.html' %}
 
 {% block title %}ML models{% endblock %}
 
-{% block content %}
-<div class="container-fluid p-3">
-    <div class="row justify-content-center fixed-content">
-        <div class="col-11">
-            <!-- Comparativa de rendimientos de los modelos -->
-            <div class="row">
-                <div class="col-12">
-                    <!-- Pestañas de tipos de modelos -->
-                    <div class="row">
-                        <div class="col-12 p-0">
-                            <ul class="nav nav-pills nav-fill darkblue-bg-color p-2">
-                                <li class="nav-item m-1">
-                                    <a class="nav-link active-custom text-white" aria-current="page" href="/ml_models">Multilabel models</a>
-                                </li>
-                                <li class="nav-item grey-bg-color m-1">
-                                    <a class="nav-link text-dark" href="/ovr_models">One vs Rest models</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <!-- Gráfica y tabla de resultados -->
-                    <div class="row p-2">
-                        <div class="col-12">
-                            <h1 class="mt-3">Model performance comparison</h1>
-                            <!-- Gráfica -->
-                            <div class="row justify-content-center">
-                                <div class="col-12 col-md-10 col-xl-8">
-                                    <canvas id="verticalBarChart"></canvas>
-                                </div>
-                            </div>
-                            <!-- Tabla de resultados -->
-                            <!-- Cabecera -->
-                            <div class="row mt-3" id="ml_models_performance_comparison-header">
-                                <div class="col-4 p-2 border border-dark text-white darkblue-bg-color">
-                                    <h3 class="mb-0 text-truncate" title="Models/Metrics">Models/Metrics</h3>
-                                </div>
-                                <div class="col-2 p-2 border border-dark text-white blue-green-bg-color text-end">
-                                    <h3 class="mb-0 text-truncate" title="Accuracy">Accuracy</h3>
-                                </div>
-                                <div class="col-2 p-2 border border-dark text-white blue-green-bg-color text-end">
-                                    <h3 class="mb-0 text-truncate" title="Precision">Precision</h3>
-                                </div>
-                                <div class="col-2 p-2 border border-dark text-white blue-green-bg-color text-end">
-                                    <h3 class="mb-0 text-truncate" title="Recall">Recall</h3>
-                                </div>
-                                <div class="col-2 p-2 border border-dark text-white blue-green-bg-color text-end">
-                                    <h3 class="mb-0 text-truncate" title="F1">F1</h3>
-                                </div>
-                            </div>
-                            <!-- Métricas de los modelos -->
-                            {% for ml_model_name, ml_model in ml_models_dict.items() %}
-                            <div class="row" id="ml_models_performance_comparison-model-{{ml_model_name}}-row">
-                                <div class="col-4 p-2 border border-dark text-dark grey-bg-color text-truncate">
-                                    <span class="mb-0 fw-bold" title="{{ml_model_name}}">{{ml_model_name}}</span>
-                                </div>
-                                <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
-                                    <span class="mb-0" title="{{ '%.2f'|format(ml_model.model_performance_data['Accuracy']) }}%">{{ '%.2f'|format(ml_model.model_performance_data['Accuracy']) }}%</span>
-                                </div>
-                                <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
-                                    <span class="mb-0" title="{{ '%.2f'|format(ml_model.model_performance_data['Precision']) }}%">{{ '%.2f'|format(ml_model.model_performance_data['Precision']) }}%</span>
-                                </div>
-                                <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
-                                    <span class="mb-0" title="{{ '%.2f'|format(ml_model.model_performance_data['Recall']) }}%">{{ '%.2f'|format(ml_model.model_performance_data['Recall']) }}%</span>
-                                </div>
-                                <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
-                                    <span class="mb-0" title="{{ '%.2f'|format(ml_model.model_performance_data['F1']) }}%">{{ '%.2f'|format(ml_model.model_performance_data['F1']) }}%</span>
-                                </div>
-                            </div>
-                            <div class="row" id="ml_models_performance_comparison-model-{{ml_model_name}}-with-best-features-row">
-                                <div class="col-4 p-2 border border-dark text-dark grey-bg-color text-truncate">
-                                    <span class="mb-0 fw-bold" title="{{ml_model_name}} with feature selection">{{ml_model_name}} with feature selection</span>
-                                </div>
-                                <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
-                                    <span class="mb-0" title="{{ '%.2f'|format(ml_model.best_features_model_performance_data['Accuracy']) }}%">{{ '%.2f'|format(ml_model.best_features_model_performance_data['Accuracy']) }}%</span>
-                                </div>
-                                <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
-                                    <span class="mb-0" title="{{ '%.2f'|format(ml_model.best_features_model_performance_data['Precision']) }}%">{{ '%.2f'|format(ml_model.best_features_model_performance_data['Precision']) }}%</span>
-                                </div>
-                                <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
-                                    <span class="mb-0" title="{{ '%.2f'|format(ml_model.best_features_model_performance_data['Recall']) }}%">{{ '%.2f'|format(ml_model.best_features_model_performance_data['Recall']) }}%</span>
-                                </div>
-                                <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
-                                    <span class="mb-0" title="{{ '%.2f'|format(ml_model.best_features_model_performance_data['F1']) }}%">{{ '%.2f'|format(ml_model.best_features_model_performance_data['F1']) }}%</span>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
+{% block navigation_links %}
+<li class="nav-item m-1">
+    <a class="nav-link active-custom text-white" aria-current="page" href="/ml_models">Multilabel models</a>
+</li>
+<li class="nav-item grey-bg-color m-1">
+    <a class="nav-link text-dark" href="/ovr_models">One vs Rest models</a>
+</li>
+{% endblock %}
+
+{% block chart %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-10 col-xl-8">
+        <canvas id="verticalBarChart"></canvas>
+    </div>
+</div>
+{% endblock %}
+
+{% block result_table %}
+<div class="row mb-3">
+    <div class="col-12">
+        <!-- Cabecera -->
+        <div class="row mt-3" id="ml_models_performance_comparison-header">
+            <div class="col-4 p-2 border border-dark text-white darkblue-bg-color">
+                <h3 class="mb-0 text-truncate" title="Models/Metrics">Models/Metrics</h3>
             </div>
-            <!-- Detalle de los modelos -->
-            <div class="row" id="ml_models_performance_details">
-                <div class="col-12">
-                    <h1 class="mb-3 mt-3">Model performance details</h1>
-                    <!-- Acordeón con los modelos -->
-                    <div class="accordion" id="ml_models_performance_details-accordion">
-                        {% for ml_model_name, ml_model in ml_models_dict.items() %}
-                        <div class="accordion-item">
-                            <h2 class="accordion-header" id="{{ml_model.__class__.__name__}}-accordion-heading">
-                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#{{ml_model.__class__.__name__}}-accordion-collapse" aria-expanded="false" aria-controls="collapseOne">
-                                    {{ml_model_name}}
-                                </button>
-                            </h2>
-                            <div id="{{ml_model.__class__.__name__}}-accordion-collapse" class="accordion-collapse collapse show" aria-labelledby="{{ml_model.__class__.__name__}}-accordion-heading" data-bs-parent="#ml_models_performance_details-accordion">
-                                <div class="accordion-body">
-                                    <!-- Acordeón para los dos modelos -->
-                                    <div class="accordion" id="ml_models_details-{{ml_model.__class__.__name__}}-accordion">
-                                        <!-- Modelo normal -->
-                                        <div class="accordion-item">
-                                            <h2 class="accordion-header" id="{{ml_model.__class__.__name__}}-simple-accordion-heading">
-                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#{{ml_model.__class__.__name__}}-simple-accordion-collapse" aria-expanded="false" aria-controls="collapseOne">
-                                                    Simple model
-                                                </button>
-                                            </h2>
-                                            <div id="{{ml_model.__class__.__name__}}-simple-accordion-collapse" class="accordion-collapse collapse" aria-labelledby="{{ml_model.__class__.__name__}}-simple-accordion-heading">
-                                                <div class="accordion-body">
-                                                    <!-- Métricas de rendimiento del modelo -->
-                                                    <div class="row">
-                                                        <div class="col-12">
-                                                            <!-- Gráficas de resultados -->
-                                                            <div class="row p-2">
-                                                                <div class="col-12 col-sm-6 col-lg-3">
-                                                                    <h2 class="mb-0 text-truncate" title="Accuracy">Accuracy</h2>
-                                                                    <canvas class="chart-dimensions" data-value="{{ '%.2f'|format(ml_model.model_performance_data['Accuracy']) }}"></canvas>
-                                                                </div>
-                                                                <div class="col-12 col-sm-6 col-lg-3">
-                                                                    <h2 class="mb-0 text-truncate" title="Precision">Precision</h2>
-                                                                    <canvas class="chart-dimensions" data-value="{{ '%.2f'|format(ml_model.model_performance_data['Precision']) }}"></canvas>
-                                                                </div>
-                                                                <div class="col-12 col-sm-6 col-lg-3">
-                                                                    <h2 class="mb-0 text-truncate" title="Recall">Recall</h2>
-                                                                    <canvas class="chart-dimensions" data-value="{{ '%.2f'|format(ml_model.model_performance_data['Recall']) }}"></canvas>
-                                                                </div>
-                                                                <div class="col-12 col-sm-6 col-lg-3">
-                                                                    <h2 class="mb-0 text-truncate" title="F1">F1</h2>
-                                                                    <canvas class="chart-dimensions" data-value="{{ '%.2f'|format(ml_model.model_performance_data['F1']) }}"></canvas>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <!-- Resultados por patrón -->
-                                                    <div class="row">
-                                                        <div class="col-12">
-                                                            <h1 class="mt-3">Classification report</h1>
-                                                            <!-- Tabla de resultados por patrón -->
-                                                            <div class="row p-2">
-                                                                <div class="col-12">
-                                                                    <!-- Cabecera -->
-                                                                    <div class="row">
-                                                                        <div class="col-4 p-2 border border-dark text-white darkblue-bg-color">
-                                                                            <h3 class="mb-0 text-truncate" title="Pattern">Pattern</h3>
-                                                                        </div>
-                                                                        <div class="col-2 p-2 border border-dark text-white blue-green-bg-color text-end">
-                                                                            <h3 class="mb-0 text-truncate" title="Precision">Precision</h3>
-                                                                        </div>
-                                                                        <div class="col-2 p-2 border border-dark text-white blue-green-bg-color text-end">
-                                                                            <h3 class="mb-0 text-truncate" title="Recall">Recall</h3>
-                                                                        </div>
-                                                                        <div class="col-2 p-2 border border-dark text-white blue-green-bg-color text-end">
-                                                                            <h3 class="mb-0 text-truncate" title="F1-score">F1-score</h3>
-                                                                        </div>
-                                                                        <div class="col-2 p-2 border border-dark text-white blue-green-bg-color text-end">
-                                                                            <h3 class="mb-0 text-truncate" title="Support">Support</h3>
-                                                                        </div>
-                                                                    </div>
-                                                                    <!-- Métricas de los patrones -->
-                                                                    {% for pattern, pattern_metrics in ml_model.model_performance_data['Classification report'].items() %}
-                                                                    <div class="row" id="ml_models_performance_details_per_pattern-model-{{ml_model_name}}-row">
-                                                                        <div class="col-4 p-2 border border-dark text-dark grey-bg-color text-truncate">
-                                                                            <span class="mb-0 fw-bold" title="{{pattern | replace('p.', '') | capitalize }}">{{pattern | replace("p.", "") | capitalize }}</span>
-                                                                        </div>
-                                                                        <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
-                                                                            <span class="mb-0" title="{{ '%.2f'|format((pattern_metrics['precision'] * 100) | float | round(3)) }}%">{{ '%.2f'|format((pattern_metrics['precision'] * 100) | float | round(3)) }}%</span>
-                                                                        </div>
-                                                                        <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
-                                                                            <span class="mb-0" title="{{ '%.2f'|format((pattern_metrics['recall'] * 100) | float | round(3)) }}%">{{ '%.2f'|format((pattern_metrics['recall'] * 100) | float | round(3)) }}%</span>
-                                                                        </div>
-                                                                        <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
-                                                                            <span class="mb-0" title="{{ '%.2f'|format((pattern_metrics['f1-score'] * 100) | float | round(3)) }}%">{{ '%.2f'|format((pattern_metrics['f1-score'] * 100) | float | round(3)) }}%</span>
-                                                                        </div>
-                                                                        <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
-                                                                            <span class="mb-0" title="{{pattern_metrics['support'] | int }}">{{pattern_metrics['support'] | int }}</span>
-                                                                        </div>
-                                                                    </div>
-                                                                    {% endfor %}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <!-- Matrices de confusión por patrón -->
-                                                    <div class="row">
-                                                        <div class="col-12">
-                                                            <h1 class="mt-3">Confusion matrices</h1>
-                                                            <!-- Matriz de confusión por patrón -->
-                                                            {% for pattern, confusion_matrix in ml_model.model_performance_data['Confusion matrix'].items() %}
-                                                            <div class="row p-2">
-                                                                <div class="col-12">
-                                                                    <!-- Cabecera -->
-                                                                    <div class="row">
-                                                                        <div class="col-4 p-2 border border-dark text-white darkblue-bg-color">
-                                                                            <h3 class="mb-0 text-truncate" title="{{ pattern|replace('p.', '')|capitalize }}">
-                                                                                {{ pattern|replace('p.', '')|capitalize }}
-                                                                                <a class="text-decoration-none ms-1" href="{{ pattern_links[pattern] }}" target="_blank">Click to learn more</a>
-                                                                            </h3>
-                                                                        </div>
-                                                                        <div class="col-4 p-2 border border-dark text-white blue-green-bg-color text-end">
-                                                                            <h3 class="mb-0 text-truncate" title="Real value - False">Real value - False</h3>
-                                                                        </div>
-                                                                        <div class="col-4 p-2 border border-dark text-white blue-green-bg-color text-end">
-                                                                            <h3 class="mb-0 text-truncate" title="Real value - True">Real value - True</h3>
-                                                                        </div>
-                                                                    </div>
-                                                                    <!-- Filas -->
-                                                                    <div class="row">
-                                                                        <div class="col-4 p-2 border border-dark text-dark grey-bg-color text-truncate">
-                                                                            <span class="mb-0 fw-bold" title="Predicted value - False">Predicted value - False</span>
-                                                                        </div>
-                                                                        <div class="col-4 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
-                                                                            <span class="mb-0" title="{{ confusion_matrix[0][0] }} ({{ '%.2f'|format((ml_model.model_performance_data['Normalized confusion matrix'][pattern][0][0] * 100) | float | round(3)) }}%)">{{ confusion_matrix[0][0] }} ({{ '%.2f'|format((ml_model.model_performance_data['Normalized confusion matrix'][pattern][0][0] * 100) | float | round(3)) }}%)</span>
-                                                                        </div>
-                                                                        <div class="col-4 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
-                                                                            <span class="mb-0" title="{{ confusion_matrix[0][1] }} ({{ '%.2f'|format((ml_model.model_performance_data['Normalized confusion matrix'][pattern][0][1] * 100) | float | round(3)) }}%)">{{ confusion_matrix[0][1] }} ({{ '%.2f'|format((ml_model.model_performance_data['Normalized confusion matrix'][pattern][0][1] * 100) | float | round(3)) }}%)</span>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="row">
-                                                                        <div class="col-4 p-2 border border-dark text-dark grey-bg-color text-truncate">
-                                                                            <span class="mb-0 fw-bold" title="Predicted value - True">Predicted value - True</span>
-                                                                        </div>
-                                                                        <div class="col-4 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
-                                                                            <span class="mb-0" title="{{ confusion_matrix[1][0] }} ({{ '%.2f'|format((ml_model.model_performance_data['Normalized confusion matrix'][pattern][1][0] * 100) | float | round(3)) }}%)">{{ confusion_matrix[1][0] }} ({{ '%.2f'|format((ml_model.model_performance_data['Normalized confusion matrix'][pattern][1][0] * 100) | float | round(3)) }}%)</span>
-                                                                        </div>
-                                                                        <div class="col-4 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
-                                                                            <span class="mb-0" title="{{confusion_matrix[1][1] }} ({{ '%.2f'|format((ml_model.model_performance_data['Normalized confusion matrix'][pattern][1][1] * 100) | float | round(3)) }}%)">{{ confusion_matrix[1][1] }} ({{ '%.2f'|format((ml_model.model_performance_data['Normalized confusion matrix'][pattern][1][1] * 100) | float | round(3)) }}%)</span>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            {% endfor %}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <!-- Modelo mejorado -->
-                                        <div class="accordion-item">
-                                            <h2 class="accordion-header" id="{{ml_model.__class__.__name__}}-improved-accordion-heading">
-                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#{{ml_model.__class__.__name__}}-improved-accordion-collapse" aria-expanded="false" aria-controls="collapseOne">
-                                                    Model with feature selection
-                                                </button>
-                                            </h2>
-                                            <div id="{{ml_model.__class__.__name__}}-improved-accordion-collapse" class="accordion-collapse collapse" aria-labelledby="{{ml_model.__class__.__name__}}-improved-accordion-heading">
-                                                <div class="accordion-body">
-                                                    <!-- Métricas de rendimiento del modelo mejorado -->
-                                                    <div class="row">
-                                                        <div class="col-12">
-                                                            <h1>Model performance metrics</h1>
-                                                            <!-- Gráficas de resultados del modelo mejorado -->
-                                                            <div class="row p-2">
-                                                                <div class="col-12 col-sm-6 col-lg-3">
-                                                                    <h2 class="mb-0 text-truncate" title="Accuracy">Accuracy</h2>
-                                                                    <canvas class="chart-dimensions" data-value="{{ '%.2f'|format(ml_model.best_features_model_performance_data['Accuracy']) }}"></canvas>
-                                                                </div>
-                                                                <div class="col-12 col-sm-6 col-lg-3">
-                                                                    <h2 class="mb-0 text-truncate" title="Precision">Precision</h2>
-                                                                    <canvas class="chart-dimensions" data-value="{{ '%.2f'|format(ml_model.best_features_model_performance_data['Precision']) }}"></canvas>
-                                                                </div>
-                                                                <div class="col-12 col-sm-6 col-lg-3">
-                                                                    <h2 class="mb-0 text-truncate" title="Recall">Recall</h2>
-                                                                    <canvas class="chart-dimensions" data-value="{{ '%.2f'|format(ml_model.best_features_model_performance_data['Recall']) }}"></canvas>
-                                                                </div>
-                                                                <div class="col-12 col-sm-6 col-lg-3">
-                                                                    <h2 class="mb-0 text-truncate" title="F1">F1</h2>
-                                                                    <canvas class="chart-dimensions" data-value="{{ '%.2f'|format(ml_model.best_features_model_performance_data['F1']) }}"></canvas>
-                                                                </div>
-                                                            </div>     
-                                                        </div>
-                                                    </div>
-                                                    <!-- Mejores métricas -->
-                                                    <h1 class="mt-3">Best features</h1>
-                                                    <div class="row" id="ml_models_best_features-model-{{ml_model_name}}-row">
-                                                        <div class="col-12">
-                                                            <h3 class="fw-bold mt-2">{{ml_model.best_features|length}} selected features</h3>
-                                                            <div class="row p-2">
-                                                                {% for feature in ml_model.best_features %}
-                                                                <div class="col-12 col-md-4 col-xxl-2">
-                                                                    <span><b>{{loop.index}}.</b> {{feature}}</span>
-                                                                </div>
-                                                                {% endfor %}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <!-- Resultados por patrón -->
-                                                    <div class="row">
-                                                        <div class="col-12">
-                                                            <h1 class="mt-3">Classification report</h1>
-                                                            <!-- Tabla de resultados por patrón -->
-                                                            <div class="row p-2">
-                                                                <div class="col-12">
-                                                                    <!-- Cabecera -->
-                                                                    <div class="row">
-                                                                        <div class="col-4 p-2 border border-dark text-white darkblue-bg-color">
-                                                                            <h3 class="mb-0 text-truncate" title="Pattern">Pattern</h3>
-                                                                        </div>
-                                                                        <div class="col-2 p-2 border border-dark text-white blue-green-bg-color text-end">
-                                                                            <h3 class="mb-0 text-truncate" title="Precision">Precision</h3>
-                                                                        </div>
-                                                                        <div class="col-2 p-2 border border-dark text-white blue-green-bg-color text-end">
-                                                                            <h3 class="mb-0 text-truncate" title="Recall">Recall</h3>
-                                                                        </div>
-                                                                        <div class="col-2 p-2 border border-dark text-white blue-green-bg-color text-end">
-                                                                            <h3 class="mb-0 text-truncate" title="F1-score">F1-score</h3>
-                                                                        </div>
-                                                                        <div class="col-2 p-2 border border-dark text-white blue-green-bg-color text-end">
-                                                                            <h3 class="mb-0 text-truncate" title="Support">Support</h3>
-                                                                        </div>
-                                                                    </div>
-                                                                    <!-- Métricas de los patrones -->
-                                                                    {% for pattern, pattern_metrics in ml_model.best_features_model_performance_data['Classification report'].items() %}
-                                                                    <div class="row" id="ml_models_performance_details_per_pattern-model-{{ml_model_name}}-row">
-                                                                        <div class="col-4 p-2 border border-dark text-dark grey-bg-color text-truncate">
-                                                                            <span class="mb-0 fw-bold" title="{{pattern | replace('p.', '') | capitalize }}">{{pattern | replace("p.", "") | capitalize }}</span>
-                                                                        </div>
-                                                                        <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
-                                                                            <span class="mb-0" title="{{ '%.2f'|format((pattern_metrics['precision'] * 100) | float | round(3)) }}%">{{ '%.2f'|format((pattern_metrics['precision'] * 100) | float | round(3)) }}%</span>
-                                                                        </div>
-                                                                        <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
-                                                                            <span class="mb-0" title="{{ '%.2f'|format((pattern_metrics['recall'] * 100) | float | round(3)) }}%">{{ '%.2f'|format((pattern_metrics['recall'] * 100) | float | round(3)) }}%</span>
-                                                                        </div>
-                                                                        <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
-                                                                            <span class="mb-0" title="{{ '%.2f'|format((pattern_metrics['f1-score'] * 100) | float | round(3)) }}%">{{ '%.2f'|format((pattern_metrics['f1-score'] * 100) | float | round(3)) }}%</span>
-                                                                        </div>
-                                                                        <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
-                                                                            <span class="mb-0" title="{{pattern_metrics['support'] | int }}">{{pattern_metrics['support'] | int }}</span>
-                                                                        </div>
-                                                                    </div>
-                                                                    {% endfor %}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <!-- Matrices de confusión por patrón -->
-                                                    <div class="row">
-                                                        <div class="col-12">
-                                                            <h1 class="mt-3">Confusion matrices</h1>
-                                                            <!-- Matriz de confusión por patrón -->
-                                                            {% for pattern, confusion_matrix in ml_model.best_features_model_performance_data['Confusion matrix'].items() %}
-                                                            <div class="row p-2">
-                                                                <div class="col-12">
-                                                                    <!-- Cabecera -->
-                                                                    <div class="row">
-                                                                        <div class="col-4 p-2 border border-dark text-white darkblue-bg-color">
-                                                                            <h3 class="mb-0 text-truncate" title="{{ pattern|replace('p.', '')|capitalize }}">
-                                                                                {{ pattern|replace('p.', '')|capitalize }}
-                                                                                <a class="text-decoration-none ms-1" href="{{ pattern_links[pattern] }}" target="_blank">Click to learn more</a>
-                                                                            </h3>
-                                                                        </div>
-                                                                        <div class="col-4 p-2 border border-dark text-white blue-green-bg-color text-end">
-                                                                            <h3 class="mb-0 text-truncate" title="Real value - False">Real value - False</h3>
-                                                                        </div>
-                                                                        <div class="col-4 p-2 border border-dark text-white blue-green-bg-color text-end">
-                                                                            <h3 class="mb-0 text-truncate" title="Real value - True">Real value - True</h3>
-                                                                        </div>
-                                                                    </div>
-                                                                    <!-- Filas -->
-                                                                    <div class="row">
-                                                                        <div class="col-4 p-2 border border-dark text-dark grey-bg-color text-truncate">
-                                                                            <span class="mb-0 fw-bold" title="Predicted value - False">Predicted value - False</span>
-                                                                        </div>
-                                                                        <div class="col-4 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
-                                                                            <span class="mb-0" title="{{ confusion_matrix[0][0] }} ({{ '%.2f'|format((ml_model.best_features_model_performance_data['Normalized confusion matrix'][pattern][0][0] * 100) | float | round(3)) }}%)">{{ confusion_matrix[0][0] }} ({{ '%.2f'|format((ml_model.best_features_model_performance_data['Normalized confusion matrix'][pattern][0][0] * 100) | float | round(3)) }}%)</span>
-                                                                        </div>
-                                                                        <div class="col-4 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
-                                                                            <span class="mb-0" title="{{ confusion_matrix[0][1] }} ({{ '%.2f'|format((ml_model.best_features_model_performance_data['Normalized confusion matrix'][pattern][0][1] * 100) | float | round(3)) }}%)">{{ confusion_matrix[0][1] }} ({{ '%.2f'|format((ml_model.best_features_model_performance_data['Normalized confusion matrix'][pattern][0][1] * 100) | float | round(3)) }}%)</span>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="row">
-                                                                        <div class="col-4 p-2 border border-dark text-dark grey-bg-color text-truncate">
-                                                                            <span class="mb-0 fw-bold" title="Predicted value - True">Predicted value - True</span>
-                                                                        </div>
-                                                                        <div class="col-4 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
-                                                                            <span class="mb-0" title="{{ confusion_matrix[1][0] }} ({{ '%.2f'|format((ml_model.best_features_model_performance_data['Normalized confusion matrix'][pattern][1][0] * 100) | float | round(3)) }}%)">{{ confusion_matrix[1][0] }} ({{ '%.2f'|format((ml_model.best_features_model_performance_data['Normalized confusion matrix'][pattern][1][0] * 100) | float | round(3)) }}%)</span>
-                                                                        </div>
-                                                                        <div class="col-4 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
-                                                                            <span class="mb-0" title="{{confusion_matrix[1][1] }} ({{ '%.2f'|format((ml_model.best_features_model_performance_data['Normalized confusion matrix'][pattern][1][1] * 100) | float | round(3)) }}%)">{{ confusion_matrix[1][1] }} ({{ '%.2f'|format((ml_model.best_features_model_performance_data['Normalized confusion matrix'][pattern][1][1] * 100) | float | round(3)) }}%)</span>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            {% endfor %}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
+            <div class="col-2 p-2 border border-dark text-white blue-green-bg-color text-end">
+                <h3 class="mb-0 text-truncate" title="Accuracy">Accuracy</h3>
             </div>
+            <div class="col-2 p-2 border border-dark text-white blue-green-bg-color text-end">
+                <h3 class="mb-0 text-truncate" title="Precision">Precision</h3>
+            </div>
+            <div class="col-2 p-2 border border-dark text-white blue-green-bg-color text-end">
+                <h3 class="mb-0 text-truncate" title="Recall">Recall</h3>
+            </div>
+            <div class="col-2 p-2 border border-dark text-white blue-green-bg-color text-end">
+                <h3 class="mb-0 text-truncate" title="F1">F1</h3>
+            </div>
+        </div>
+        <!-- Métricas de los modelos -->
+        {% for ml_model_name, ml_model in ml_models_dict.items() %}
+        <div class="row" id="ml_models_performance_comparison-model-{{ml_model_name}}-row">
+            <div class="col-4 p-2 border border-dark text-dark grey-bg-color text-truncate">
+                <span class="mb-0 fw-bold" title="{{ml_model_name}}">{{ml_model_name}}</span>
+            </div>
+            <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
+                <span class="mb-0" title="{{ '%.2f'|format(ml_model.model_performance_data['Accuracy']) }}%">{{ '%.2f'|format(ml_model.model_performance_data['Accuracy']) }}%</span>
+            </div>
+            <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
+                <span class="mb-0" title="{{ '%.2f'|format(ml_model.model_performance_data['Precision']) }}%">{{ '%.2f'|format(ml_model.model_performance_data['Precision']) }}%</span>
+            </div>
+            <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
+                <span class="mb-0" title="{{ '%.2f'|format(ml_model.model_performance_data['Recall']) }}%">{{ '%.2f'|format(ml_model.model_performance_data['Recall']) }}%</span>
+            </div>
+            <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
+                <span class="mb-0" title="{{ '%.2f'|format(ml_model.model_performance_data['F1']) }}%">{{ '%.2f'|format(ml_model.model_performance_data['F1']) }}%</span>
+            </div>
+        </div>
+        <div class="row" id="ml_models_performance_comparison-model-{{ml_model_name}}-with-best-features-row">
+            <div class="col-4 p-2 border border-dark text-dark grey-bg-color text-truncate">
+                <span class="mb-0 fw-bold" title="{{ml_model_name}} with feature selection">{{ml_model_name}} with feature selection</span>
+            </div>
+            <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
+                <span class="mb-0" title="{{ '%.2f'|format(ml_model.best_features_model_performance_data['Accuracy']) }}%">{{ '%.2f'|format(ml_model.best_features_model_performance_data['Accuracy']) }}%</span>
+            </div>
+            <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
+                <span class="mb-0" title="{{ '%.2f'|format(ml_model.best_features_model_performance_data['Precision']) }}%">{{ '%.2f'|format(ml_model.best_features_model_performance_data['Precision']) }}%</span>
+            </div>
+            <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
+                <span class="mb-0" title="{{ '%.2f'|format(ml_model.best_features_model_performance_data['Recall']) }}%">{{ '%.2f'|format(ml_model.best_features_model_performance_data['Recall']) }}%</span>
+            </div>
+            <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
+                <span class="mb-0" title="{{ '%.2f'|format(ml_model.best_features_model_performance_data['F1']) }}%">{{ '%.2f'|format(ml_model.best_features_model_performance_data['F1']) }}%</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block performance_details_row %}
+<div class="row" id="ml_models_performance_details">
+{% endblock %}
+
+{% block performance_details_accordion %}
+<div class="accordion" id="ml_models_performance_details-accordion">
+{% endblock %}
+
+{% block model_performance_metrics %}
+<div class="row p-2">
+    <div class="col-12 col-sm-6 col-lg-3">
+        <h2 class="mb-0 text-truncate" title="Accuracy">Accuracy</h2>
+        <canvas class="chart-dimensions" data-value="{{ '%.2f'|format(ml_model.model_performance_data['Accuracy']) }}"></canvas>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-3">
+        <h2 class="mb-0 text-truncate" title="Precision">Precision</h2>
+        <canvas class="chart-dimensions" data-value="{{ '%.2f'|format(ml_model.model_performance_data['Precision']) }}"></canvas>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-3">
+        <h2 class="mb-0 text-truncate" title="Recall">Recall</h2>
+        <canvas class="chart-dimensions" data-value="{{ '%.2f'|format(ml_model.model_performance_data['Recall']) }}"></canvas>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-3">
+        <h2 class="mb-0 text-truncate" title="F1">F1</h2>
+        <canvas class="chart-dimensions" data-value="{{ '%.2f'|format(ml_model.model_performance_data['F1']) }}"></canvas>
+    </div>
+</div>
+{% endblock %}
+
+{% block classification_report %}
+<div class="row p-2">
+    <div class="col-12">
+        <!-- Cabecera -->
+        <div class="row">
+            <div class="col-4 p-2 border border-dark text-white darkblue-bg-color">
+                <h3 class="mb-0 text-truncate" title="Pattern">Pattern</h3>
+            </div>
+            <div class="col-2 p-2 border border-dark text-white blue-green-bg-color text-end">
+                <h3 class="mb-0 text-truncate" title="Precision">Precision</h3>
+            </div>
+            <div class="col-2 p-2 border border-dark text-white blue-green-bg-color text-end">
+                <h3 class="mb-0 text-truncate" title="Recall">Recall</h3>
+            </div>
+            <div class="col-2 p-2 border border-dark text-white blue-green-bg-color text-end">
+                <h3 class="mb-0 text-truncate" title="F1-score">F1-score</h3>
+            </div>
+            <div class="col-2 p-2 border border-dark text-white blue-green-bg-color text-end">
+                <h3 class="mb-0 text-truncate" title="Support">Support</h3>
+            </div>
+        </div>
+        <!-- Métricas de los patrones -->
+        {% for pattern, pattern_metrics in ml_model.model_performance_data['Classification report'].items() %}
+        <div class="row" id="ml_models_performance_details_per_pattern-model-{{ml_model_name}}-row">
+            <div class="col-4 p-2 border border-dark text-dark grey-bg-color text-truncate">
+                <span class="mb-0 fw-bold" title="{{pattern | replace('p.', '') | capitalize }}">{{pattern | replace("p.", "") | capitalize }}</span>
+            </div>
+            <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
+                <span class="mb-0" title="{{ '%.2f'|format((pattern_metrics['precision'] * 100) | float | round(3)) }}%">{{ '%.2f'|format((pattern_metrics['precision'] * 100) | float | round(3)) }}%</span>
+            </div>
+            <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
+                <span class="mb-0" title="{{ '%.2f'|format((pattern_metrics['recall'] * 100) | float | round(3)) }}%">{{ '%.2f'|format((pattern_metrics['recall'] * 100) | float | round(3)) }}%</span>
+            </div>
+            <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
+                <span class="mb-0" title="{{ '%.2f'|format((pattern_metrics['f1-score'] * 100) | float | round(3)) }}%">{{ '%.2f'|format((pattern_metrics['f1-score'] * 100) | float | round(3)) }}%</span>
+            </div>
+            <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
+                <span class="mb-0" title="{{pattern_metrics['support'] | int }}">{{pattern_metrics['support'] | int }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block confusion_matrices %}
+{% for pattern, confusion_matrix in ml_model.model_performance_data['Confusion matrix'].items() %}
+<div class="row p-2">
+    <div class="col-12">
+        <!-- Cabecera -->
+        <div class="row">
+            <div class="col-4 p-2 border border-dark text-white darkblue-bg-color">
+                <h3 class="mb-0 text-truncate" title="{{ pattern|replace('p.', '')|capitalize }}">
+                    {{ pattern|replace('p.', '')|capitalize }}
+                    <a class="text-decoration-none ms-1" href="{{ pattern_links[pattern] }}" target="_blank">Click to learn more</a>
+                </h3>
+            </div>
+            <div class="col-4 p-2 border border-dark text-white blue-green-bg-color text-end">
+                <h3 class="mb-0 text-truncate" title="Real value - False">Real value - False</h3>
+            </div>
+            <div class="col-4 p-2 border border-dark text-white blue-green-bg-color text-end">
+                <h3 class="mb-0 text-truncate" title="Real value - True">Real value - True</h3>
+            </div>
+        </div>
+        <!-- Filas -->
+        <div class="row">
+            <div class="col-4 p-2 border border-dark text-dark grey-bg-color text-truncate">
+                <span class="mb-0 fw-bold" title="Predicted value - False">Predicted value - False</span>
+            </div>
+            <div class="col-4 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
+                <span class="mb-0" title="{{ confusion_matrix[0][0] }} ({{ '%.2f'|format((ml_model.model_performance_data['Normalized confusion matrix'][pattern][0][0] * 100) | float | round(3)) }}%)">{{ confusion_matrix[0][0] }} ({{ '%.2f'|format((ml_model.model_performance_data['Normalized confusion matrix'][pattern][0][0] * 100) | float | round(3)) }}%)</span>
+            </div>
+            <div class="col-4 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
+                <span class="mb-0" title="{{ confusion_matrix[0][1] }} ({{ '%.2f'|format((ml_model.model_performance_data['Normalized confusion matrix'][pattern][0][1] * 100) | float | round(3)) }}%)">{{ confusion_matrix[0][1] }} ({{ '%.2f'|format((ml_model.model_performance_data['Normalized confusion matrix'][pattern][0][1] * 100) | float | round(3)) }}%)</span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-4 p-2 border border-dark text-dark grey-bg-color text-truncate">
+                <span class="mb-0 fw-bold" title="Predicted value - True">Predicted value - True</span>
+            </div>
+            <div class="col-4 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
+                <span class="mb-0" title="{{ confusion_matrix[1][0] }} ({{ '%.2f'|format((ml_model.model_performance_data['Normalized confusion matrix'][pattern][1][0] * 100) | float | round(3)) }}%)">{{ confusion_matrix[1][0] }} ({{ '%.2f'|format((ml_model.model_performance_data['Normalized confusion matrix'][pattern][1][0] * 100) | float | round(3)) }}%)</span>
+            </div>
+            <div class="col-4 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
+                <span class="mb-0" title="{{confusion_matrix[1][1] }} ({{ '%.2f'|format((ml_model.model_performance_data['Normalized confusion matrix'][pattern][1][1] * 100) | float | round(3)) }}%)">{{ confusion_matrix[1][1] }} ({{ '%.2f'|format((ml_model.model_performance_data['Normalized confusion matrix'][pattern][1][1] * 100) | float | round(3)) }}%)</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block best_features_model_performance_metrics %}
+<div class="row p-2">
+    <div class="col-12 col-sm-6 col-lg-3">
+        <h2 class="mb-0 text-truncate" title="Accuracy">Accuracy</h2>
+        <canvas class="chart-dimensions" data-value="{{ '%.2f'|format(ml_model.best_features_model_performance_data['Accuracy']) }}"></canvas>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-3">
+        <h2 class="mb-0 text-truncate" title="Precision">Precision</h2>
+        <canvas class="chart-dimensions" data-value="{{ '%.2f'|format(ml_model.best_features_model_performance_data['Precision']) }}"></canvas>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-3">
+        <h2 class="mb-0 text-truncate" title="Recall">Recall</h2>
+        <canvas class="chart-dimensions" data-value="{{ '%.2f'|format(ml_model.best_features_model_performance_data['Recall']) }}"></canvas>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-3">
+        <h2 class="mb-0 text-truncate" title="F1">F1</h2>
+        <canvas class="chart-dimensions" data-value="{{ '%.2f'|format(ml_model.best_features_model_performance_data['F1']) }}"></canvas>
+    </div>
+</div>
+{% endblock %}
+
+{% block best_features %}
+<div class="row" id="ml_models_best_features-model-{{ml_model_name}}-row">
+    <div class="col-12">
+        <h3 class="fw-bold mt-2">{{ml_model.best_features|length}} selected features</h3>
+        <div class="row p-2">
+            {% for feature in ml_model.best_features %}
+            <div class="col-12 col-md-4 col-xxl-2">
+                <span><b>{{loop.index}}.</b> {{feature}}</span>
+            </div>
+            {% endfor %}
         </div>
     </div>
 </div>
 {% endblock %}
 
-{% block scripts %}
+{% block best_features_classification_report %}
+<div class="row p-2">
+    <div class="col-12">
+        <!-- Cabecera -->
+        <div class="row">
+            <div class="col-4 p-2 border border-dark text-white darkblue-bg-color">
+                <h3 class="mb-0 text-truncate" title="Pattern">Pattern</h3>
+            </div>
+            <div class="col-2 p-2 border border-dark text-white blue-green-bg-color text-end">
+                <h3 class="mb-0 text-truncate" title="Precision">Precision</h3>
+            </div>
+            <div class="col-2 p-2 border border-dark text-white blue-green-bg-color text-end">
+                <h3 class="mb-0 text-truncate" title="Recall">Recall</h3>
+            </div>
+            <div class="col-2 p-2 border border-dark text-white blue-green-bg-color text-end">
+                <h3 class="mb-0 text-truncate" title="F1-score">F1-score</h3>
+            </div>
+            <div class="col-2 p-2 border border-dark text-white blue-green-bg-color text-end">
+                <h3 class="mb-0 text-truncate" title="Support">Support</h3>
+            </div>
+        </div>
+        <!-- Métricas de los patrones -->
+        {% for pattern, pattern_metrics in ml_model.best_features_model_performance_data['Classification report'].items() %}
+        <div class="row" id="ml_models_performance_details_per_pattern-model-{{ml_model_name}}-row">
+            <div class="col-4 p-2 border border-dark text-dark grey-bg-color text-truncate">
+                <span class="mb-0 fw-bold" title="{{pattern | replace('p.', '') | capitalize }}">{{pattern | replace("p.", "") | capitalize }}</span>
+            </div>
+            <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
+                <span class="mb-0" title="{{ '%.2f'|format((pattern_metrics['precision'] * 100) | float | round(3)) }}%">{{ '%.2f'|format((pattern_metrics['precision'] * 100) | float | round(3)) }}%</span>
+            </div>
+            <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
+                <span class="mb-0" title="{{ '%.2f'|format((pattern_metrics['recall'] * 100) | float | round(3)) }}%">{{ '%.2f'|format((pattern_metrics['recall'] * 100) | float | round(3)) }}%</span>
+            </div>
+            <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
+                <span class="mb-0" title="{{ '%.2f'|format((pattern_metrics['f1-score'] * 100) | float | round(3)) }}%">{{ '%.2f'|format((pattern_metrics['f1-score'] * 100) | float | round(3)) }}%</span>
+            </div>
+            <div class="col-2 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
+                <span class="mb-0" title="{{pattern_metrics['support'] | int }}">{{pattern_metrics['support'] | int }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block best_features_confusion_matrices %}
+{% for pattern, confusion_matrix in ml_model.best_features_model_performance_data['Confusion matrix'].items() %}
+<div class="row p-2">
+    <div class="col-12">
+        <!-- Cabecera -->
+        <div class="row">
+            <div class="col-4 p-2 border border-dark text-white darkblue-bg-color">
+                <h3 class="mb-0 text-truncate" title="{{ pattern|replace('p.', '')|capitalize }}">
+                    {{ pattern|replace('p.', '')|capitalize }}
+                    <a class="text-decoration-none ms-1" href="{{ pattern_links[pattern] }}" target="_blank">Click to learn more</a>
+                </h3>
+            </div>
+            <div class="col-4 p-2 border border-dark text-white blue-green-bg-color text-end">
+                <h3 class="mb-0 text-truncate" title="Real value - False">Real value - False</h3>
+            </div>
+            <div class="col-4 p-2 border border-dark text-white blue-green-bg-color text-end">
+                <h3 class="mb-0 text-truncate" title="Real value - True">Real value - True</h3>
+            </div>
+        </div>
+        <!-- Filas -->
+        <div class="row">
+            <div class="col-4 p-2 border border-dark text-dark grey-bg-color text-truncate">
+                <span class="mb-0 fw-bold" title="Predicted value - False">Predicted value - False</span>
+            </div>
+            <div class="col-4 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
+                <span class="mb-0" title="{{ confusion_matrix[0][0] }} ({{ '%.2f'|format((ml_model.best_features_model_performance_data['Normalized confusion matrix'][pattern][0][0] * 100) | float | round(3)) }}%)">{{ confusion_matrix[0][0] }} ({{ '%.2f'|format((ml_model.best_features_model_performance_data['Normalized confusion matrix'][pattern][0][0] * 100) | float | round(3)) }}%)</span>
+            </div>
+            <div class="col-4 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
+                <span class="mb-0" title="{{ confusion_matrix[0][1] }} ({{ '%.2f'|format((ml_model.best_features_model_performance_data['Normalized confusion matrix'][pattern][0][1] * 100) | float | round(3)) }}%)">{{ confusion_matrix[0][1] }} ({{ '%.2f'|format((ml_model.best_features_model_performance_data['Normalized confusion matrix'][pattern][0][1] * 100) | float | round(3)) }}%)</span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-4 p-2 border border-dark text-dark grey-bg-color text-truncate">
+                <span class="mb-0 fw-bold" title="Predicted value - True">Predicted value - True</span>
+            </div>
+            <div class="col-4 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
+                <span class="mb-0" title="{{ confusion_matrix[1][0] }} ({{ '%.2f'|format((ml_model.best_features_model_performance_data['Normalized confusion matrix'][pattern][1][0] * 100) | float | round(3)) }}%)">{{ confusion_matrix[1][0] }} ({{ '%.2f'|format((ml_model.best_features_model_performance_data['Normalized confusion matrix'][pattern][1][0] * 100) | float | round(3)) }}%)</span>
+            </div>
+            <div class="col-4 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
+                <span class="mb-0" title="{{confusion_matrix[1][1] }} ({{ '%.2f'|format((ml_model.best_features_model_performance_data['Normalized confusion matrix'][pattern][1][1] * 100) | float | round(3)) }}%)">{{ confusion_matrix[1][1] }} ({{ '%.2f'|format((ml_model.best_features_model_performance_data['Normalized confusion matrix'][pattern][1][1] * 100) | float | round(3)) }}%)</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block custom_scripts %}
 <!-- Script personalizado -->
-<script src="../../static/model_performance_metrics_charts.js"></script>
 <script src="../../static/ml_models.js"></script>
 {% endblock %}

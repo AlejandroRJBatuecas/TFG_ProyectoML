@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title scoped %}ML models base{% endblock %}
+
+{% block content scoped %}
+<div class="container-fluid p-3">
+    <div class="row justify-content-center fixed-content">
+        <div class="col-11">
+            <!-- Comparativa de rendimientos de los modelos -->
+            <div class="row">
+                <div class="col-12">
+                    <!-- Pestañas de tipos de modelos -->
+                    <div class="row">
+                        <div class="col-12 p-0">
+                            <ul class="nav nav-pills nav-fill darkblue-bg-color p-2">
+                                {% block navigation_links %}{% endblock %}
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- Gráfica y tabla de resultados -->
+                    <div class="row p-2">
+                        <div class="col-12">
+                            <h1 class="mt-3">Model performance comparison</h1>
+                            <!-- Gráfica de resultados -->
+                            {% block chart %}{% endblock %}
+                            <!-- Tabla de resultados -->
+                            {% block result_table %}{% endblock %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Detalle de los modelos -->
+            {% block performance_details_row %}{% endblock %}
+                <div class="col-12">
+                    <h1 class="mb-3 mt-3">Model performance details</h1>
+                    <!-- Acordeón con los modelos -->
+                    {% block performance_details_accordion %}{% endblock %}
+                        {% for ml_model_name, ml_model in ml_models_dict.items() %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="{{ml_model.__class__.__name__}}-accordion-heading">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#{{ml_model.__class__.__name__}}-accordion-collapse" aria-expanded="false" aria-controls="collapseOne">
+                                    {{ml_model_name}}
+                                </button>
+                            </h2>
+                            <div id="{{ml_model.__class__.__name__}}-accordion-collapse" class="accordion-collapse collapse show" aria-labelledby="{{ml_model.__class__.__name__}}-accordion-heading" data-bs-parent="#ml_models_performance_details-accordion">
+                                <div class="accordion-body">
+                                    <!-- Acordeón para los dos modelos -->
+                                    <div class="accordion">
+                                        <!-- Modelo normal -->
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="{{ml_model.__class__.__name__}}-simple-accordion-heading">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#{{ml_model.__class__.__name__}}-simple-accordion-collapse" aria-expanded="false" aria-controls="collapseOne">
+                                                    Simple model
+                                                </button>
+                                            </h2>
+                                            <div id="{{ml_model.__class__.__name__}}-simple-accordion-collapse" class="accordion-collapse collapse" aria-labelledby="{{ml_model.__class__.__name__}}-simple-accordion-heading">
+                                                <div class="accordion-body">
+                                                    <!-- Métricas de rendimiento del modelo -->
+                                                    <div class="row">
+                                                        <div class="col-12">
+                                                            <h1>Model performance metrics</h1>
+                                                            <!-- Gráficas de resultados -->
+                                                            {% block model_performance_metrics scoped %}
+                                                            {{ml_model}}
+                                                            {% endblock %}
+                                                        </div>
+                                                    </div>
+                                                    <!-- Resultados por patrón -->
+                                                    <div class="row">
+                                                        <div class="col-12">
+                                                            <h1 class="mt-3">Classification report</h1>
+                                                            <!-- Tabla de resultados por patrón -->
+                                                            {% block classification_report scoped %}
+                                                            {% endblock %}
+                                                        </div>
+                                                    </div>
+                                                    <!-- Matrices de confusión por patrón -->
+                                                    <div class="row">
+                                                        <div class="col-12">
+                                                            <h1 class="mt-3">Confusion matrices</h1>
+                                                            <!-- Matriz de confusión por patrón -->
+                                                            {% block confusion_matrices scoped %}
+                                                            {% endblock %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- Modelo mejorado -->
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="{{ml_model.__class__.__name__}}-improved-accordion-heading">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#{{ml_model.__class__.__name__}}-improved-accordion-collapse" aria-expanded="false" aria-controls="collapseOne">
+                                                    Model with feature selection
+                                                </button>
+                                            </h2>
+                                            <div id="{{ml_model.__class__.__name__}}-improved-accordion-collapse" class="accordion-collapse collapse" aria-labelledby="{{ml_model.__class__.__name__}}-improved-accordion-heading">
+                                                <div class="accordion-body">
+                                                    <!-- Métricas de rendimiento del modelo mejorado -->
+                                                    <div class="row">
+                                                        <div class="col-12">
+                                                            <h1>Model performance metrics</h1>
+                                                            <!-- Gráficas de resultados del modelo mejorado -->
+                                                            {% block best_features_model_performance_metrics scoped %}
+                                                            {% endblock %}
+                                                        </div>
+                                                    </div>
+                                                    <!-- Mejores métricas -->
+                                                    <h1 class="mt-3">Best features</h1>
+                                                    {% block best_features scoped %}
+                                                    {% endblock %}
+                                                    <!-- Resultados por patrón -->
+                                                    <div class="row">
+                                                        <div class="col-12">
+                                                            <!-- Tabla de resultados por patrón -->
+                                                            <h1 class="mt-3">Classification report</h1>
+                                                            {% block best_features_classification_report scoped %}
+                                                            {% endblock %}
+                                                        </div>
+                                                    </div>
+                                                    <!-- Matrices de confusión por patrón -->
+                                                    <div class="row">
+                                                        <div class="col-12">
+                                                            <!-- Matriz de confusión por patrón -->
+                                                            <h1 class="mt-3">Confusion matrices</h1>
+                                                            {% block best_features_confusion_matrices scoped %}
+                                                            {% endblock %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts scoped %}
+<script src="../../static/model_performance_metrics_charts.js"></script>
+{% block custom_scripts scoped %}{% endblock %}
+{% endblock %}
