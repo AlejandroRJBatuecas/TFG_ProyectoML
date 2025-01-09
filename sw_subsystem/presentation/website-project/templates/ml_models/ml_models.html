@@ -3,23 +3,24 @@
 {% block title %}ML models{% endblock %}
 
 {% block navigation_links %}
-<li class="nav-item m-1">
-    <a class="nav-link active-custom text-white" aria-current="page" href="/ml_models">Multilabel models</a>
-</li>
-<li class="nav-item grey-bg-color m-1">
-    <a class="nav-link text-dark" href="/ovr_models">One vs Rest models</a>
-</li>
+<ul class="nav nav-pills nav-fill darkblue-bg-color p-2">
+    <li class="nav-item m-1">
+        <a class="nav-link active-custom text-white" aria-current="page" href="/ml_models">Multilabel models</a>
+    </li>
+    <li class="nav-item grey-bg-color m-1">
+        <a class="nav-link text-dark" href="/ovr_models">One vs Rest models</a>
+    </li>
+</ul>
 {% endblock %}
 
-{% block chart %}
+{% block chart_and_result_table %}
+<!-- Gráfica -->
 <div class="row justify-content-center">
     <div class="col-12 col-md-10 col-xl-8">
         <canvas id="verticalBarChart"></canvas>
     </div>
 </div>
-{% endblock %}
-
-{% block result_table %}
+<!-- Tabla de resultados -->
 <div class="row mb-3">
     <div class="col-12">
         <!-- Cabecera -->

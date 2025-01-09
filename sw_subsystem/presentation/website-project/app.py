@@ -265,6 +265,15 @@ def create_metric_dicts(selected_models_num, circuits_number, circuit_metrics_to
 def predict_get():
     return render_template('/pattern_analysis/prediction_results.html', patterns_list=ml_parameters.patterns_list)
 
+def get_dict_key(dict, value):
+    # Invertir el diccionario
+    inverted_dict = {v: k for k, v in dict.items()}
+
+    # Obtener la clave asociada al valor
+    key = inverted_dict.get(value)
+
+    return key
+
 @app.route('/prediction_results', methods=['POST'])
 def predict_post():
     # Inicialización de los listados
@@ -297,12 +306,13 @@ def predict_post():
         selected_models.append(form_values[i])
 
     circuits_predictions = [{} for _ in range(circuits_number)] # Lista que contiene las predicciones de los circuitos
-    
+
     for selected_model in selected_models:
         model = get_or_create_model(selected_model)
         model_predictions_list = model.get_prediction()
+        selected_model_key = get_dict_key(ml_trained_model_paths.trained_models, selected_model)
         for i, value in enumerate(model_predictions_list):
-            circuits_predictions[i][selected_model] = value
+            circuits_predictions[i][selected_model_key] = value
 
     circuits_metrics = get_simplified_circuit("Descriptive name")
 

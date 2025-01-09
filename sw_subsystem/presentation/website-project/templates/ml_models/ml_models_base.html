@@ -12,19 +12,15 @@
                     <!-- Pestañas de tipos de modelos -->
                     <div class="row">
                         <div class="col-12 p-0">
-                            <ul class="nav nav-pills nav-fill darkblue-bg-color p-2">
-                                {% block navigation_links %}{% endblock %}
-                            </ul>
+                            {% block navigation_links %}{% endblock %}
                         </div>
                     </div>
                     <!-- Gráfica y tabla de resultados -->
                     <div class="row p-2">
                         <div class="col-12">
                             <h1 class="mt-3">Model performance comparison</h1>
-                            <!-- Gráfica de resultados -->
-                            {% block chart %}{% endblock %}
-                            <!-- Tabla de resultados -->
-                            {% block result_table %}{% endblock %}
+                            <!-- Gráfica y tabla de resultados -->
+                            {% block chart_and_result_table %}{% endblock %}
                         </div>
                     </div>
                 </div>

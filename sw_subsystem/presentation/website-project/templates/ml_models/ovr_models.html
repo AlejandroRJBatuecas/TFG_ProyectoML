@@ -3,15 +3,17 @@
 {% block title %}OvR models{% endblock %}
 
 {% block navigation_links %}
-<li class="nav-item grey-bg-color m-1">
-    <a class="nav-link text-dark" href="/ml_models">Multilabel models</a>
-</li>
-<li class="nav-item m-1">
-    <a class="nav-link active-custom text-white" aria-current="page" href="/ovr_models">One vs Rest models</a>
-</li>
+<ul class="nav nav-pills nav-fill darkblue-bg-color p-2">
+    <li class="nav-item grey-bg-color m-1">
+        <a class="nav-link text-dark" href="/ml_models">Multilabel models</a>
+    </li>
+    <li class="nav-item m-1">
+        <a class="nav-link active-custom text-white" aria-current="page" href="/ovr_models">One vs Rest models</a>
+    </li>
+</ul>
 {% endblock %}
 
-{% block chart %}
+{% block chart_and_result_table %}
 {% for pattern in patterns_list %}
 <div class="row p-2 grey-bg-color">
     <div class="col-12 p-0">
@@ -27,11 +29,7 @@
         <canvas id="chart-pattern-{{ pattern }}"></canvas>
     </div>
 </div>
-{% endfor %}
-{% endblock %}
-
-{% block result_table %}
-{% for pattern in patterns_list %}
+<!-- Tabla de resultados -->
 <div class="row mb-3">
     <div class="col-12">
         <!-- Cabecera -->
