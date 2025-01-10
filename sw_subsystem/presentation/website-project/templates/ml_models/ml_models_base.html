@@ -75,8 +75,29 @@
                                                         <div class="col-12">
                                                             <h1 class="mt-3">Confusion matrices</h1>
                                                             <!-- Matriz de confusión por patrón -->
-                                                            {% block confusion_matrices scoped %}
-                                                            {% endblock %}
+                                                            {% for pattern in patterns_list %}
+                                                            <div class="row p-2">
+                                                                <div class="col-12">
+                                                                    <!-- Cabecera -->
+                                                                    <div class="row">
+                                                                        <div class="col-4 p-2 border border-dark text-white darkblue-bg-color">
+                                                                            <h3 class="mb-0 text-truncate" title="{{ pattern|replace('p.', '')|capitalize }}">
+                                                                                {{ pattern|replace('p.', '')|capitalize }}
+                                                                                <a class="text-decoration-none ms-1" href="{{ pattern_links[pattern] }}" target="_blank">Click to learn more</a>
+                                                                            </h3>
+                                                                        </div>
+                                                                        <div class="col-4 p-2 border border-dark text-white blue-green-bg-color text-end">
+                                                                            <h3 class="mb-0 text-truncate" title="Real value - False">Real value - False</h3>
+                                                                        </div>
+                                                                        <div class="col-4 p-2 border border-dark text-white blue-green-bg-color text-end">
+                                                                            <h3 class="mb-0 text-truncate" title="Real value - True">Real value - True</h3>
+                                                                        </div>
+                                                                    </div>
+                                                                    {% block confusion_matrices scoped %}
+                                                                    {% endblock %}
+                                                                </div>
+                                                            </div>
+                                                            {% endfor %}
                                                         </div>
                                                     </div>
                                                 </div>

@@ -157,50 +157,31 @@
 {% endblock %}
 
 {% block confusion_matrices %}
-{% for pattern, confusion_matrix in ml_model.model_performance_data['Confusion matrix'].items() %}
-<div class="row p-2">
-    <div class="col-12">
-        <!-- Cabecera -->
-        <div class="row">
-            <div class="col-4 p-2 border border-dark text-white darkblue-bg-color">
-                <h3 class="mb-0 text-truncate" title="{{ pattern|replace('p.', '')|capitalize }}">
-                    {{ pattern|replace('p.', '')|capitalize }}
-                    <a class="text-decoration-none ms-1" href="{{ pattern_links[pattern] }}" target="_blank">Click to learn more</a>
-                </h3>
-            </div>
-            <div class="col-4 p-2 border border-dark text-white blue-green-bg-color text-end">
-                <h3 class="mb-0 text-truncate" title="Real value - False">Real value - False</h3>
-            </div>
-            <div class="col-4 p-2 border border-dark text-white blue-green-bg-color text-end">
-                <h3 class="mb-0 text-truncate" title="Real value - True">Real value - True</h3>
-            </div>
-        </div>
-        <!-- Filas -->
-        <div class="row">
-            <div class="col-4 p-2 border border-dark text-dark grey-bg-color text-truncate">
-                <span class="mb-0 fw-bold" title="Predicted value - False">Predicted value - False</span>
-            </div>
-            <div class="col-4 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
-                <span class="mb-0" title="{{ confusion_matrix[0][0] }} ({{ '%.2f'|format((ml_model.model_performance_data['Normalized confusion matrix'][pattern][0][0] * 100) | float | round(3)) }}%)">{{ confusion_matrix[0][0] }} ({{ '%.2f'|format((ml_model.model_performance_data['Normalized confusion matrix'][pattern][0][0] * 100) | float | round(3)) }}%)</span>
-            </div>
-            <div class="col-4 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
-                <span class="mb-0" title="{{ confusion_matrix[0][1] }} ({{ '%.2f'|format((ml_model.model_performance_data['Normalized confusion matrix'][pattern][0][1] * 100) | float | round(3)) }}%)">{{ confusion_matrix[0][1] }} ({{ '%.2f'|format((ml_model.model_performance_data['Normalized confusion matrix'][pattern][0][1] * 100) | float | round(3)) }}%)</span>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-4 p-2 border border-dark text-dark grey-bg-color text-truncate">
-                <span class="mb-0 fw-bold" title="Predicted value - True">Predicted value - True</span>
-            </div>
-            <div class="col-4 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
-                <span class="mb-0" title="{{ confusion_matrix[1][0] }} ({{ '%.2f'|format((ml_model.model_performance_data['Normalized confusion matrix'][pattern][1][0] * 100) | float | round(3)) }}%)">{{ confusion_matrix[1][0] }} ({{ '%.2f'|format((ml_model.model_performance_data['Normalized confusion matrix'][pattern][1][0] * 100) | float | round(3)) }}%)</span>
-            </div>
-            <div class="col-4 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
-                <span class="mb-0" title="{{confusion_matrix[1][1] }} ({{ '%.2f'|format((ml_model.model_performance_data['Normalized confusion matrix'][pattern][1][1] * 100) | float | round(3)) }}%)">{{ confusion_matrix[1][1] }} ({{ '%.2f'|format((ml_model.model_performance_data['Normalized confusion matrix'][pattern][1][1] * 100) | float | round(3)) }}%)</span>
-            </div>
-        </div>
+{% set confusion_matrix = ml_model.model_performance_data['Confusion matrix'][pattern] %}
+{% set normalized_confusion_matrix = ml_model.model_performance_data['Normalized confusion matrix'][pattern] %}
+<!-- Filas -->
+<div class="row">
+    <div class="col-4 p-2 border border-dark text-dark grey-bg-color text-truncate">
+        <span class="mb-0 fw-bold" title="Predicted value - False">Predicted value - False</span>
+    </div>
+    <div class="col-4 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
+        <span class="mb-0" title="{{ confusion_matrix[0][0] }} ({{ '%.2f'|format((normalized_confusion_matrix[0][0] * 100) | float | round(3)) }}%)">{{ confusion_matrix[0][0] }} ({{ '%.2f'|format((normalized_confusion_matrix[0][0] * 100) | float | round(3)) }}%)</span>
+    </div>
+    <div class="col-4 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
+        <span class="mb-0" title="{{ confusion_matrix[0][1] }} ({{ '%.2f'|format((normalized_confusion_matrix[0][1] * 100) | float | round(3)) }}%)">{{ confusion_matrix[0][1] }} ({{ '%.2f'|format((normalized_confusion_matrix[0][1] * 100) | float | round(3)) }}%)</span>
     </div>
 </div>
-{% endfor %}
+<div class="row">
+    <div class="col-4 p-2 border border-dark text-dark grey-bg-color text-truncate">
+        <span class="mb-0 fw-bold" title="Predicted value - True">Predicted value - True</span>
+    </div>
+    <div class="col-4 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
+        <span class="mb-0" title="{{ confusion_matrix[1][0] }} ({{ '%.2f'|format((normalized_confusion_matrix[1][0] * 100) | float | round(3)) }}%)">{{ confusion_matrix[1][0] }} ({{ '%.2f'|format((normalized_confusion_matrix[1][0] * 100) | float | round(3)) }}%)</span>
+    </div>
+    <div class="col-4 p-2 border border-dark text-dark text-end lightblue-bg-color text-truncate">
+        <span class="mb-0" title="{{confusion_matrix[1][1] }} ({{ '%.2f'|format((normalized_confusion_matrix[1][1] * 100) | float | round(3)) }}%)">{{ confusion_matrix[1][1] }} ({{ '%.2f'|format((normalized_confusion_matrix[1][1] * 100) | float | round(3)) }}%)</span>
+    </div>
+</div>
 {% endblock %}
 
 {% block best_features_model_performance_metrics %}

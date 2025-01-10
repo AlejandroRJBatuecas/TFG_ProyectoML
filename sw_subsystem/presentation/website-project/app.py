@@ -333,7 +333,7 @@ def ml_models():
     # Obtener los modelos requeridos
     ml_models_dict = {model: ML_MODELS_DICT[model] for model in ml_models_values if model in ML_MODELS_DICT}
 
-    return render_template('/ml_models/ml_models.html', ml_models_dict=ml_models_dict)
+    return render_template('/ml_models/ml_models.html', ml_models_dict=ml_models_dict, patterns_list=ml_parameters.patterns_list)
 
 @app.route('/ovr_models')
 def ovr_models():
