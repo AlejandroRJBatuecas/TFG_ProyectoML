@@ -8,6 +8,9 @@ import os
 from .utils import save_fig
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, classification_report, confusion_matrix, multilabel_confusion_matrix
 
+# Constante para mantenibilidad
+correlation = "Correlación"
+
 # Mostrar la estructura de los datos
 def show_data_structure(data):
     # Mostrar la forma del dataset
@@ -75,13 +78,13 @@ def correlation_analysis(correlation_matrix, min_correlation_value, patterns_lis
     )
 
     # Renombrar columnas para mayor claridad
-    high_correlation_pairs.columns = ["Característica 1", "Característica 2", "Correlación"]
+    high_correlation_pairs.columns = ["Característica 1", "Característica 2", correlation]
 
     # Filtrar solo las correlaciones mayores al umbral de correlación
-    high_correlation_pairs = high_correlation_pairs[high_correlation_pairs["Correlación"] > min_correlation_value]
+    high_correlation_pairs = high_correlation_pairs[high_correlation_pairs[correlation] > min_correlation_value]
 
     # Ordenar de mayor a menor correlación
-    high_correlation_pairs = high_correlation_pairs.sort_values(by="Correlación", ascending=False)
+    high_correlation_pairs = high_correlation_pairs.sort_values(by=correlation, ascending=False)
 
     # Mostrar los pares de variables con alta correlación
     print(f"\n{high_correlation_pairs}")

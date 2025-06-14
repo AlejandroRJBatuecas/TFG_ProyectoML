@@ -345,4 +345,4 @@ def ovr_models():
     return render_template('/ml_models/ovr_models.html', ml_models_dict=ml_models_dict, patterns_list=ml_parameters.patterns_list)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
