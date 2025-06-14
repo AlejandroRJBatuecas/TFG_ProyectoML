@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
+import pandas as pd
 import numpy as np
+import seaborn as sns
 import joblib
 import os
 
@@ -7,51 +9,83 @@ from .utils import save_fig
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, classification_report, confusion_matrix, multilabel_confusion_matrix
 
 # Mostrar la estructura de los datos
-def show_data_structure(data, data_values, data_labels, train_set_values, test_set_values, train_set_labels, test_set_labels):
-    # Mostrar los 5 primeros registros
-    print(data.head())
+def show_data_structure(data):
+    # Mostrar la forma del dataset
+    print(data.shape)
     # Mostrar la estructura de los datos
     data.info()
+    # Mostrar los 5 primeros registros
+    print(data.head())
     # Mostrar las estadísticas de los datos numéricos
     print(data.describe())
-    # Mostrar el total de patrones detectados y tamaño de los dataframes
-    for pattern in data_labels.columns:
-        print("\nTotal", data_labels[pattern].value_counts())
 
-    print("\nFormato antes del train-test split:")
-    print("Formato de los valores:", data_values.shape)
+# Mostrar la estructura de los datos particionados
+def show_split_data_structure(data_values, data_labels):
+    # Mostrar el total de patrones detectados y tamaño de los dataframes
+    print("\nFormato tras de la división en conjuntos de entrenamiento y prueba:")
+    print("Formato de las características:", data_values.shape)
     print("Formato de las etiquetas:", data_labels.shape)
 
-    # Mostrar el tamaño de los conjuntos de entrenamiento y de prueba
-    print("\nFormato después del train-test split:")
-    print("Formato de los valores de entrenamiento:", train_set_values.shape)
-    print("Formato de los valores de prueba:", test_set_values.shape)
-    print("Formato de las etiquetas de entrenamiento:", train_set_labels.shape)
-    print("Formato de las etiquetas de prueba:", test_set_labels.shape)
+    # Crear un DataFrame con los conteos de valores True/False para cada patrón
+    pattern_values_count = pd.DataFrame({
+        "Patrón": data_labels.columns,
+        "False": [data_labels[col].value_counts().get(False, 0) for col in data_labels.columns],
+        "True": [data_labels[col].value_counts().get(True, 0) for col in data_labels.columns]
+    })
 
-# Crear histograma de los atributos
-def create_data_histogram(data):
-    data.hist(bins=50)
+    print("\nRecuento de valores por patrón:")
+    print(pattern_values_count)
+
+# Crear histograma de las características de entrada
+def create_data_histogram(data, data_values):
+    # Crear los histogramas de la distribución de los datos
+    plt.figure(figsize=(9, 12))
+    for i, column in enumerate(data_values.columns):
+        plt.subplot(9, 3, i+1)
+        sns.histplot(data[column], kde=True)
+        plt.xlabel("")
+        plt.ylabel("")
+        plt.title(f'{column}')
+    plt.tight_layout()
     save_fig("attribute_histogram_plots")
-    plt.show()
+    #plt.show()
 
-# Ver la correlación entre los datos
-def get_correlation_matrix(data, min_correlation_value, patterns_list):
-    # Calcular correlación
+# Obtener la matriz de correlación
+def get_correlation_matrix(data):
+    # Calcular la matriz de correlación en valor absoluto
     correlation_matrix = data.corr().abs()
 
-    # Plot
-    plt.figure(figsize=(8, 6))
-    plt.imshow(correlation_matrix, cmap='coolwarm', interpolation='nearest')
-    plt.colorbar(label='Correlation')
-    plt.title('Matriz de correlación')
-    plt.xticks(range(len(correlation_matrix)), correlation_matrix.columns, rotation=90)
-    plt.yticks(range(len(correlation_matrix)), correlation_matrix.columns)
+    # Visualizar la matriz de correlación utilizando un mapa de calor
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(correlation_matrix, cmap='coolwarm')
+    plt.title('Matriz de Correlación')
     plt.tight_layout()
-
-    # Guardar la imagen
     save_fig('correlation_matrix')
+    #plt.show()
 
+    return correlation_matrix
+
+# Analizar la correlación entre las variables
+def correlation_analysis(correlation_matrix, min_correlation_value, patterns_list):
+    # Crear las parejas de correlación entre las variables
+    high_correlation_pairs = (
+        correlation_matrix.where(np.triu(np.ones(correlation_matrix.shape), k=1).astype(bool))
+        .stack()
+        .reset_index()
+    )
+
+    # Renombrar columnas para mayor claridad
+    high_correlation_pairs.columns = ["Característica 1", "Característica 2", "Correlación"]
+
+    # Filtrar solo las correlaciones mayores al umbral de correlación
+    high_correlation_pairs = high_correlation_pairs[high_correlation_pairs["Correlación"] > min_correlation_value]
+
+    # Ordenar de mayor a menor correlación
+    high_correlation_pairs = high_correlation_pairs.sort_values(by="Correlación", ascending=False)
+
+    # Mostrar los pares de variables con alta correlación
+    print(f"\n{high_correlation_pairs}")
+    
     # Seleccionar las características con alta correlación con las variables objetivo
     print(f"\nCaracterísticas con alta correlación (>{min_correlation_value}):")
     for pattern in patterns_list:
@@ -60,6 +94,19 @@ def get_correlation_matrix(data, min_correlation_value, patterns_list):
         if pattern in high_correlation_features:
             high_correlation_features.remove(pattern)  # Eliminar la variable objetivo de la lista
         print(f"{pattern}:", high_correlation_features)
+
+# Mostrar la estructura de los conjuntos de entrenamiento y prueba
+def show_datasets_structure(train_set_values, test_set_values, train_set_labels, test_set_labels):
+    # Crear un DataFrame con los tamaños de cada conjunto
+    datasets_sizes = pd.DataFrame({
+        "Dataset": ["Entrenamiento", "Entrenamiento", "Prueba", "Prueba"],
+        "Datos": ["Características", "Etiquetas", "Características", "Etiquetas"],
+        "Registros": [train_set_values.shape[0], train_set_labels.shape[0], test_set_values.shape[0], test_set_labels.shape[0]],
+        "Columnas": [train_set_values.shape[1], train_set_labels.shape[1], test_set_values.shape[1], test_set_labels.shape[1]]
+    })
+
+    print("\nTamaños de los conjuntos de entrenamiento y prueba:")
+    print(datasets_sizes)
 
 # Normalizar la matriz de confusión multietiqueta
 def normalize_confusion_matrix(mcm):

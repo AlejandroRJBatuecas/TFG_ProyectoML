@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 from config import ml_parameters
-from .ml_utils import show_data_structure, get_correlation_matrix
+from .ml_utils import show_data_structure, show_split_data_structure, create_data_histogram, get_correlation_matrix, correlation_analysis, show_datasets_structure
 from abc import ABC, abstractmethod
 from pathlib import Path
 from sklearn.model_selection import train_test_split
@@ -11,9 +11,15 @@ class BaseMLModel(ABC):
     def __init__(self, data_filename=ml_parameters.data_filename, test_size=ml_parameters.test_set_size):
         # Definir el modelo de ML utilizado y los parámetros para la búsqueda de hiperparámetros
         self.model, self.param_grid = self._init_model()
+        self.test_size = test_size
+
         # Leer el csv con los datos de entrenamiento
         self.data = pd.read_csv(Path(data_filename), delimiter=";")
-        self.test_size = test_size
+
+        # Mostrar la estructura de los datos
+        show_data_structure(self.data)
+
+        # Preparar los datos
         self.data_values, self.data_labels = self._prepare_data()
         self.train_set_values, self.test_set_values, self.train_set_labels, self.test_set_labels = self._get_datasets()
 
@@ -24,34 +30,40 @@ class BaseMLModel(ABC):
 
     # Realizar el preprocesamiento de los datos
     def _prepare_data(self):
+        # Eliminar columnas con información sobre el fichero y el circuito
+        self.data = self.data.drop(ml_parameters.circuit_information_columns, axis=1)
+
+        # Eliminar las columnas relacionadas con Oracle
+        self.data = self.data.drop(columns=ml_parameters.oracle_metrics_removed)
+
         # Limpiar las filas con algún dato nulo
         self.data = self.data.dropna()
 
-        # Elimnar las columnas relacionadas con Oracle
-        self.data = self.data.drop(columns=ml_parameters.eliminated_metrics)
-
-        # Separar datos y etiquetas
+        # Separar características y etiquetas
         data_values = self.data.select_dtypes(include=[np.number])
         data_labels = self.data[ml_parameters.patterns_list]
+
+        # Mostrar la estructura de los datos particionados
+        show_split_data_structure(data_values, data_labels)
+
+        # Crear histograma de las características de entrada
+        create_data_histogram(self.data, data_values)
+
+        # Obtener la matriz de correlación
+        correlation_matrix = get_correlation_matrix(self.data)
+
+        # Analizar la correlación entre las variables
+        correlation_analysis(correlation_matrix, ml_parameters.min_correlation_value, ml_parameters.patterns_list)
 
         return data_values, data_labels
     
     # Obtener los valores y etiquetas en conjuntos de entrenamiento y prueba
     def _get_datasets(self):
-        print(self.data_values)
-        print(self.data_labels)
-
         # Obtener el conjunto de entrenamiento y de prueba
         train_set_values, test_set_values, train_set_labels, test_set_labels = train_test_split(self.data_values, self.data_labels, test_size=ml_parameters.test_set_size, random_state=ml_parameters.random_state_value, stratify=self.data_labels)
 
-        # Mostrar la estructura de los datos
-        show_data_structure(self.data, self.data_values, self.data_labels, train_set_values, test_set_values, train_set_labels, test_set_labels)
-        #create_data_histogram(data)
-
-        # Ver la correlación entre los datos
-        data_vars = self.data.drop(ml_parameters.eliminated_columns, axis=1)
-        # # Obtener la matriz de correlación
-        get_correlation_matrix(data_vars, ml_parameters.min_correlation_value, ml_parameters.patterns_list)
+        # Mostrar la estructura de los conjuntos de entrenamiento y prueba
+        show_datasets_structure(train_set_values, test_set_values, train_set_labels, test_set_labels)
 
         return train_set_values, test_set_values, train_set_labels, test_set_labels
     

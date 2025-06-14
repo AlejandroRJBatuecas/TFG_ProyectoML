@@ -4,7 +4,7 @@ import tkinter as tk
 from pathlib import Path
 
 # Crear carpeta de imágenes
-IMAGES_PATH = Path() / "../images"
+IMAGES_PATH = Path(__file__).resolve().parent.parent / "images"
 IMAGES_PATH.mkdir(parents=True, exist_ok=True)
 
 # Obtener la resolución de la pantalla
@@ -44,7 +44,10 @@ def save_fig(fig_id, tight_layout=True, fig_extension="png", resolution=300):
     path = IMAGES_PATH / f"{fig_id}.{fig_extension}"
     if tight_layout:
         plt.tight_layout()
+    print(f"\nGuardando figura en {path}")  # <-- Depuración
     plt.savefig(path, format=fig_extension, dpi=resolution)
+    plt.close()
+    print(f"Imagen guardada en: {IMAGES_PATH / f'{fig_id}.{fig_extension}'}")
 
 # Crear el conjunto de prueba de manera manual
 def create_test_set(data, train_ratio):

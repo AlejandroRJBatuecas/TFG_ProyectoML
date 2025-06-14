@@ -20,15 +20,15 @@ patterns_links = {
     "p.entanglement": "https://patternatlas.planqk.de/pattern-languages/af7780d5-1f97-4536-8da7-4194b093ab1d/3d1f3991-df47-4d42-8f9a-e6dcf4e3ccec"
 }
 """ Diccionario con las URLs con la documentación de los patrones """
-eliminated_columns = ["id", "language", "extension", "author", "name", "path", "circuit"]
+circuit_information_columns = ["id", "language", "extension", "author", "name", "path", "circuit"]
 """ Columnas eliminadas para realizar la matriz de correlación """
-eliminated_metrics = ["m.NoOr", "m.NoCOr", "m.%QInOr", "m.%QInCOr", "m.AvgOrD", "m.MaxOrD"]
+oracle_metrics_removed = ["m.NoOr", "m.NoCOr", "m.%QInOr", "m.%QInCOr", "m.AvgOrD", "m.MaxOrD"]
 """ Métricas de Oráculo eliminadas """
 min_importance_value = 0.01
 """ Selecciona características con una importancia superior a este valor """
 min_importance_values = [0.02, 0.02, 0.01, 0.01]
 """ Selecciona características con una importancia superior a este valor para cada etiqueta """
-min_correlation_value = 0.5
+min_correlation_value = 0.8
 """ Selecciona características con una correlación superior a este valor """
 cv_value = 3 # Establecido en 3, ya que es un conjunto de datos pequeño
 """ Por defecto = 5 \n 

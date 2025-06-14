@@ -10,7 +10,7 @@ app = Flask(__name__)
 app.json.sort_keys = False
 
 # Nombre de la aplicación
-APP_NAME = "QPP-ML"
+APP_NAME = "QPP-ML" # Quantum Pattern Predictor using Machine Learning
 
 # Constantes
 PATTERN_ANALYSIS_HTML_FILE = '/pattern_analysis/pattern_analysis_configuration.html'

@@ -28,6 +28,8 @@ class MultilabelLearningModel(BaseMLModel):
         self.best_features_model_performance_data = self._evaluate_best_features_model_performance()
         self.predictions_proba = self.classifier.predict_proba(self.test_set_values)
         self.best_features_predictions_proba = self.best_features_classifier.predict_proba(self.test_set_values)
+        self._test_model_performance()
+        self._test_best_features_model_performance()
 
     # Definir las pipelines
     def _create_pipelines(self):

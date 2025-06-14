@@ -30,6 +30,9 @@ class OneVsRestModel(BaseMLModel):
             # Probabilidad de predicción del modelo mejorado
             self.best_features_predictions_proba[pattern] = self.best_features_classifiers[pattern].predict_proba(self.test_set_values)
 
+        self._test_model_performance()
+        self._test_best_features_model_performance()
+
     # Definir las pipelines
     def _create_pipelines(self):
         pipelines = {}
