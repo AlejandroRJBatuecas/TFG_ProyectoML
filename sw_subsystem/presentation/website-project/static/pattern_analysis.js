@@ -221,10 +221,13 @@ function generateMetricsColumn() {
 }
 
 function getFileExtension(file_type) {
-    if (file_type == "json") {
+    if (file_type == " json") {
         return ".json"
+    } else if (file_type == " py, qasm") {
+        return ".py,.qasm"
+    } else {
+        return ""
     }
-    return file_type == "python" ? ".py" : file_type
 }
 
 function openFileImportModal(file_type) {
@@ -292,12 +295,12 @@ document.getElementById('metrics-add-circuit-button').addEventListener('click', 
 
 // Evento para abrir el modal con el botón Importar fichero JSON
 document.getElementById('json-file-import-button').addEventListener('click', function() {
-    openFileImportModal("json");
+    openFileImportModal(" json");
 });
 
 // Evento para abrir el modal con el botón Importar fichero de código
 document.getElementById('code-file-import-button').addEventListener('click', function() {
-    openFileImportModal("python");
+    openFileImportModal(" py, qasm");
 });
 
 function getParsedValue(value) {

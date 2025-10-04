@@ -2,9 +2,14 @@ import json, joblib, copy
 
 from flask import Flask, jsonify, render_template, request
 from pathlib import Path
+from qiskit import QuantumCircuit
+from qiskit.exceptions import QiskitError
+from qiskit.qasm2 import loads as qasm2_loads # Parser de QASM 2.0 en memoria
+from qiskit.qasm2.exceptions import QASM2ParseError
 from config import metrics_definition, ml_trained_model_paths, ml_parameters
 from ml_subsystem.ml_models import KNNClassifierModel, KNNOvsRClassifierModel, RandomForestClassifierModel, store_model
 from sw_subsystem.business.metrics import ASTFileReader
+from sw_subsystem.business.metrics import MetricsAnalyzer
 
 app = Flask(__name__)
 app.json.sort_keys = False
@@ -104,10 +109,6 @@ def get_simplified_circuit(metric_detail):
         
     return simplified_circuit_metrics
 
-def allowed_file(filename, file_extension):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() == file_extension
-
 def get_json_file_metrics(file_data):
     circuit_metrics = []
     # Obtener el circuito base simplificado
@@ -167,7 +168,60 @@ def read_python_file(file):
 
     return file_content, circuits_list
 
-def verify_file(file, file_extension):
+def read_qasm_file(file):
+    '''
+    Lee un archivo QASM y devuelve su contenido y la lista de circuitos.
+    '''
+    circuits_read = []
+
+    # Obtener el nombre del archivo y su contenido
+    file_name = file.filename
+    file_content = file.read().decode('utf-8')
+
+    try:
+        # Intentar cargar como un único circuito
+        circuits_read.append(QuantumCircuit.from_qasm_str(file_content))
+    except QiskitError:
+        # Si falla, intentar interpretar varios circuitos
+        # 'qasm2_loads' puede devolver un programa con varias definiciones
+        # que luego se separan en subcircuitos
+        try:
+            program = qasm2_loads(file_content)
+
+            # Separar en circuitos individuales
+            for circ in program.circuits: # cada elemento es un QuantumCircuit
+                circuits_read.append(circ)
+        except QASM2ParseError:
+            # Si no se puede interpretar, devolver None
+            return None, None
+
+    # Obtener las métricas de los circuitos y sus imágenes
+    circuits_list = []
+
+    for i, circuit in enumerate(circuits_read):
+        # Analizar el circuito y añadirlo a la lista
+        metrics_analyzer = MetricsAnalyzer(circuit)
+
+        circuit_data = {
+            "name": f"Circuit {i+1}" if len(circuits_read) > 1 else file_name,
+            "circuit_metrics": metrics_analyzer.simplified_circuit,
+            "circuit_draw": metrics_analyzer.circuit_draw
+        }
+        circuits_list.append(circuit_data)
+
+    return file_content, circuits_list
+
+def allowed_file(filename, file_extension):
+    '''
+    Comprueba si el archivo tiene la extensión permitida.
+    '''
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() == file_extension
+
+def verify_file(file, file_extension) -> tuple | None:
+    '''
+    Verifica si el archivo es válido según su extensión.
+    '''
     error_message = None
 
     # Verificar si se ha enviado un archivo
@@ -178,17 +232,24 @@ def verify_file(file, file_extension):
     if file.filename == '':
         error_message = "No file selected"
 
-    # Verificar la extensión del archivo
-    if not allowed_file(file.filename, file_extension.replace(".", "")):
-        error_message = "The file does not have the specified extension"
+    if not error_message:
+        # Verificar la extensión del archivo
+        file_extension_allowed = file_extension.split(",")
+
+        for file_extension in file_extension_allowed:
+            if allowed_file(file.filename, file_extension.replace(".", "")):
+                error_message = None
+                break
+            else:
+                error_message = "The file does not have the specified extension"
     
-    return error_message
+    return error_message, file_extension
 
 def read_import_file(file, file_extension):
     imported_file_data = {
         "file_content": None,
         "circuit_metrics": None,
-        "cirucits_list": None,
+        "circuits_list": None,
         "error_message": None
     }
 
@@ -204,6 +265,14 @@ def read_import_file(file, file_extension):
         # Si no, devolver el mensaje de error
         if not imported_file_data["circuits_list"]:
             imported_file_data["error_message"] = "The file does not have the specified format"
+    elif file_extension == ".qasm":
+        # Si se han obtenido las métricas correctamente, devolver el archivo y las métricas
+        imported_file_data["file_content"], imported_file_data["circuits_list"] = read_qasm_file(file)
+        # Si no, devolver el mensaje de error
+        if not imported_file_data["circuits_list"]:
+            imported_file_data["error_message"] = "The file does not have the specified format"
+            if not imported_file_data["file_content"]:
+                imported_file_data["error_message"] = "The file is not a valid QASM file"
     else:
         imported_file_data["error_message"]= "The file does not have the specified extension"
     
@@ -211,6 +280,7 @@ def read_import_file(file, file_extension):
 
 @app.route('/pattern_analysis_configuration', methods=['GET'])
 def pattern_analysis_get():
+    ''' Renderiza la página de configuración del análisis de patrones. '''
     return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models)
 
 @app.route('/pattern_analysis_configuration', methods=['POST'])
@@ -220,8 +290,8 @@ def pattern_analysis_post():
 
     # Obtener la extensión del archivo requerido
     file_extension = request.form['file_extension']
-
-    error_message = verify_file(file, file_extension)
+    
+    error_message, file_extension = verify_file(file, file_extension)
 
     if error_message:
         return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, error_message=error_message)
@@ -229,15 +299,16 @@ def pattern_analysis_post():
     # Lectura del archivo dependiendo de su extensión
     imported_file_data = read_import_file(file, file_extension)
 
+    print(imported_file_data["error_message"])
+
     if imported_file_data["error_message"]:
-        return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, error_message=error_message)
+        return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, error_message=imported_file_data["error_message"])
     else:
         if imported_file_data["circuit_metrics"]:
             return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, file_name=file.filename, file_content=imported_file_data["file_content"], file_extension=file_extension.replace(".", ""), circuit_metrics=imported_file_data["circuit_metrics"])
         elif imported_file_data["circuits_list"]:
             return render_template(PATTERN_ANALYSIS_HTML_FILE, trained_models=ml_trained_model_paths.trained_models, file_name=file.filename, file_content=imported_file_data["file_content"], file_extension=file_extension.replace(".", ""), circuits_list=imported_file_data["circuits_list"])
         
-    
 def create_metric_dicts(selected_models_num, circuits_number, circuit_metrics_total_values, form_keys, form_values):
     circuits_list = []
 
@@ -345,4 +416,4 @@ def ovr_models():
     return render_template('/ml_models/ovr_models.html', ml_models_dict=ml_models_dict, patterns_list=ml_parameters.patterns_list)
 
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(debug=True)
